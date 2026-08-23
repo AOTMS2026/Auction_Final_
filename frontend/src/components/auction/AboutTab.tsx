@@ -79,7 +79,7 @@ export function AboutTab({ auction, teams, players }: AboutTabProps) {
             <div className="bg-brand/10 p-1.5 rounded-full text-brand">
               <Users className="size-4" />
             </div>
-            {auction.playersPerTeam} Players/Team
+            {auction.playersPerTeam} Player Per Team
           </div>
           <button onClick={shareAuction} className="text-brand hover:bg-brand/10 p-1.5 rounded-full transition-colors">
             <Share2 className="size-4" />

@@ -171,7 +171,7 @@ export function AuctionForm({
             name="playersPerTeam"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Players / Team</FormLabel>
+                <FormLabel>Player Per Team</FormLabel>
                 <FormControl>
                   <Input type="number" min={1} {...field} />
                 </FormControl>

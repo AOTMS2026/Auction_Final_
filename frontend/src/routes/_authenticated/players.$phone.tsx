@@ -149,7 +149,7 @@ function PlayerProfilePage() {
                       <div>
                         <h3 className="font-semibold text-base sm:text-lg truncate max-w-[200px] sm:max-w-xs">{item.auctionName}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(new Date(item.auctionDate), "MMM d, yyyy")} · {item.playersPerTeam} Pl/Team
+                          {format(new Date(item.auctionDate), "MMM d, yyyy")} · {item.playersPerTeam} Player Per Team
                         </p>
                       </div>
                       

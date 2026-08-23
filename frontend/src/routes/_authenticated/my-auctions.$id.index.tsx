@@ -164,7 +164,7 @@ function ManageAuctionPage() {
                 </p>
                 <div className="flex items-center gap-6 text-white/80">
                   <span className="flex items-center gap-2">
-                    <Users className="size-4" /> {auction.playersPerTeam} Pl/Team
+                    <Users className="size-4" /> {auction.playersPerTeam} Player Per Team
                   </span>
                   <Countdown targetDate={auction.startsAt} />
                 </div>
