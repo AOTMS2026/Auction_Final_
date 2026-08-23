@@ -58,7 +58,7 @@ export function SiteHeader() {
             <img 
               src="https://res.cloudinary.com/dlxveseav/image/upload/v1787290700/Super_Player_Auction/AOTMS%20%20logo.png" 
               alt="Logo" 
-              className="h-10 w-auto object-contain"
+              className="h-16 w-auto object-contain"
             />
             
           </Link>

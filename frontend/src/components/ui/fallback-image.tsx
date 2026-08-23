@@ -20,8 +20,10 @@ export function FallbackImage({ src, fallback, className, ...props }: FallbackIm
       <img
         src={src}
         className={cn(
-          "relative z-10 size-full object-cover transition-opacity duration-200",
-          loaded ? "opacity-100" : "opacity-0"
+          "relative z-10 size-full transition-opacity duration-200",
+          !className?.includes("object-") && "object-cover",
+          loaded ? "opacity-100" : "opacity-0",
+          className
         )}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}

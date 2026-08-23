@@ -155,18 +155,31 @@ function AuctioneerConsole() {
     
     setShuffledIds((prev) => {
       // Find priority players that are still pending
-      const priorityPlayers = pending
-        .filter((p) => getSpecialPriority(p.name) !== Infinity)
-        .sort((a, b) => getSpecialPriority(a.name) - getSpecialPriority(b.name));
-      const priorityIds = priorityPlayers.map((p) => p.id);
+      const priorityPending = pending.filter((p) => getSpecialPriority(p.name) !== Infinity);
+      const priorityPendingIds = priorityPending.map((p) => p.id);
+      
+      // Filter existing queue to only keep pending priority player IDs
+      const filteredQueuePriority = prev.filter((id) => priorityPendingIds.includes(id));
+      
+      // Find new priority players that aren't in the queue yet
+      const newPriorityIds = priorityPendingIds.filter(
+        (id) => !filteredQueuePriority.includes(id)
+      );
+      
+      // Shuffle new additions
+      const shuffledNewPriority = [...newPriorityIds];
+      for (let i = shuffledNewPriority.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledNewPriority[i], shuffledNewPriority[j]] = [shuffledNewPriority[j], shuffledNewPriority[i]];
+      }
+      
+      const finalPriorityQueue = [...filteredQueuePriority, ...shuffledNewPriority];
       
       // Non-priority pending player IDs
-      const nonPriorityPendingIds = pendingIds.filter((id) => !priorityIds.includes(id));
+      const nonPriorityPendingIds = pendingIds.filter((id) => !priorityPendingIds.includes(id));
       
       // Filter existing queue to only keep pending non-priority player IDs
-      const filteredQueueNonPriority = prev.filter(
-        (id) => nonPriorityPendingIds.includes(id) && !priorityIds.includes(id)
-      );
+      const filteredQueueNonPriority = prev.filter((id) => nonPriorityPendingIds.includes(id));
       
       // Find new non-priority players that aren't in the queue yet
       const newNonPriorityIds = nonPriorityPendingIds.filter(
@@ -183,7 +196,7 @@ function AuctioneerConsole() {
       const finalNonPriorityQueue = [...filteredQueueNonPriority, ...shuffledNewNonPriority];
       
       // Priority player IDs go first, then the remaining shuffled non-priority queue
-      return [...priorityIds, ...finalNonPriorityQueue];
+      return [...finalPriorityQueue, ...finalNonPriorityQueue];
     });
   }, [players, playersPending, mode, trialOverrides]);
 
