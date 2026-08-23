@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i 's/html.slice\\(0, 4000\\)/html.slice\\(2000, 5500\\)/' debug-edit-btn.js)",
+      "Bash(node debug-edit-btn.js)",
+      "Bash(sed -i 's/timeout: 10000/timeout: 20000/g' auction-e2e.js)",
+      "Bash(node auction-e2e.js)",
+      "Bash(node debug-seq.js)",
+      "Bash(node_modules/.bin/tsc.cmd --noEmit -p tsconfig.json)",
+      "Bash(grep -n \"readinessModalOpen\\\\|AlertDialog>\" 'c:/Users/raman/Music/Games/lovable-project-820a9450/frontend/src/routes/_authenticated/my-auctions.$id.index.tsx')",
+      "Read(//c/Users/raman/Music/Games/lovable-project-820a9450/frontend/src/routes/_authenticated/**)",
+      "Bash(netstat -ano)"
+    ]
+  }
+}
