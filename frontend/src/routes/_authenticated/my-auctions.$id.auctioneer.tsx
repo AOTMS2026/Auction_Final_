@@ -135,6 +135,18 @@ function AuctioneerConsole() {
     }
   }
 
+  function getSpecialPriority(name: string): number {
+    const n = name.toLowerCase();
+    if (n.includes("maddineni")) return 1;
+    if (n.includes("praveen")) return 2;
+    if (n.includes("mallesh")) return 3;
+    if (n.includes("dileep")) return 4;
+    if (/\bali\b/i.test(n) || n === "ali") return 5;
+    if (n.includes("kesava")) return 6;
+    if (n.includes("sundeep")) return 7;
+    return Infinity;
+  }
+
   // Keep shuffled queue synchronized with pending players
   useEffect(() => {
     if (playersPending) return;
@@ -142,21 +154,36 @@ function AuctioneerConsole() {
     const pendingIds = pending.map((p) => p.id);
     
     setShuffledIds((prev) => {
-      // Remove any IDs that are no longer pending
-      const filtered = prev.filter((id) => pendingIds.includes(id));
+      // Find priority players that are still pending
+      const priorityPlayers = pending
+        .filter((p) => getSpecialPriority(p.name) !== Infinity)
+        .sort((a, b) => getSpecialPriority(a.name) - getSpecialPriority(b.name));
+      const priorityIds = priorityPlayers.map((p) => p.id);
       
-      // Find new pending players that aren't in the queue
-      const newIds = pendingIds.filter((id) => !filtered.includes(id));
-      if (newIds.length > 0) {
-        // Shuffle the new additions
-        const shuffledNew = [...newIds];
-        for (let i = shuffledNew.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffledNew[i], shuffledNew[j]] = [shuffledNew[j], shuffledNew[i]];
-        }
-        return [...filtered, ...shuffledNew];
+      // Non-priority pending player IDs
+      const nonPriorityPendingIds = pendingIds.filter((id) => !priorityIds.includes(id));
+      
+      // Filter existing queue to only keep pending non-priority player IDs
+      const filteredQueueNonPriority = prev.filter(
+        (id) => nonPriorityPendingIds.includes(id) && !priorityIds.includes(id)
+      );
+      
+      // Find new non-priority players that aren't in the queue yet
+      const newNonPriorityIds = nonPriorityPendingIds.filter(
+        (id) => !filteredQueueNonPriority.includes(id)
+      );
+      
+      // Shuffle new additions
+      const shuffledNewNonPriority = [...newNonPriorityIds];
+      for (let i = shuffledNewNonPriority.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledNewNonPriority[i], shuffledNewNonPriority[j]] = [shuffledNewNonPriority[j], shuffledNewNonPriority[i]];
       }
-      return filtered;
+      
+      const finalNonPriorityQueue = [...filteredQueueNonPriority, ...shuffledNewNonPriority];
+      
+      // Priority player IDs go first, then the remaining shuffled non-priority queue
+      return [...priorityIds, ...finalNonPriorityQueue];
     });
   }, [players, playersPending, mode, trialOverrides]);
 
@@ -289,7 +316,11 @@ function AuctioneerConsole() {
     advanceShuffledPlayer(currentPlayer.id, null);
   }
 
-  const filteredPickerPlayers = pendingPlayers.filter((p) =>
+  const pendingPriorityPlayers = pendingPlayers.filter(
+    (p) => getSpecialPriority(p.name) !== Infinity
+  );
+  const basePickerPlayers = pendingPriorityPlayers.length > 0 ? pendingPriorityPlayers : pendingPlayers;
+  const filteredPickerPlayers = basePickerPlayers.filter((p) =>
     p.name.toLowerCase().includes(pickerQuery.trim().toLowerCase()),
   );
 

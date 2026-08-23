@@ -91,10 +91,6 @@ function ManageAuctionPage() {
       setReadinessModalOpen(true);
       return;
     }
-    if (auction.status === "live") {
-      void navigate({ to: "/my-auctions/$id/auctioneer", params: { id: auction.id } });
-      return;
-    }
     setModeDialogOpen(true);
   }
 
