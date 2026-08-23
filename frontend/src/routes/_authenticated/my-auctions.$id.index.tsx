@@ -177,7 +177,7 @@ function ManageAuctionPage() {
               <span className="text-xl">✨ Free/-</span>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => setPaymentModalOpen(true)} className="bg-red-700 text-white hover:bg-red-800">
+              <Button onClick={() => setPaymentModalOpen(true)} className="bg-accent text-accent-foreground hover:bg-accent/90 font-bold border border-orange-500/20">
                 Upgrade Now
               </Button>
               <Button onClick={handleStartAuction} variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10">
@@ -201,7 +201,7 @@ function ManageAuctionPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`whitespace-nowrap px-4 py-4 text-sm font-semibold tracking-wide transition-colors ${
-                activeTab === tab ? "border-b-2 border-yellow-400 text-white" : "text-white/60 hover:text-white"
+                activeTab === tab ? "border-b-2 border-orange-500 text-white" : "text-white/60 hover:text-white"
               }`}
             >
               {tab}
@@ -328,10 +328,10 @@ function ManageAuctionPage() {
         )}
 
         {activeTab === "PLAYERS" && (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {playersPending ? (
               Array.from({ length: 2 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                <Skeleton key={i} className="h-20 w-full rounded-xl" />
               ))
             ) : players.length === 0 ? (
               <div className="py-16 text-center">
@@ -340,30 +340,30 @@ function ManageAuctionPage() {
               </div>
             ) : (
               players.map((player) => (
-                <div key={player.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4 card-shadow">
+                <div key={player.id} className="relative flex items-center gap-4 rounded-xl border border-border bg-card p-4.5 sm:p-5 card-shadow hover:shadow-md transition-shadow">
                   <PlayerPreviewCard
                     player={player}
                     open={previewPlayerId === player.id}
                     onOpenChange={(open) => !open && setPreviewPlayerId(null)}
                     trigger={
                       <button 
-                        className="flex flex-1 items-center gap-4 text-left hover:opacity-80 transition-opacity"
+                        className="flex flex-1 items-center gap-5 text-left hover:opacity-80 transition-opacity min-w-0 pr-8"
                         onClick={() => setPreviewPlayerId(player.id)}
                       >
                         <FallbackImage
                           src={player.photo || ""}
                           alt={player.name}
-                          className="size-12 rounded-full border border-border shrink-0 object-cover"
+                          className="size-16 rounded-full border border-border shrink-0 object-cover object-top shadow-sm"
                           fallback={
-                            <span className="display grid size-full place-items-center rounded-full bg-brand/10 text-lg font-bold text-brand">
+                            <span className="display grid size-full place-items-center rounded-full bg-brand/10 text-2xl font-bold text-brand">
                               {player.name.slice(0, 2).toUpperCase()}
                             </span>
                           }
                         />
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{player.name}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            {player.sportFields?.["role"] || player.category || "No Role"} · Base: {player.baseValue}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-extrabold text-lg sm:text-xl text-foreground truncate">{player.name}</h3>
+                          <p className="text-sm sm:text-base font-bold text-muted-foreground mt-1 leading-snug">
+                            {player.sportFields?.["role"] || "-"}  •  Grade {player.category || "-"}  •  {player.customData ? player.customData.replace("Dominated Hand: ", "") : "-"}
                           </p>
                         </div>
                       </button>
@@ -377,21 +377,23 @@ function ManageAuctionPage() {
                     open={editPlayerId === player.id}
                     onOpenChange={(open) => !open && setEditPlayerId(null)}
                   />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="size-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)}>
-                        <Pencil className="mr-2 size-4" /> Edit player
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onSelect={() => setPlayerToDelete(player.id)}>
-                        <Trash className="mr-2 size-4" /> Delete player
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="shrink-0 mr-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full size-9 hover:bg-muted">
+                          <MoreVertical className="size-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)}>
+                          <Pencil className="mr-2 size-4" /> Edit player
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onSelect={() => setPlayerToDelete(player.id)}>
+                          <Trash className="mr-2 size-4" /> Delete player
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               ))
             )}

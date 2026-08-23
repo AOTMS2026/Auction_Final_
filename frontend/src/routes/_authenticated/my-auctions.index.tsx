@@ -54,7 +54,7 @@ function MyAuctionsPage() {
       <main className="mx-auto max-w-4xl px-4 py-12">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="display text-3xl font-bold uppercase tracking-wider text-foreground">MY AUCTIONS</h1>
-          <Button className="bg-[#b3141f] text-white hover:bg-[#8f1019]" asChild>
+          <Button className="bg-brand text-brand-foreground hover:bg-brand-dark" asChild>
             <Link to="/my-auctions/new">
               <Plus className="mr-1.5 size-4" /> Create Auction
             </Link>

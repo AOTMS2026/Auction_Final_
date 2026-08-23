@@ -1,4 +1,4 @@
-import { Pencil } from "lucide-react";
+import { Pencil, Undo2 } from "lucide-react";
 import { useState } from "react";
 
 import { FallbackImage } from "@/components/ui/fallback-image";
@@ -14,6 +14,7 @@ export function CurrentPlayerCard({
   sportType,
   currentBid,
   onBidChange,
+  onClear,
   mode,
 }: {
   player: Player;
@@ -21,6 +22,7 @@ export function CurrentPlayerCard({
   sportType: SportType;
   currentBid: number;
   onBidChange: (value: number) => void;
+  onClear: () => void;
   mode: "trial" | "live";
 }) {
   const [editingBid, setEditingBid] = useState(false);
@@ -31,20 +33,23 @@ export function CurrentPlayerCard({
   );
 
   const statsLine = config.stats
-    .map((stat) => `${stat[0]}:${player.sportFields?.[stat] ?? 0}`)
-    .join(" | ");
+    .map((stat) => `${stat[0]}: ${player.sportFields?.[stat] ?? 0}`)
+    .join("  |  ");
+
+  const isDummyPhone = player.phone.startsWith("90000000");
+  const playerNumber = isDummyPhone ? parseInt(player.phone.slice(8)) : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 card-shadow">
-      <div className="flex gap-4">
+    <div className="rounded-2xl border border-border bg-card p-5 md:p-6 card-shadow flex flex-col justify-between h-full">
+      <div className="flex flex-col items-center text-center md:items-start md:text-left md:flex-row gap-6 md:gap-8">
         <div className="relative shrink-0">
-          <div className="relative size-24 overflow-hidden rounded-full border-4 border-background shadow-md">
+          <div className="relative size-28 sm:size-32 overflow-hidden rounded-full border-4 border-background shadow-lg">
             <FallbackImage
               src={player.photo || ""}
               alt={player.name}
-              className="size-full object-cover"
+              className="size-full object-cover object-top"
               fallback={
-                <span className="display grid size-full place-items-center bg-brand/10 text-2xl font-bold text-brand">
+                <span className="display grid size-full place-items-center bg-brand/10 text-3xl sm:text-4xl font-bold text-brand">
                   {player.name.slice(0, 2).toUpperCase()}
                 </span>
               }
@@ -58,42 +63,69 @@ export function CurrentPlayerCard({
             )}
           </div>
           {player.age != null && (
-            <div className="mt-2 rounded-full bg-muted px-2 py-1 text-center text-xs font-semibold">
-              {player.age} Years
+            <div className="mt-2.5 rounded-full bg-muted px-3 py-1.5 text-center text-xs sm:text-sm font-semibold">
+              {player.age} Years Old
             </div>
           )}
         </div>
 
-        <div className="min-w-0 flex-1 space-y-2">
-          <h2 className="truncate text-lg font-bold">
-            {lotNumber} | {player.name}
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {tags.length > 0 ? (
-              tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-md bg-brand px-3 py-1.5 text-center text-sm font-semibold text-brand-foreground"
-                >
-                  {tag}
-                </span>
-              ))
+        <div className="min-w-0 flex-1 space-y-4">
+          <h2 className="text-2xl sm:text-3xl font-extrabold flex flex-wrap items-center justify-center md:justify-start gap-2 leading-tight">
+            {playerNumber ? (
+              <>
+                <span className="text-muted-foreground">Player {playerNumber}</span>
+                <span className="text-muted-foreground/50">•</span>
+              </>
             ) : (
-              <span className="text-sm text-muted-foreground">No role set</span>
+              <>
+                <span className="text-muted-foreground">Player {lotNumber}</span>
+                <span className="text-muted-foreground/50">•</span>
+              </>
             )}
+            <span className="text-foreground">{player.name}</span>
+          </h2>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+            {/* Skill / Role Badge */}
+            <span className="rounded-lg bg-brand px-4 py-2 text-center text-sm font-bold text-brand-foreground shadow-sm animate-pulse-subtle">
+              {player.sportFields?.["role"] || "-"}
+            </span>
+            {/* Category / Grade Badge */}
+            <span className="rounded-lg bg-orange-100 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/40 text-orange-600 dark:text-orange-400 px-4 py-2 text-center text-sm font-bold shadow-sm">
+              Grade {player.category || "-"}
+            </span>
+            {/* Dominated Hand Badge */}
+            <span className="rounded-lg bg-blue-100 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 px-4 py-2 text-center text-sm font-bold shadow-sm">
+              {player.customData ? player.customData.replace("Dominated Hand: ", "") : "-"}
+            </span>
+            {/* Additional Spec Badges */}
+            {config.specs
+              .map((spec) => player.sportFields?.[spec])
+              .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+              .map((val) => (
+                <span
+                  key={val}
+                  className="rounded-lg bg-muted border border-border px-4 py-2 text-center text-sm font-bold text-muted-foreground shadow-sm"
+                >
+                  {val}
+                </span>
+              ))}
           </div>
-          {statsLine && <p className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium">{statsLine}</p>}
+          {statsLine && (
+            <p className="rounded-lg bg-muted px-4 py-2.5 text-sm sm:text-base font-semibold text-muted-foreground tracking-wide">
+              {statsLine}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-3 border-t border-border pt-4">
-        <span className="text-2xl">🪙</span>
+      <div className="mt-6 sm:mt-8 flex items-center justify-center gap-3 border-t border-border pt-6">
+        <span className="text-3xl sm:text-4xl">🪙</span>
         {editingBid ? (
           <Input
             type="number"
             autoFocus
             defaultValue={currentBid}
-            className="w-32 text-center text-xl font-bold"
+            className="w-40 text-center text-2xl sm:text-3xl font-extrabold h-12"
             onBlur={(e) => {
               const value = parseFloat(e.target.value);
               if (Number.isFinite(value)) onBidChange(value);
@@ -104,16 +136,29 @@ export function CurrentPlayerCard({
             }}
           />
         ) : (
-          <span className={cn("text-2xl font-bold")}>{currentBid.toLocaleString()}</span>
+          <span className="text-4xl sm:text-5xl font-black text-orange-500 tracking-tight">
+            {currentBid.toLocaleString()}
+          </span>
         )}
-        <button
-          type="button"
-          onClick={() => setEditingBid(true)}
-          aria-label="Edit bid amount"
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <Pencil className="size-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setEditingBid(true)}
+            aria-label="Edit bid amount"
+            className="text-muted-foreground hover:text-foreground p-1.5 hover:bg-muted rounded transition-colors"
+          >
+            <Pencil className="size-5 sm:size-6" />
+          </button>
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label="Reset bid amount"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1.5 rounded transition-colors"
+            title="Reset to base price"
+          >
+            <Undo2 className="size-5 sm:size-6" />
+          </button>
+        </div>
       </div>
     </div>
   );
