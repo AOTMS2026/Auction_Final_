@@ -28,13 +28,14 @@ import { fileToCompressedDataUrl, IMAGE_PRESETS } from "@/lib/image";
 type PlayerFormModalProps = {
   auctionId: string;
   sportType: SportType;
+  playersPerTeam: number;
   player?: Player;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 };
 
-export function PlayerFormModal({ auctionId, sportType, player, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: PlayerFormModalProps) {
+export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: PlayerFormModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = setControlledOpen || setInternalOpen;
@@ -59,9 +60,13 @@ export function PlayerFormModal({ auctionId, sportType, player, trigger, open: c
   // Sport fields
   const [sportFields, setSportFields] = useState<Record<string, any>>(player?.sportFields || {});
 
-  const { createPlayer, updatePlayer, isCreating, isUpdating } = usePlayers(auctionId);
+  const { players, createPlayer, updatePlayer, isCreating, isUpdating } = usePlayers(auctionId);
   const { teams } = useTeams(auctionId);
   const isSubmitting = isCreating || isUpdating;
+
+  function rosterCount(teamId: string) {
+    return players.filter((p) => p.teamId === teamId && p.id !== player?.id).length;
+  }
 
   const config = SPORT_CONFIGS[sportType] || SPORT_CONFIGS["cricket"];
 
@@ -277,11 +282,28 @@ export function PlayerFormModal({ auctionId, sportType, player, trigger, open: c
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Sold To Team</Label>
-                  <Select value={teamId} onValueChange={setTeamId}>
+                  <Select value={teamId} onValueChange={(val) => {
+                    if (val !== "none") {
+                      const count = rosterCount(val);
+                      if (count >= playersPerTeam && val !== player?.teamId) {
+                        toast.error(`This team already has the maximum ${playersPerTeam} players.`);
+                        return; // Prevent selection
+                      }
+                    }
+                    setTeamId(val);
+                  }}>
                     <SelectTrigger><SelectValue placeholder="Unsold" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Unsold</SelectItem>
-                      {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                      {teams.map((t) => {
+                        const count = rosterCount(t.id);
+                        const full = count >= playersPerTeam && t.id !== teamId;
+                        return (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name} {full ? `(Full ${count}/${playersPerTeam})` : `(${count}/${playersPerTeam})`}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>

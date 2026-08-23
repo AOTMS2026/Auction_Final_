@@ -105,6 +105,13 @@ function AuctioneerConsole() {
       toast.error("Select a team first.");
       return;
     }
+    // Guard here too (not just in TeamBidCard's disabled state) since Trial
+    // Mode never reaches the backend's own roster-cap check.
+    const selectedTeam = teams.find((t) => t.id === selectedTeamId);
+    if (selectedTeam && computeTeamStats(selectedTeam, effectivePlayers, auction).reservedPlayers <= 0) {
+      toast.error(`${selectedTeam.name} already has the maximum ${auction.playersPerTeam} players.`);
+      return;
+    }
     if (mode === "live") {
       try {
         await updatePlayer({

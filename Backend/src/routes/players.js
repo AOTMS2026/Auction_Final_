@@ -105,9 +105,23 @@ router.patch(
       }
     }
 
-    // Special handling for teamId (can be explicitly set to null)
+    // Special handling for teamId (can be explicitly set to null).
+    // Enforce the auction's Players/Team cap here — the real check has to
+    // live server-side since any client-side guard can be bypassed.
     if (req.body.teamId !== undefined) {
-      player.teamId = req.body.teamId === null ? null : req.body.teamId;
+      const currentTeamId = player.teamId ? player.teamId.toString() : null;
+      const nextTeamId = req.body.teamId === null ? null : req.body.teamId;
+
+      if (nextTeamId && nextTeamId !== currentTeamId) {
+        const rosterCount = await Player.countDocuments({ teamId: nextTeamId, _id: { $ne: player._id } });
+        if (rosterCount >= auction.playersPerTeam) {
+          return res
+            .status(400)
+            .json({ error: `This team already has the maximum ${auction.playersPerTeam} players.` });
+        }
+      }
+
+      player.teamId = nextTeamId;
     }
 
     await player.save();

@@ -369,10 +369,11 @@ function ManageAuctionPage() {
                       </button>
                     }
                   />
-                  <PlayerFormModal 
-                    auctionId={auction.id} 
-                    sportType={auction.sportType} 
-                    player={player} 
+                  <PlayerFormModal
+                    auctionId={auction.id}
+                    sportType={auction.sportType}
+                    playersPerTeam={auction.playersPerTeam}
+                    player={player}
                     open={editPlayerId === player.id}
                     onOpenChange={(open) => !open && setEditPlayerId(null)}
                   />
@@ -394,7 +395,7 @@ function ManageAuctionPage() {
                 </div>
               ))
             )}
-            <PlayerFormModal auctionId={auction.id} sportType={auction.sportType} />
+            <PlayerFormModal auctionId={auction.id} sportType={auction.sportType} playersPerTeam={auction.playersPerTeam} />
           </div>
         )}
 
