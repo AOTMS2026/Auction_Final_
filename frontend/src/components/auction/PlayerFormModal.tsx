@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -115,19 +115,76 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     setSportFields((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         toast.error("Photo must be less than 2MB");
         return;
       }
-      try {
-        const dataUrl = await fileToCompressedDataUrl(file, IMAGE_PRESETS.avatar);
-        setPhoto(dataUrl);
-      } catch (err) {
-        toast.error("Failed to process photo");
+      const reader = new FileReader();
+      reader.onload = () => {
+        const rawDataUrl = reader.result as string;
+        setSportFields((prev) => ({ ...prev, originalPhoto: rawDataUrl }));
+        setCropImageSrc(rawDataUrl);
+        setZoom(1);
+        setDragOffset({ x: 0, y: 0 });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropSave = () => {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+      const img = imgRef.current;
+      
+      if (ctx && img) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, 256, 256);
+        
+        const nW = img.naturalWidth;
+        const nH = img.naturalHeight;
+        let drawW = 288;
+        let drawH = 288;
+        
+        if (nW > nH) {
+          drawH = 288;
+          drawW = 288 * (nW / nH);
+        } else {
+          drawW = 288;
+          drawH = 288 * (nH / nW);
+        }
+        
+        drawW *= zoom;
+        drawH *= zoom;
+        
+        const containerCenter = 144;
+        const drawX = (containerCenter - drawW / 2) + dragOffset.x;
+        const drawY = (containerCenter - drawH / 2) + dragOffset.y;
+        const scale = 256 / 288;
+        
+        ctx.drawImage(img, drawX * scale, drawY * scale, drawW * scale, drawH * scale);
+        
+        const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        setPhoto(croppedDataUrl);
+        setCropImageSrc(null);
       }
+    } catch (err) {
+      console.error("Failed to crop photo", err);
+      toast.error("Using original photo directly.");
+      setPhoto(cropImageSrc);
+      setCropImageSrc(null);
     }
   };
 
@@ -173,39 +230,65 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button size="icon" className="fixed bottom-24 right-6 size-14 rounded-full shadow-lg sm:bottom-6 sm:right-10">
-            <Plus className="size-6" />
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{player ? "Edit Player" : "Add New Player"}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-6 pt-4">
-          <div className="flex flex-col items-center justify-center space-y-2 pb-2">
-            <Label htmlFor="player-photo" className="cursor-pointer">
-              <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors">
-                {photo ? (
-                  <img src={photo} alt="Player photo" className="size-full object-cover" />
-                ) : (
-                  <Plus className="size-8 text-muted-foreground" />
-                )}
-              </div>
-            </Label>
-            <span className="text-xs text-muted-foreground">Player Photo</span>
-            <input
-              id="player-photo"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handlePhotoChange}
-              disabled={isSubmitting}
-            />
-          </div>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button size="icon" className="fixed bottom-24 right-6 size-14 rounded-full shadow-lg sm:bottom-6 sm:right-10">
+              <Plus className="size-6" />
+            </Button>
+          )}
+        </DialogTrigger>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{player ? "Edit Player" : "Add New Player"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={onSubmit} className="space-y-6 pt-4">
+            <div className="flex flex-col items-center justify-center space-y-2 pb-2">
+              {photo ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const basePhoto = sportFields.originalPhoto || photo;
+                      setCropImageSrc(basePhoto);
+                      setZoom(1);
+                      setDragOffset({ x: 0, y: 0 });
+                    }}
+                    className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-border/80 bg-muted hover:border-brand/40 transition-all group cursor-pointer shadow-sm"
+                    title="Crop / Zoom existing picture"
+                  >
+                    <img src={photo} alt="Player photo" className="size-full object-cover object-top" />
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Pencil className="size-5 text-white mb-0.5" />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Crop/Zoom</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("player-photo")?.click()}
+                    className="text-xs text-brand hover:text-brand/80 font-bold hover:underline transition-colors mt-0.5"
+                  >
+                    Upload New
+                  </button>
+                </div>
+              ) : (
+                <Label htmlFor="player-photo" className="cursor-pointer">
+                  <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors shadow-sm">
+                    <Plus className="size-8 text-muted-foreground" />
+                  </div>
+                </Label>
+              )}
+              <span className="text-xs text-muted-foreground font-semibold">Player Photo</span>
+              <input
+                id="player-photo"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoChange}
+                disabled={isSubmitting}
+              />
+            </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
@@ -329,6 +412,77 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           </div>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+
+      <Dialog open={!!cropImageSrc} onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}>
+        <DialogContent className="sm:max-w-md flex flex-col items-center">
+          <DialogHeader>
+            <DialogTitle>Crop Profile Photo</DialogTitle>
+          </DialogHeader>
+          
+          <div className="relative mt-4 flex items-center justify-center bg-black/5 dark:bg-black/40 p-6 rounded-2xl w-full">
+            <div 
+              className="relative size-72 rounded-full overflow-hidden border-4 border-white bg-black select-none cursor-move shadow-md"
+              onPointerDown={(e) => {
+                setIsDragging(true);
+                setDragStart({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                if (!isDragging) return;
+                setDragOffset({
+                  x: e.clientX - dragStart.x,
+                  y: e.clientY - dragStart.y,
+                });
+              }}
+              onPointerUp={(e) => {
+                setIsDragging(false);
+                e.currentTarget.releasePointerCapture(e.pointerId);
+              }}
+            >
+              {cropImageSrc && (
+                <img
+                  ref={imgRef}
+                  src={cropImageSrc}
+                  crossOrigin="anonymous"
+                  alt="Crop preview"
+                  className="pointer-events-none select-none max-w-none origin-center"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${zoom})`,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+          
+          <div className="w-full space-y-4 px-4 mt-4">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold text-muted-foreground">Zoom</span>
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.05"
+                value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="w-full accent-brand h-1.5 bg-muted rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setCropImageSrc(null)}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={handleCropSave} className="bg-brand text-brand-foreground hover:bg-brand-dark">
+                Save Photo
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
