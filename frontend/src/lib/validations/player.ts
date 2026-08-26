@@ -12,6 +12,12 @@ export const basePlayerSchema = z.object({
   jerseyName: z.string().optional(),
   trouserSize: z.string().optional(),
   customData: z.string().optional(),
+  gender: z.string().optional(),
+  city: z.string().optional(),
+  playerLevel: z.string().optional(),
+  paymentMode: z.string().optional(),
+  utrNumber: z.string().optional(),
+  paymentImage: z.string().nullable().optional(),
   teamId: z.string().nullable().optional(),
   soldPrice: z.coerce.number().min(0).nullable().optional(),
 });
@@ -27,27 +33,27 @@ export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
   cricket: {
     roles: ["Batsman", "Bowler", "Wicket-Keeper", "All-Rounder"],
     stats: ["Matches", "Runs", "Wickets"],
-    specs: ["Specification 1", "Specification 2", "Specification 3"],
+    specs: ["Specification"],
   },
   football: {
     roles: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
     stats: ["Matches", "Goals", "Assists"],
-    specs: ["Preferred Foot", "Special Trait 1", "Special Trait 2"],
+    specs: ["Specification"],
   },
   volleyball: {
     roles: ["Setter", "Libero", "Spiker", "Blocker"],
     stats: ["Matches", "Points", "Blocks"],
-    specs: ["Spike Height", "Block Height", "Special Trait"],
+    specs: ["Specification"],
   },
   kabaddi: {
     roles: ["Raider", "Defender (Left)", "Defender (Right)", "All-Rounder"],
     stats: ["Matches", "Raid Points", "Tackle Points"],
-    specs: ["Signature Move", "Specification 2", "Specification 3"],
+    specs: ["Specification"],
   },
-  hockey: {
-    roles: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
-    stats: ["Matches", "Goals", "Assists"],
-    specs: ["Specification 1", "Specification 2", "Specification 3"],
+  baseball: {
+    roles: ["Pitcher", "Catcher", "Infielder", "Outfielder", "Designated Hitter"],
+    stats: ["Matches", "Runs", "Home Runs", "Strikeouts"],
+    specs: ["Specification"],
   },
 };
 

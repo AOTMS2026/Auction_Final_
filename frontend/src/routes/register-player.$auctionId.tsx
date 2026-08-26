@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Plus, Pencil, CheckCircle2 } from "lucide-react";
+import { Loader2, Plus, Pencil, CheckCircle2, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -43,12 +43,16 @@ function PlayerRegistrationPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
-  const [category, setCategory] = useState("");
+  const [gender, setGender] = useState("");
+  const [city, setCity] = useState("");
+  const [playerLevel, setPlayerLevel] = useState("");
+  const [paymentMode, setPaymentMode] = useState("");
+  const [utrNumber, setUtrNumber] = useState("");
+  const [paymentImage, setPaymentImage] = useState<string | null>(null);
   const [baseValue, setBaseValue] = useState("0");
   const [jerseySize, setJerseySize] = useState("");
   const [jerseyName, setJerseyName] = useState("");
   const [trouserSize, setTrouserSize] = useState("");
-  const [customData, setCustomData] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [sportFields, setSportFields] = useState<Record<string, any>>({});
 
@@ -84,6 +88,21 @@ function PlayerRegistrationPage() {
     "Signature Move": "e.g. Cobra Raid",
   };
   const getSpecPlaceholder = (spec: string) => specPlaceholders[spec] || "e.g. Add a detail";
+
+  const handlePaymentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image must be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPaymentImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -157,18 +176,30 @@ function PlayerRegistrationPage() {
       toast.error("Please provide a valid name and exactly 10-digit phone number");
       return;
     }
+    if (!utrNumber.trim() || utrNumber.trim().length !== 12) {
+      toast.error("Please provide a valid 12-digit UTR Number");
+      return;
+    }
+    if (!paymentImage) {
+      toast.error("Please upload the payment screenshot");
+      return;
+    }
 
     const input: PlayerInput = {
       auctionId: auction.id,
       name,
       phone,
       age: age ? parseInt(age) : null,
-      category,
+      gender,
+      city,
+      playerLevel,
+      paymentMode,
+      utrNumber,
+      paymentImage,
       baseValue: parseFloat(baseValue) || 0,
       jerseySize,
       jerseyName,
       trouserSize,
-      customData,
       photo,
       sportFields,
     };
@@ -281,8 +312,31 @@ function PlayerRegistrationPage() {
                 <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={registerMutation.isPending} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Input id="category" placeholder="e.g. Icon / Set A / Marquee" value={category} onChange={(e) => setCategory(e.target.value)} disabled={registerMutation.isPending} />
+                <Label>Gender</Label>
+                <Select value={gender} onValueChange={setGender}>
+                  <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" placeholder="e.g. Mumbai" value={city} onChange={(e) => setCity(e.target.value)} disabled={registerMutation.isPending} />
+              </div>
+              <div className="space-y-2">
+                <Label>Player Level</Label>
+                <Select value={playerLevel} onValueChange={setPlayerLevel}>
+                  <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="Professional">Professional</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -328,9 +382,69 @@ function PlayerRegistrationPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="customData">Custom Data / Extra Details</Label>
-              <Input id="customData" placeholder="e.g. Injury history, past team, notes" value={customData} onChange={(e) => setCustomData(e.target.value)} disabled={registerMutation.isPending} />
+            <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
+              <h3 className="font-semibold text-lg">Payment Details</h3>
+              <div className="p-4 bg-primary/5 rounded-md border border-primary/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">UPI ID</p>
+                    <p className="font-mono font-medium text-lg">7780178092@mbkns</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText("7780178092@mbkns");
+                      toast.success("UPI ID copied to clipboard!");
+                    }}
+                  >
+                    <Copy className="size-4" /> Copy
+                  </Button>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Amount Payable</p>
+                  <p className="font-semibold text-lg text-primary">₹149 per player</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
+                <div className="space-y-2">
+                  <Label>Payment Mode *</Label>
+                  <Select value={paymentMode} onValueChange={setPaymentMode}>
+                    <SelectTrigger><SelectValue placeholder="Select Payment Mode" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PhonePe">PhonePe</SelectItem>
+                      <SelectItem value="UPI ID">UPI ID</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="utrNumber">UTR Number (12 digits) *</Label>
+                  <Input id="utrNumber" placeholder="e.g. 123456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={registerMutation.isPending} maxLength={12} required />
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="paymentImage">Payment Screenshot *</Label>
+                {paymentImage ? (
+                  <div className="relative w-full max-w-sm">
+                    <img src={paymentImage} alt="Payment screenshot" className="rounded-md border object-contain w-full h-40" />
+                    <Button 
+                      type="button" 
+                      variant="secondary" 
+                      size="sm" 
+                      className="absolute top-2 right-2"
+                      onClick={() => setPaymentImage(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <Input id="paymentImage" type="file" accept="image/*" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
+                )}
+              </div>
             </div>
 
             <div className="pt-6">

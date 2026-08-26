@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const SPORT_TYPES = ["cricket", "volleyball", "football", "kabaddi", "hockey"];
+const SPORT_TYPES = ["cricket", "volleyball", "football", "kabaddi", "baseball"];
 const VISIBILITIES = ["public", "semi-private", "private"];
 const STATUSES = ["draft", "live"];
 

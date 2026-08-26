@@ -2,6 +2,7 @@ const { Router } = require("express");
 const Player = require("../models/Player");
 const Auction = require("../models/Auction");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
+const { uploadBase64Image } = require("../lib/cloudinary");
 
 const router = Router();
 
@@ -25,6 +26,12 @@ function toPublicPlayer(doc) {
     trouserSize: doc.trouserSize,
     customData: doc.customData,
     photo: doc.photo,
+    gender: doc.gender,
+    city: doc.city,
+    playerLevel: doc.playerLevel,
+    paymentMode: doc.paymentMode,
+    utrNumber: doc.utrNumber,
+    paymentImage: doc.paymentImage,
     sportFields: doc.sportFields,
     auctionRoundStatus: doc.auctionRoundStatus,
     createdAt: doc.createdAt,
@@ -69,11 +76,16 @@ router.post(
       return res.status(403).json({ error: "You don't have permission to modify this auction" });
     }
 
+    const uploadedPhoto = await uploadBase64Image(rest.photo);
+    const uploadedPayment = await uploadBase64Image(rest.paymentImage);
+
     const player = await Player.create({
       auctionId,
       name: name.trim(),
       phone: phone.trim(),
       ...rest,
+      photo: uploadedPhoto,
+      paymentImage: uploadedPayment,
     });
 
     res.status(201).json({ player: toPublicPlayer(player) });
@@ -93,11 +105,16 @@ router.post(
     const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
+    const uploadedPhoto = await uploadBase64Image(rest.photo);
+    const uploadedPayment = await uploadBase64Image(rest.paymentImage);
+
     const player = await Player.create({
       auctionId,
       name: name.trim(),
       phone: phone.trim(),
       ...rest,
+      photo: uploadedPhoto,
+      paymentImage: uploadedPayment,
     });
 
     res.status(201).json({ player: toPublicPlayer(player) });
@@ -120,12 +137,17 @@ router.patch(
     const updatableFields = [
       "name", "phone", "age", "category", "baseValue",
       "soldPrice", "jerseySize", "jerseyName", "trouserSize",
-      "customData", "photo", "sportFields", "auctionRoundStatus"
+      "customData", "photo", "gender", "city", "playerLevel",
+      "paymentMode", "utrNumber", "paymentImage", "sportFields", "auctionRoundStatus"
     ];
 
     for (const field of updatableFields) {
       if (req.body[field] !== undefined) {
-        player[field] = req.body[field];
+        if (field === "photo" || field === "paymentImage") {
+          player[field] = await uploadBase64Image(req.body[field]);
+        } else {
+          player[field] = req.body[field];
+        }
       }
     }
 

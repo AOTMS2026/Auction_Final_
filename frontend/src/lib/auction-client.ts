@@ -1,6 +1,6 @@
 import { request } from "@/lib/api-client";
 
-export type SportType = "cricket" | "volleyball" | "football" | "kabaddi" | "hockey";
+export type SportType = "cricket" | "volleyball" | "football" | "kabaddi" | "baseball";
 export type Visibility = "public" | "semi-private" | "private";
 export type AuctionStatus = "draft" | "live";
 
@@ -49,6 +49,12 @@ export type Player = {
   trouserSize: string;
   customData: string;
   photo?: string | null;
+  gender?: string;
+  city?: string;
+  playerLevel?: string;
+  paymentMode?: string;
+  utrNumber?: string;
+  paymentImage?: string | null;
   sportFields: Record<string, any>;
   auctionRoundStatus: "pending" | "sold" | "unsold";
   createdAt: string;
@@ -67,6 +73,12 @@ export type PlayerInput = {
   trouserSize?: string;
   customData?: string;
   photo?: string | null;
+  gender?: string;
+  city?: string;
+  playerLevel?: string;
+  paymentMode?: string;
+  utrNumber?: string;
+  paymentImage?: string | null;
   sportFields?: Record<string, any>;
 };
 

@@ -46,6 +46,12 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [phone, setPhone] = useState(player?.phone || "");
   const [age, setAge] = useState(player?.age?.toString() || "");
   const [category, setCategory] = useState(player?.category || "");
+  const [gender, setGender] = useState(player?.gender || "");
+  const [city, setCity] = useState(player?.city || "");
+  const [playerLevel, setPlayerLevel] = useState(player?.playerLevel || "");
+  const [paymentMode, setPaymentMode] = useState(player?.paymentMode || "");
+  const [utrNumber, setUtrNumber] = useState(player?.utrNumber || "");
+  const [paymentImage, setPaymentImage] = useState<string | null>(player?.paymentImage || null);
   const [baseValue, setBaseValue] = useState(player?.baseValue?.toString() || "0");
   const [jerseySize, setJerseySize] = useState(player?.jerseySize || "");
   const [jerseyName, setJerseyName] = useState(player?.jerseyName || "");
@@ -99,6 +105,12 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setPhone(player.phone);
       setAge(player.age?.toString() || "");
       setCategory(player.category);
+      setGender(player.gender || "");
+      setCity(player.city || "");
+      setPlayerLevel(player.playerLevel || "");
+      setPaymentMode(player.paymentMode || "");
+      setUtrNumber(player.utrNumber || "");
+      setPaymentImage(player.paymentImage || null);
       setBaseValue(player.baseValue.toString());
       setJerseySize(player.jerseySize);
       setJerseyName(player.jerseyName);
@@ -201,6 +213,12 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       phone,
       age: age ? parseInt(age) : null,
       category,
+      gender,
+      city,
+      playerLevel,
+      paymentMode,
+      utrNumber,
+      paymentImage,
       baseValue: parseFloat(baseValue) || 0,
       jerseySize,
       jerseyName,
@@ -303,8 +321,35 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={isSubmitting} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Input id="category" placeholder="e.g. Icon / Set A / Marquee" value={category} onChange={(e) => setCategory(e.target.value)} disabled={isSubmitting} />
+              <Label htmlFor="category">Grade</Label>
+              <Input id="category" placeholder="e.g. A, B, C" value={category} onChange={(e) => setCategory(e.target.value)} disabled={isSubmitting} />
+            </div>
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Select value={gender} onValueChange={setGender}>
+                <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input id="city" placeholder="e.g. Mumbai" value={city} onChange={(e) => setCity(e.target.value)} disabled={isSubmitting} />
+            </div>
+            <div className="space-y-2">
+              <Label>Player Level</Label>
+              <Select value={playerLevel} onValueChange={setPlayerLevel}>
+                <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="Professional">Professional</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="baseValue">Base Value</Label>
@@ -354,9 +399,41 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="customData">Custom Data / Extra Details</Label>
-            <Input id="customData" placeholder="e.g. Injury history, past team, notes" value={customData} onChange={(e) => setCustomData(e.target.value)} disabled={isSubmitting} />
+          <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
+            <h3 className="font-semibold text-lg">Payment Details</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Payment Mode</Label>
+                <Select value={paymentMode} onValueChange={setPaymentMode}>
+                  <SelectTrigger><SelectValue placeholder="Select Mode" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PhonePe">PhonePe</SelectItem>
+                    <SelectItem value="UPI ID">UPI ID</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="utrNumber">UTR Number</Label>
+                <Input id="utrNumber" placeholder="12-digit UTR" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={isSubmitting} maxLength={12} />
+              </div>
+            </div>
+            {paymentImage && (
+              <div className="space-y-2">
+                <Label>Payment Screenshot</Label>
+                <div className="relative w-full max-w-sm">
+                  <img src={paymentImage} alt="Payment screenshot" className="rounded-md border object-contain w-full h-40" />
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    size="sm" 
+                    className="absolute top-2 right-2"
+                    onClick={() => setPaymentImage(null)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {player && (

@@ -60,6 +60,31 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    gender: {
+      type: String,
+      default: "",
+    },
+    city: {
+      type: String,
+      default: "",
+    },
+    playerLevel: {
+      type: String,
+      enum: ["Beginner", "Intermediate", "Advanced", "Professional", ""],
+      default: "",
+    },
+    paymentMode: {
+      type: String,
+      default: "",
+    },
+    utrNumber: {
+      type: String,
+      default: "",
+    },
+    paymentImage: {
+      type: String,
+      default: null,
+    },
     sportFields: {
       type: Map,
       of: mongoose.Schema.Types.Mixed,
