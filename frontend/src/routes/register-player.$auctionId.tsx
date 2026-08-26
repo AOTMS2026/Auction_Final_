@@ -23,6 +23,7 @@ import { auctionClient, PlayerInput } from "@/lib/auction-client";
 import { auctionDetailQueryOptions } from "@/lib/queries/auctions";
 import { SPORT_CONFIGS } from "@/lib/validations/player";
 import stadiumImg from "@/assets/stadium-band.jpg";
+import bniLogoImg from "@/assets/bni-logo.png";
 
 export const Route = createFileRoute("/register-player/$auctionId")({
   loader: async ({ params, context }) => {
@@ -306,17 +307,26 @@ function PlayerRegistrationPage() {
         />
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-white flex flex-col items-center">
-          {auction.coverImage ? (
-            <img 
-              src={auction.coverImage} 
-              alt={auction.name} 
-              className="size-28 rounded-full border-4 border-white/20 shadow-xl object-cover mb-6 bg-muted"
-            />
-          ) : (
-            <div className="size-28 rounded-full border-4 border-white/20 shadow-xl bg-primary/20 flex items-center justify-center mb-6">
-              <span className="text-3xl font-bold text-white">{auction.name.substring(0, 2).toUpperCase()}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-6 mb-6">
+            {auction.id === "6a8edaddd7ed74151dbafab3" && (
+              <img 
+                src={bniLogoImg} 
+                alt="BNI Logo" 
+                className="h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-black p-2"
+              />
+            )}
+            {auction.coverImage ? (
+              <img 
+                src={auction.coverImage} 
+                alt={auction.name} 
+                className="size-28 rounded-full border-4 border-white/20 shadow-xl object-cover bg-muted"
+              />
+            ) : (
+              <div className="size-28 rounded-full border-4 border-white/20 shadow-xl bg-primary/20 flex items-center justify-center">
+                <span className="text-3xl font-bold text-white">{auction.name.substring(0, 2).toUpperCase()}</span>
+              </div>
+            )}
+          </div>
           <h1 className="text-3xl font-black sm:text-5xl mb-4 tracking-tight drop-shadow-md uppercase">PLAYER REGISTRATION</h1>
           <p className="text-lg text-white/80 font-medium tracking-wide">Register as a player for <span className="text-white font-bold">{auction.name}</span></p>
         </div>
