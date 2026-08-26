@@ -22,7 +22,7 @@ app.use(cors({ origin: allowedOrigins.length > 0 ? allowedOrigins : true }));
 // Raised from the default ~100kb: cover images/avatars are inlined as base64
 // JSON strings (no file-upload storage backend), which inflates ~33% over
 // the raw image bytes. Paired with client-side downscaling before encoding.
-app.use(express.json({ limit: "6mb" }));
+app.use(express.json({ limit: "15mb" }));
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/auth", authRoutes);
