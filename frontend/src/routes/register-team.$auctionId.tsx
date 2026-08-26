@@ -148,8 +148,12 @@ function PublicRegisterTeamPage() {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !shortName.trim()) {
-      toast.error("Please provide Team Name and Short Name");
+    if (!name.trim() || !shortName.trim() || !ownerName.trim() || !ownerPhone.trim() || !colorTheme.trim()) {
+      toast.error("Please fill in all team details");
+      return;
+    }
+    if (!logo) {
+      toast.error("Please upload a team logo");
       return;
     }
     
@@ -268,7 +272,7 @@ function PublicRegisterTeamPage() {
                       ) : (
                         <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
                           <UploadCloud className="size-8 text-primary/60" />
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo *</span>
                         </div>
                       )}
                       
@@ -298,16 +302,16 @@ function PublicRegisterTeamPage() {
                     <Input id="shortName" placeholder="e.g. CSK" value={shortName} onChange={(e) => setShortName(e.target.value)} disabled={registerMutation.isPending} required maxLength={5} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ownerName">Owner/Franchisee Name</Label>
-                    <Input id="ownerName" placeholder="e.g. N. Srinivasan" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} disabled={registerMutation.isPending} />
+                    <Label htmlFor="ownerName">Owner/Franchisee Name *</Label>
+                    <Input id="ownerName" placeholder="e.g. N. Srinivasan" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} disabled={registerMutation.isPending} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ownerPhone">Contact Number</Label>
-                    <Input id="ownerPhone" placeholder="e.g. 9876543210" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} disabled={registerMutation.isPending} />
+                    <Label htmlFor="ownerPhone">Contact Number *</Label>
+                    <Input id="ownerPhone" placeholder="e.g. 9876543210" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} disabled={registerMutation.isPending} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="colorTheme">Team Color/Theme</Label>
-                    <Input id="colorTheme" placeholder="e.g. Yellow & Blue" value={colorTheme} onChange={(e) => setColorTheme(e.target.value)} disabled={registerMutation.isPending} />
+                    <Label htmlFor="colorTheme">Team Color/Theme *</Label>
+                    <Input id="colorTheme" placeholder="e.g. Yellow & Blue" value={colorTheme} onChange={(e) => setColorTheme(e.target.value)} disabled={registerMutation.isPending} required />
                   </div>
                 </div>
               </div>

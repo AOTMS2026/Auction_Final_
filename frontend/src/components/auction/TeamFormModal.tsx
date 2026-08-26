@@ -55,8 +55,12 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !shortName.trim()) {
-      toast.error("Please fill in both fields");
+    if (!name.trim() || !shortName.trim() || !ownerName.trim() || !ownerPhone.trim() || !colorTheme.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (!logo) {
+      toast.error("Please upload a team logo");
       return;
     }
 
@@ -109,7 +113,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
                 )}
               </div>
             </Label>
-            <span className="text-xs text-muted-foreground">Team Logo</span>
+            <span className="text-xs text-muted-foreground">Team Logo *</span>
             <input
               id="logo"
               type="file"
@@ -121,7 +125,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team Name</Label>
+              <Label htmlFor="name">Team Name *</Label>
               <Input
                 id="name"
                 placeholder="e.g. Royal Challengers"
@@ -131,7 +135,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="shortName">Short Name</Label>
+              <Label htmlFor="shortName">Short Name *</Label>
               <Input
                 id="shortName"
                 placeholder="e.g. RCB"
@@ -143,7 +147,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="ownerName">Owner Name <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+              <Label htmlFor="ownerName">Owner Name *</Label>
               <Input
                 id="ownerName"
                 placeholder="e.g. John Doe"
@@ -153,7 +157,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ownerPhone">Owner Contact <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+              <Label htmlFor="ownerPhone">Owner Contact *</Label>
               <Input
                 id="ownerPhone"
                 placeholder="e.g. 9876543210"
@@ -164,7 +168,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="colorTheme">Team Color/Theme <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+            <Label htmlFor="colorTheme">Team Color/Theme *</Label>
             <Input
               id="colorTheme"
               placeholder="e.g. #FF0000 or Red"
