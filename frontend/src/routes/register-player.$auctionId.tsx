@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Plus, Pencil, CheckCircle2, Copy } from "lucide-react";
+import { Loader2, Plus, Pencil, CheckCircle2, Copy, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -176,6 +176,34 @@ function PlayerRegistrationPage() {
       toast.error("Please provide a valid name and exactly 10-digit phone number");
       return;
     }
+    if (!age || !gender || !city || !playerLevel) {
+      toast.error("Please fill in all personal details");
+      return;
+    }
+    if (!sportFields["role"]) {
+      toast.error("Please select a role/skill");
+      return;
+    }
+    for (const stat of config.stats) {
+      if (!sportFields[stat]) {
+        toast.error(`Please provide ${stat}`);
+        return;
+      }
+    }
+    for (const spec of config.specs) {
+      if (!sportFields[spec]) {
+        toast.error(`Please provide ${spec}`);
+        return;
+      }
+    }
+    if (!jerseySize || !jerseyName || !trouserSize) {
+      toast.error("Please fill in all uniform details");
+      return;
+    }
+    if (!paymentMode) {
+      toast.error("Please select a payment mode");
+      return;
+    }
     if (!utrNumber.trim() || utrNumber.trim().length !== 12) {
       toast.error("Please provide a valid 12-digit UTR Number");
       return;
@@ -237,15 +265,26 @@ function PlayerRegistrationPage() {
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden">
         <img
-          src={stadiumImg}
+          src={auction.coverImage || stadiumImg}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 size-full object-cover"
+          className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-white">
-          <h1 className="text-3xl font-bold sm:text-5xl mb-4">Player Registration</h1>
-          <p className="text-lg text-white/80">Register as a player for {auction.name}</p>
+        <div className="absolute inset-0 bg-black/70" />
+        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-white flex flex-col items-center">
+          {auction.coverImage ? (
+            <img 
+              src={auction.coverImage} 
+              alt={auction.name} 
+              className="size-28 rounded-full border-4 border-white/20 shadow-xl object-cover mb-6 bg-muted"
+            />
+          ) : (
+            <div className="size-28 rounded-full border-4 border-white/20 shadow-xl bg-primary/20 flex items-center justify-center mb-6">
+              <span className="text-3xl font-bold text-white">{auction.name.substring(0, 2).toUpperCase()}</span>
+            </div>
+          )}
+          <h1 className="text-3xl font-black sm:text-5xl mb-4 tracking-tight drop-shadow-md uppercase">PLAYER REGISTRATION</h1>
+          <p className="text-lg text-white/80 font-medium tracking-wide">Register as a player for <span className="text-white font-bold">{auction.name}</span></p>
         </div>
       </section>
 
@@ -287,7 +326,7 @@ function PlayerRegistrationPage() {
                   </div>
                 </Label>
               )}
-              <span className="text-xs text-muted-foreground font-semibold">Player Photo</span>
+              <span className="text-xs text-muted-foreground font-semibold">Player Photo *</span>
               <input
                 id="player-photo"
                 type="file"
@@ -308,11 +347,11 @@ function PlayerRegistrationPage() {
                 <Input id="phone" placeholder="e.g. 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={registerMutation.isPending} maxLength={10} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={registerMutation.isPending} />
+                <Label htmlFor="age">Age *</Label>
+                <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label>Gender</Label>
+                <Label>Gender *</Label>
                 <Select value={gender} onValueChange={setGender}>
                   <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
                   <SelectContent>
@@ -323,11 +362,11 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" placeholder="e.g. Mumbai" value={city} onChange={(e) => setCity(e.target.value)} disabled={registerMutation.isPending} />
+                <Label htmlFor="city">City *</Label>
+                <Input id="city" placeholder="e.g. Mumbai" value={city} onChange={(e) => setCity(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label>Player Level</Label>
+                <Label>Player Level *</Label>
                 <Select value={playerLevel} onValueChange={setPlayerLevel}>
                   <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
                   <SelectContent>
@@ -344,7 +383,7 @@ function PlayerRegistrationPage() {
               <h3 className="mb-4 font-semibold">{auction.sportType.charAt(0).toUpperCase() + auction.sportType.slice(1)} Specific Details</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Role/Skill</Label>
+                  <Label>Role/Skill *</Label>
                   <Select value={sportFields["role"] || ""} onValueChange={(v) => handleSportFieldChange("role", v)}>
                     <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
                     <SelectContent>
@@ -354,14 +393,14 @@ function PlayerRegistrationPage() {
                 </div>
                 {config.stats.map(stat => (
                   <div key={stat} className="space-y-2">
-                    <Label>{stat}</Label>
-                    <Input type="number" placeholder="e.g. 0" value={sportFields[stat] || ""} onChange={(e) => handleSportFieldChange(stat, e.target.value)} disabled={registerMutation.isPending} />
+                    <Label>{stat} *</Label>
+                    <Input type="number" placeholder="e.g. 0" value={sportFields[stat] || ""} onChange={(e) => handleSportFieldChange(stat, e.target.value)} disabled={registerMutation.isPending} required />
                   </div>
                 ))}
                 {config.specs.map(spec => (
                   <div key={spec} className="space-y-2">
-                    <Label>{spec}</Label>
-                    <Input placeholder={getSpecPlaceholder(spec)} value={sportFields[spec] || ""} onChange={(e) => handleSportFieldChange(spec, e.target.value)} disabled={registerMutation.isPending} />
+                    <Label>{spec} *</Label>
+                    <Input placeholder={getSpecPlaceholder(spec)} value={sportFields[spec] || ""} onChange={(e) => handleSportFieldChange(spec, e.target.value)} disabled={registerMutation.isPending} required />
                   </div>
                 ))}
               </div>
@@ -369,16 +408,16 @@ function PlayerRegistrationPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="jerseySize">Jersey Size</Label>
-                <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} />
+                <Label htmlFor="jerseySize">Jersey Size *</Label>
+                <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jerseyName">Jersey Name</Label>
-                <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={registerMutation.isPending} />
+                <Label htmlFor="jerseyName">Jersey Name *</Label>
+                <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="trouserSize">Trouser Size</Label>
-                <Input id="trouserSize" placeholder="e.g. 32" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={registerMutation.isPending} />
+                <Label htmlFor="trouserSize">Trouser Size *</Label>
+                <Input id="trouserSize" placeholder="e.g. 32" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
             </div>
 
@@ -429,20 +468,30 @@ function PlayerRegistrationPage() {
               <div className="space-y-2 pt-2">
                 <Label htmlFor="paymentImage">Payment Screenshot *</Label>
                 {paymentImage ? (
-                  <div className="relative w-full max-w-sm">
-                    <img src={paymentImage} alt="Payment screenshot" className="rounded-md border object-contain w-full h-40" />
+                  <div className="relative w-full max-w-sm group">
+                    <img src={paymentImage} alt="Payment screenshot" className="rounded-xl border-2 border-primary/20 object-contain w-full h-48 bg-muted shadow-sm transition-all group-hover:border-primary/50" />
                     <Button 
                       type="button" 
-                      variant="secondary" 
+                      variant="destructive" 
                       size="sm" 
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 opacity-90 hover:opacity-100 shadow-md"
                       onClick={() => setPaymentImage(null)}
                     >
                       Remove
                     </Button>
                   </div>
                 ) : (
-                  <Input id="paymentImage" type="file" accept="image/*" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
+                  <div>
+                    <Label 
+                      htmlFor="paymentImage" 
+                      className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+                    >
+                      <UploadCloud className="size-8 text-primary/60 mb-2" />
+                      <span className="text-sm font-medium text-foreground">Click to upload screenshot</span>
+                      <span className="text-xs text-muted-foreground mt-1">JPEG, PNG up to 2MB</span>
+                    </Label>
+                    <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
+                  </div>
                 )}
               </div>
             </div>
