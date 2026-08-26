@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, FileSpreadsheet, MoreVertical, Pencil, Trash } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, FileSpreadsheet, MoreVertical, Pencil, Trash, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -84,6 +84,12 @@ function ManageAuctionPage() {
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
     toast.success("Auction code copied!");
+  }
+
+  function handleSharePlayerForm() {
+    const url = `${window.location.origin}/register-player/${auction.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Player registration link copied to clipboard!");
   }
 
   function handleStartAuction() {
@@ -325,6 +331,11 @@ function ManageAuctionPage() {
 
         {activeTab === "PLAYERS" && (
           <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-end">
+              <Button onClick={handleSharePlayerForm} variant="outline" className="gap-2">
+                <Share2 className="size-4" /> Share Registration Link
+              </Button>
+            </div>
             {playersPending ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Skeleton key={i} className="h-20 w-full rounded-xl" />

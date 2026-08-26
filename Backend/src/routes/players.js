@@ -80,6 +80,30 @@ router.post(
   })
 );
 
+// Publicly register player
+router.post(
+  "/players/register",
+  asyncHandler(async (req, res) => {
+    const { auctionId, name, phone, ...rest } = req.body;
+
+    if (!auctionId || !name || !phone) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const auction = await Auction.findById(auctionId).catch(() => null);
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    const player = await Player.create({
+      auctionId,
+      name: name.trim(),
+      phone: phone.trim(),
+      ...rest,
+    });
+
+    res.status(201).json({ player: toPublicPlayer(player) });
+  })
+);
+
 // Update player
 router.patch(
   "/players/:id",

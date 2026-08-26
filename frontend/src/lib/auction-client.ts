@@ -241,6 +241,14 @@ export const auctionClient = {
     return player;
   },
 
+  async registerPlayer(input: PlayerInput): Promise<Player> {
+    const { player } = await request<{ player: Player }>("/api/players/register", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return player;
+  },
+
   async updatePlayer(
     id: string,
     patch: Partial<PlayerInput> & {

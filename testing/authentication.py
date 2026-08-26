@@ -18,7 +18,7 @@ async def run_auth_test():
             print("Navigating to Authentication...")
             # We'll use the localhost for reliable testing, or stick to aotms.com if preferred
             # But since it failed on waiting, let's just use the direct URL
-            await page.goto("https://www.aotms.com/auth")
+            await page.goto("http://192.168.18.1:8081/")
             
             # They requested login first. Wait for Sign In tab (default)
             print("Entering email: ameen@gmail.com")
