@@ -250,7 +250,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   <button
                     type="button"
                     onClick={() => {
-                      const basePhoto = sportFields.originalPhoto || photo;
+                      const basePhoto = sportFields['originalPhoto'] || photo;
                       setCropImageSrc(basePhoto);
                       setZoom(1);
                       setDragOffset({ x: 0, y: 0 });
