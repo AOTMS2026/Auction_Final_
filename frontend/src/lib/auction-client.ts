@@ -1,6 +1,6 @@
 import { request } from "@/lib/api-client";
 
-export type SportType = "cricket" | "volleyball" | "football" | "kabaddi" | "baseball";
+export type SportType = "cricket" | "volleyball" | "football" | "kabaddi" | "badminton";
 export type Visibility = "public" | "semi-private" | "private";
 export type AuctionStatus = "draft" | "live";
 

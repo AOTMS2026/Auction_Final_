@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePlayers } from "@/hooks/usePlayers";
 import { useTeams } from "@/hooks/useTeams";
 import { SPORT_CONFIGS } from "@/lib/validations/player";
@@ -49,14 +50,27 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [gender, setGender] = useState(player?.gender || "");
   const [city, setCity] = useState(player?.city || "");
   const [playerLevel, setPlayerLevel] = useState(player?.playerLevel || "");
+  
+  // Payment Details
   const [paymentMode, setPaymentMode] = useState(player?.paymentMode || "");
   const [utrNumber, setUtrNumber] = useState(player?.utrNumber || "");
   const [paymentImage, setPaymentImage] = useState<string | null>(player?.paymentImage || null);
+  
   const [baseValue, setBaseValue] = useState(player?.baseValue?.toString() || "0");
   const [jerseySize, setJerseySize] = useState(player?.jerseySize || "");
   const [jerseyName, setJerseyName] = useState(player?.jerseyName || "");
   const [trouserSize, setTrouserSize] = useState(player?.trouserSize || "");
+  
+  // Custom Data / Membership
   const [customData, setCustomData] = useState(player?.customData || "");
+  const initialIsBni = player?.customData?.startsWith("BNI Member");
+  const initialIsFamily = player?.customData?.startsWith("Family Member");
+  
+  const [memberType, setMemberType] = useState<"bni" | "family" | "">(initialIsBni ? "bni" : initialIsFamily ? "family" : "");
+  const [chapterName, setChapterName] = useState("");
+  const [bniName, setBniName] = useState("");
+  const [relationship, setRelationship] = useState("");
+
   const [photo, setPhoto] = useState<string | null>(player?.photo || null);
   
   // State fields
@@ -120,6 +134,20 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setTeamId(player.teamId || "none");
       setSoldPrice(player.soldPrice?.toString() || "");
       setSportFields(player.sportFields || {});
+      
+      if (player.customData?.startsWith("BNI Member")) {
+        setMemberType("bni");
+        const match = player.customData.match(/Chapter: (.*)/);
+        if (match) setChapterName(match[1] || "");
+      } else if (player.customData?.startsWith("Family Member")) {
+        setMemberType("family");
+        const match = player.customData.match(/BNI Name: (.*), Chapter: (.*), Rel: (.*)/);
+        if (match) {
+          setBniName(match[1] || "");
+          setChapterName(match[2] || "");
+          setRelationship(match[3] || "");
+        }
+      }
     }
   }, [open, player]);
 
@@ -207,6 +235,34 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       return;
     }
 
+    const isBniAuction = auctionId === "6a8edaddd7ed74151dbafab3";
+    let customDataStr = customData;
+
+    if (isBniAuction) {
+      if (memberType === "bni" && !chapterName.trim()) {
+        toast.error("Please provide Chapter Name");
+        return;
+      }
+      if (memberType === "family" && (!bniName.trim() || !chapterName.trim() || !relationship)) {
+        toast.error("Please provide BNI Name, Chapter Name and Relationship");
+        return;
+      }
+      if (memberType === "bni") {
+        customDataStr = `BNI Member | Chapter: ${chapterName}`;
+      } else if (memberType === "family") {
+        customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship}`;
+      }
+    } else {
+      if (!paymentMode && paymentImage) {
+        toast.error("Please select a payment mode");
+        return;
+      }
+      if (utrNumber && utrNumber.length !== 12) {
+        toast.error("UTR Number must be 12 digits if provided");
+        return;
+      }
+    }
+
     const input: PlayerInput = {
       auctionId,
       name,
@@ -216,14 +272,14 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       gender,
       city,
       playerLevel,
-      paymentMode,
-      utrNumber,
-      paymentImage,
+      paymentMode: isBniAuction ? "" : paymentMode,
+      utrNumber: isBniAuction ? "" : utrNumber,
+      paymentImage: isBniAuction ? null : paymentImage,
       baseValue: parseFloat(baseValue) || 0,
       jerseySize,
       jerseyName,
       trouserSize,
-      customData,
+      customData: customDataStr,
       photo,
       sportFields,
     };
@@ -400,39 +456,103 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           </div>
 
           <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
-            <h3 className="font-semibold text-lg">Payment Details</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Payment Mode</Label>
-                <Select value={paymentMode} onValueChange={setPaymentMode}>
-                  <SelectTrigger><SelectValue placeholder="Select Mode" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PhonePe">PhonePe</SelectItem>
-                    <SelectItem value="UPI ID">UPI ID</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="utrNumber">UTR Number</Label>
-                <Input id="utrNumber" placeholder="12-digit UTR" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={isSubmitting} maxLength={12} />
-              </div>
-            </div>
-            {paymentImage && (
-              <div className="space-y-2">
-                <Label>Payment Screenshot</Label>
-                <div className="relative w-full max-w-sm">
-                  <img src={paymentImage} alt="Payment screenshot" className="rounded-md border object-contain w-full h-40" />
-                  <Button 
-                    type="button" 
-                    variant="secondary" 
-                    size="sm" 
-                    className="absolute top-2 right-2"
-                    onClick={() => setPaymentImage(null)}
+            {auctionId === "6a8edaddd7ed74151dbafab3" ? (
+              <>
+                <h3 className="font-semibold text-lg">Membership Details</h3>
+                <div className="space-y-4">
+                  <RadioGroup 
+                    value={memberType} 
+                    onValueChange={(val) => {
+                      setMemberType(val as "bni" | "family");
+                      if (!player) {
+                        setChapterName("");
+                        setBniName("");
+                        setRelationship("");
+                      }
+                    }} 
+                    className="flex gap-6"
+                    disabled={isSubmitting}
                   >
-                    Remove
-                  </Button>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="bni" id="modal-r-bni" />
+                      <Label htmlFor="modal-r-bni" className="cursor-pointer">BNI Member</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="family" id="modal-r-family" />
+                      <Label htmlFor="modal-r-family" className="cursor-pointer">Family Member</Label>
+                    </div>
+                  </RadioGroup>
+
+                  {memberType === "bni" && (
+                    <div className="space-y-2 pt-2 animate-in fade-in">
+                      <Label htmlFor="chapterName">Chapter Name *</Label>
+                      <Input id="chapterName" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
+                    </div>
+                  )}
+
+                  {memberType === "family" && (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
+                      <div className="space-y-2">
+                        <Label htmlFor="bniName">BNI Name *</Label>
+                        <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={isSubmitting} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="chapterNameFam">Chapter Name *</Label>
+                        <Input id="chapterNameFam" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Relationship *</Label>
+                        <Select value={relationship} onValueChange={setRelationship}>
+                          <SelectTrigger><SelectValue placeholder="Select Relationship" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Child">Child</SelectItem>
+                            <SelectItem value="Spouse">Spouse</SelectItem>
+                            <SelectItem value="Parents">Parents</SelectItem>
+                            <SelectItem value="Siblings">Siblings</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </>
+            ) : (
+              <>
+                <h3 className="font-semibold text-lg">Payment Details</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Payment Mode</Label>
+                    <Select value={paymentMode} onValueChange={setPaymentMode}>
+                      <SelectTrigger><SelectValue placeholder="Select Mode" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PhonePe">PhonePe</SelectItem>
+                        <SelectItem value="UPI ID">UPI ID</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="utrNumber">UTR Number</Label>
+                    <Input id="utrNumber" placeholder="12-digit UTR" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={isSubmitting} maxLength={12} />
+                  </div>
+                </div>
+                {paymentImage && (
+                  <div className="space-y-2">
+                    <Label>Payment Screenshot</Label>
+                    <div className="relative w-full max-w-sm">
+                      <img src={paymentImage} alt="Payment screenshot" className="rounded-md border object-contain w-full h-40" />
+                      <Button 
+                        type="button" 
+                        variant="secondary" 
+                        size="sm" 
+                        className="absolute top-2 right-2"
+                        onClick={() => setPaymentImage(null)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

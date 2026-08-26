@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { auctionClient, PlayerInput } from "@/lib/auction-client";
@@ -46,15 +47,23 @@ function PlayerRegistrationPage() {
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
   const [playerLevel, setPlayerLevel] = useState("");
-  const [paymentMode, setPaymentMode] = useState("");
-  const [utrNumber, setUtrNumber] = useState("");
-  const [paymentImage, setPaymentImage] = useState<string | null>(null);
   const [baseValue, setBaseValue] = useState("0");
   const [jerseySize, setJerseySize] = useState("");
   const [jerseyName, setJerseyName] = useState("");
   const [trouserSize, setTrouserSize] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [sportFields, setSportFields] = useState<Record<string, any>>({});
+
+  // Payment details
+  const [paymentMode, setPaymentMode] = useState("");
+  const [utrNumber, setUtrNumber] = useState("");
+  const [paymentImage, setPaymentImage] = useState<string | null>(null);
+
+  // Membership details
+  const [memberType, setMemberType] = useState<"bni" | "family" | "">("");
+  const [chapterName, setChapterName] = useState("");
+  const [bniName, setBniName] = useState("");
+  const [relationship, setRelationship] = useState("");
 
   // Crop state
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -200,17 +209,41 @@ function PlayerRegistrationPage() {
       toast.error("Please fill in all uniform details");
       return;
     }
-    if (!paymentMode) {
-      toast.error("Please select a payment mode");
-      return;
-    }
-    if (!utrNumber.trim() || utrNumber.trim().length !== 12) {
-      toast.error("Please provide a valid 12-digit UTR Number");
-      return;
-    }
-    if (!paymentImage) {
-      toast.error("Please upload the payment screenshot");
-      return;
+
+    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3";
+    let customDataStr = "";
+
+    if (isBniAuction) {
+      if (!memberType) {
+        toast.error("Please select a membership type");
+        return;
+      }
+      if (memberType === "bni" && !chapterName.trim()) {
+        toast.error("Please provide Chapter Name");
+        return;
+      }
+      if (memberType === "family" && (!bniName.trim() || !chapterName.trim() || !relationship)) {
+        toast.error("Please provide BNI Name, Chapter Name and Relationship");
+        return;
+      }
+      if (memberType === "bni") {
+        customDataStr = `BNI Member | Chapter: ${chapterName}`;
+      } else if (memberType === "family") {
+        customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship}`;
+      }
+    } else {
+      if (!paymentMode) {
+        toast.error("Please select a payment mode");
+        return;
+      }
+      if (!utrNumber.trim() || utrNumber.trim().length !== 12) {
+        toast.error("Please provide a valid 12-digit UTR Number");
+        return;
+      }
+      if (!paymentImage) {
+        toast.error("Please upload the payment screenshot");
+        return;
+      }
     }
 
     const input: PlayerInput = {
@@ -228,6 +261,7 @@ function PlayerRegistrationPage() {
       jerseySize,
       jerseyName,
       trouserSize,
+      customData: customDataStr,
       photo,
       sportFields,
     };
@@ -422,78 +456,140 @@ function PlayerRegistrationPage() {
             </div>
 
             <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
-              <h3 className="font-semibold text-lg">Payment Details</h3>
-              <div className="p-4 bg-primary/5 rounded-md border border-primary/20 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">UPI ID</p>
-                    <p className="font-mono font-medium text-lg">7780178092@mbkns</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => {
-                      navigator.clipboard.writeText("7780178092@mbkns");
-                      toast.success("UPI ID copied to clipboard!");
-                    }}
-                  >
-                    <Copy className="size-4" /> Copy
-                  </Button>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Amount Payable</p>
-                  <p className="font-semibold text-lg text-primary">₹1,200 per player</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
-                <div className="space-y-2">
-                  <Label>Payment Mode *</Label>
-                  <Select value={paymentMode} onValueChange={setPaymentMode}>
-                    <SelectTrigger><SelectValue placeholder="Select Payment Mode" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PhonePe">PhonePe</SelectItem>
-                      <SelectItem value="UPI ID">UPI ID</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="utrNumber">UTR Number (12 digits) *</Label>
-                  <Input id="utrNumber" placeholder="e.g. 123456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={registerMutation.isPending} maxLength={12} required />
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="paymentImage">Payment Screenshot *</Label>
-                {paymentImage ? (
-                  <div className="relative w-full max-w-sm group">
-                    <img src={paymentImage} alt="Payment screenshot" className="rounded-xl border-2 border-primary/20 object-contain w-full h-48 bg-muted shadow-sm transition-all group-hover:border-primary/50" />
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      size="sm" 
-                      className="absolute top-2 right-2 opacity-90 hover:opacity-100 shadow-md"
-                      onClick={() => setPaymentImage(null)}
+              {auction.id === "6a8edaddd7ed74151dbafab3" ? (
+                <>
+                  <h3 className="font-semibold text-lg">Membership Details</h3>
+                  <div className="space-y-4">
+                    <RadioGroup 
+                      value={memberType} 
+                      onValueChange={(val) => {
+                        setMemberType(val as "bni" | "family");
+                        setChapterName("");
+                        setBniName("");
+                        setRelationship("");
+                      }} 
+                      className="flex gap-6"
+                      disabled={registerMutation.isPending}
                     >
-                      Remove
-                    </Button>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="bni" id="r-bni" />
+                        <Label htmlFor="r-bni" className="cursor-pointer">BNI Member</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="family" id="r-family" />
+                        <Label htmlFor="r-family" className="cursor-pointer">Family Member</Label>
+                      </div>
+                    </RadioGroup>
+
+                    {memberType === "bni" && (
+                      <div className="space-y-2 pt-2 animate-in fade-in">
+                        <Label htmlFor="chapterName">Chapter Name *</Label>
+                        <Input id="chapterName" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={registerMutation.isPending} required />
+                      </div>
+                    )}
+
+                    {memberType === "family" && (
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
+                        <div className="space-y-2">
+                          <Label htmlFor="bniName">BNI Name *</Label>
+                          <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={registerMutation.isPending} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="chapterNameFam">Chapter Name *</Label>
+                          <Input id="chapterNameFam" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={registerMutation.isPending} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Relationship *</Label>
+                          <Select value={relationship} onValueChange={setRelationship}>
+                            <SelectTrigger><SelectValue placeholder="Select Relationship" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Child">Child</SelectItem>
+                              <SelectItem value="Spouse">Spouse</SelectItem>
+                              <SelectItem value="Parents">Parents</SelectItem>
+                              <SelectItem value="Siblings">Siblings</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div>
-                    <Label 
-                      htmlFor="paymentImage" 
-                      className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
-                    >
-                      <UploadCloud className="size-8 text-primary/60 mb-2" />
-                      <span className="text-sm font-medium text-foreground">Click to upload screenshot</span>
-                      <span className="text-xs text-muted-foreground mt-1">JPEG, PNG up to 2MB</span>
-                    </Label>
-                    <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
+                </>
+              ) : (
+                <>
+                  <h3 className="font-semibold text-lg">Payment Details</h3>
+                  <div className="p-4 bg-primary/5 rounded-md border border-primary/20 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">UPI ID</p>
+                        <p className="font-mono font-medium text-lg">7780178092@mbkns</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText("7780178092@mbkns");
+                          toast.success("UPI ID copied to clipboard!");
+                        }}
+                      >
+                        <Copy className="size-4" /> Copy
+                      </Button>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Amount Payable</p>
+                      <p className="font-semibold text-lg text-primary">₹1,200 per player</p>
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
+                    <div className="space-y-2">
+                      <Label>Payment Mode *</Label>
+                      <Select value={paymentMode} onValueChange={setPaymentMode}>
+                        <SelectTrigger><SelectValue placeholder="Select Payment Mode" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PhonePe">PhonePe</SelectItem>
+                          <SelectItem value="UPI ID">UPI ID</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="utrNumber">UTR Number (12 digits) *</Label>
+                      <Input id="utrNumber" placeholder="e.g. 123456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={registerMutation.isPending} maxLength={12} required />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <Label htmlFor="paymentImage">Payment Screenshot *</Label>
+                    {paymentImage ? (
+                      <div className="relative w-full max-w-sm group">
+                        <img src={paymentImage} alt="Payment screenshot" className="rounded-xl border-2 border-primary/20 object-contain w-full h-48 bg-muted shadow-sm transition-all group-hover:border-primary/50" />
+                        <Button 
+                          type="button" 
+                          variant="destructive" 
+                          size="sm" 
+                          className="absolute top-2 right-2 opacity-90 hover:opacity-100 shadow-md"
+                          onClick={() => setPaymentImage(null)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <Label 
+                          htmlFor="paymentImage" 
+                          className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+                        >
+                          <UploadCloud className="size-8 text-primary/60 mb-2" />
+                          <span className="text-sm font-medium text-foreground">Click to upload screenshot</span>
+                          <span className="text-xs text-muted-foreground mt-1">JPEG, PNG up to 2MB</span>
+                        </Label>
+                        <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="pt-6">
