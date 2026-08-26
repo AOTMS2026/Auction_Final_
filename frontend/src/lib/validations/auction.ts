@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const SPORT_TYPES = ["cricket", "volleyball", "football", "kabaddi", "baseball"] as const;
+export const SPORT_TYPES = ["cricket", "volleyball", "football", "kabaddi", "badminton"] as const;
 export const VISIBILITIES = ["public", "semi-private", "private"] as const;
 
 export const sportTypeLabels: Record<(typeof SPORT_TYPES)[number], string> = {
@@ -8,7 +8,7 @@ export const sportTypeLabels: Record<(typeof SPORT_TYPES)[number], string> = {
   volleyball: "Volleyball",
   football: "Football",
   kabaddi: "Kabaddi",
-  baseball: "Baseball",
+  badminton: "Badminton",
 };
 
 export const visibilityLabels: Record<(typeof VISIBILITIES)[number], string> = {

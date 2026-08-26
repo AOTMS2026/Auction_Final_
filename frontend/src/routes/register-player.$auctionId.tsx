@@ -416,7 +416,7 @@ function PlayerRegistrationPage() {
                 <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="trouserSize">Trouser Size *</Label>
+                <Label htmlFor="trouserSize">Jersey Number *</Label>
                 <Input id="trouserSize" placeholder="e.g. 32" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
             </div>
@@ -444,7 +444,7 @@ function PlayerRegistrationPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Amount Payable</p>
-                  <p className="font-semibold text-lg text-primary">₹149 per player</p>
+                  <p className="font-semibold text-lg text-primary">₹1,200 per player</p>
                 </div>
               </div>
 

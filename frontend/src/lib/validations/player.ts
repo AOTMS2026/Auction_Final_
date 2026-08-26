@@ -50,9 +50,9 @@ export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
     stats: ["Matches", "Raid Points", "Tackle Points"],
     specs: ["Specification"],
   },
-  baseball: {
-    roles: ["Pitcher", "Catcher", "Infielder", "Outfielder", "Designated Hitter"],
-    stats: ["Matches", "Runs", "Home Runs", "Strikeouts"],
+  badminton: {
+    roles: ["Singles Player", "Doubles Player", "Mixed Doubles"],
+    stats: ["Matches", "Wins", "Win Percentage"],
     specs: ["Specification"],
   },
 };
