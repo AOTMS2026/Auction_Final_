@@ -2,6 +2,7 @@ const { Router } = require("express");
 const Team = require("../models/Team");
 const Auction = require("../models/Auction");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
+const { uploadBase64Image } = require("../lib/cloudinary");
 
 const router = Router();
 
@@ -69,6 +70,38 @@ router.post(
       ownerName: ownerName ? ownerName.trim() : "",
       ownerPhone: ownerPhone ? ownerPhone.trim() : "",
       colorTheme: colorTheme ? colorTheme.trim() : "",
+    });
+
+    res.status(201).json({ team: toPublicTeam(team) });
+  })
+);
+
+// Publicly register team
+router.post(
+  "/teams/register",
+  asyncHandler(async (req, res) => {
+    const { auctionId, name, shortName, ...rest } = req.body;
+
+    if (!auctionId || !name || !shortName) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const auction = await Auction.findById(auctionId).catch(() => null);
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    let uploadedLogo = null;
+    if (rest.logo) {
+      uploadedLogo = await uploadBase64Image(rest.logo);
+    }
+
+    const team = await Team.create({
+      auctionId,
+      name: name.trim(),
+      shortName: shortName.trim(),
+      logo: uploadedLogo,
+      ownerName: rest.ownerName ? rest.ownerName.trim() : "",
+      ownerPhone: rest.ownerPhone ? rest.ownerPhone.trim() : "",
+      colorTheme: rest.colorTheme ? rest.colorTheme.trim() : "",
     });
 
     res.status(201).json({ team: toPublicTeam(team) });

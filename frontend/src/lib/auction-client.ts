@@ -228,6 +228,14 @@ export const auctionClient = {
     return team;
   },
 
+  async registerTeam(input: TeamInput): Promise<Team> {
+    const { team } = await request<{ team: Team }>("/api/teams/register", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return team;
+  },
+
   async updateTeam(id: string, patch: Partial<TeamInput>): Promise<Team> {
     const { team } = await request<{ team: Team }>(`/api/teams/${id}`, {
       method: "PATCH",

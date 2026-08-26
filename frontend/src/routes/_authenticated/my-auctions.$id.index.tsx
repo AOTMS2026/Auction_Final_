@@ -92,6 +92,12 @@ function ManageAuctionPage() {
     toast.success("Player registration link copied to clipboard!");
   }
 
+  function handleShareTeamForm() {
+    const url = `${window.location.origin}/register-team/${auction.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Team registration link copied to clipboard!");
+  }
+
   function handleStartAuction() {
     if (teams.length === 0 || players.length === 0) {
       setReadinessModalOpen(true);
@@ -216,6 +222,11 @@ function ManageAuctionPage() {
 
         {activeTab === "TEAMS" && (
           <div className="space-y-4">
+            <div className="flex items-center justify-end">
+              <Button onClick={handleShareTeamForm} variant="outline" className="gap-2">
+                <Share2 className="size-4" /> Share Registration Link
+              </Button>
+            </div>
             {teamsPending ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Skeleton key={i} className="h-16 w-full rounded-lg" />
