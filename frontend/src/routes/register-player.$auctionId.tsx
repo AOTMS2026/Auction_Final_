@@ -38,6 +38,26 @@ export const Route = createFileRoute("/register-player/$auctionId")({
   component: PlayerRegistrationPage,
 });
 
+const CHAPTERS = [
+  "Alpha",
+  "Beacon",
+  "Champions",
+  "Diamonds",
+  "Excellence",
+  "freedom",
+  "Grand",
+  "Jade",
+  "Knights",
+  "Legends",
+  "Marvel",
+  "Orbit",
+  "Prime",
+  "Royals",
+  "Suprime",
+  "Titans",
+  "Core group",
+];
+
 function PlayerRegistrationPage() {
   const { auction } = Route.useLoaderData();
   const [success, setSuccess] = useState(false);
@@ -236,8 +256,6 @@ function PlayerRegistrationPage() {
         customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship}`;
       }
     } else {
-      // Payment details are hidden in the code, validation bypassed
-      /*
       if (!paymentMode) {
         toast.error("Please select a payment mode");
         return;
@@ -250,7 +268,6 @@ function PlayerRegistrationPage() {
         toast.error("Please upload the payment screenshot");
         return;
       }
-      */
     }
 
     const input: PlayerInput = {
@@ -490,8 +507,13 @@ function PlayerRegistrationPage() {
 
                   {memberType === "bni" && (
                     <div className="space-y-2 pt-2 animate-in fade-in">
-                      <Label htmlFor="chapterName">Chapter Name *</Label>
-                      <Input id="chapterName" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={registerMutation.isPending} required />
+                      <Label>Chapter Name *</Label>
+                      <Select value={chapterName} onValueChange={setChapterName}>
+                        <SelectTrigger><SelectValue placeholder="Select Chapter" /></SelectTrigger>
+                        <SelectContent>
+                          {CHAPTERS.map(ch => <SelectItem key={ch} value={ch}>{ch}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
 
@@ -502,8 +524,13 @@ function PlayerRegistrationPage() {
                         <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={registerMutation.isPending} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="chapterNameFam">Chapter Name *</Label>
-                        <Input id="chapterNameFam" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={registerMutation.isPending} required />
+                        <Label>Chapter Name *</Label>
+                        <Select value={chapterName} onValueChange={setChapterName}>
+                          <SelectTrigger><SelectValue placeholder="Select Chapter" /></SelectTrigger>
+                          <SelectContent>
+                            {CHAPTERS.map(ch => <SelectItem key={ch} value={ch}>{ch}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label>Relationship *</Label>
@@ -522,45 +549,11 @@ function PlayerRegistrationPage() {
                 </div>
               </div>
             ) : (
-              /* Payment details are hidden in the code
               <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
                 <h3 className="font-semibold text-lg">Payment Details</h3>
-                <div className="p-4 bg-primary/5 rounded-md border border-primary/20 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">UPI ID</p>
-                      <p className="font-mono font-medium text-lg">7780178092@mbkns</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => {
-                        navigator.clipboard.writeText("7780178092@mbkns");
-                        toast.success("UPI ID copied to clipboard!");
-                      }}
-                    >
-                      <Copy className="size-4" /> Copy
-                    </Button>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Amount Payable</p>
-                    <p className="font-semibold text-lg text-primary">₹1,200 per player</p>
-                  </div>
-                </div>
+                {/* UPI details and Amount instructions box is removed */}
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
-                  <div className="space-y-2">
-                    <Label>Payment Mode *</Label>
-                    <Select value={paymentMode} onValueChange={setPaymentMode}>
-                      <SelectTrigger><SelectValue placeholder="Select Payment Mode" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PhonePe">PhonePe</SelectItem>
-                        <SelectItem value="UPI ID">UPI ID</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="utrNumber">UTR Number (12 digits) *</Label>
                     <Input id="utrNumber" placeholder="e.g. 123456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} disabled={registerMutation.isPending} maxLength={12} required />
@@ -597,8 +590,6 @@ function PlayerRegistrationPage() {
                   )}
                 </div>
               </div>
-              */
-              null
             )}
 
             <div className="pt-6">

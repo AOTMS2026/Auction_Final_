@@ -139,6 +139,22 @@ function Index() {
             >
               Start an auction
             </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/my-auctions/new"
+                className="rounded-md bg-secondary px-6 py-3 font-semibold text-secondary-foreground hover:bg-secondary/80 border border-border shadow-sm"
+              >
+                Create Auction
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                search={{ next: "/my-auctions/new" }}
+                className="rounded-md bg-secondary px-6 py-3 font-semibold text-secondary-foreground hover:bg-secondary/80 border border-border shadow-sm"
+              >
+                Create Auction
+              </Link>
+            )}
           </div>
         </div>
       </section>
