@@ -314,13 +314,6 @@ function PlayerRegistrationPage() {
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-white flex flex-col items-center">
           <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap">
-            {auction.id === "6a8edaddd7ed74151dbafab3" && (
-              <img 
-                src={bniLogoImg} 
-                alt="BNI Logo" 
-                className="h-24 sm:h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-black p-2"
-              />
-            )}
             {auction.coverImage ? (
               <img 
                 src={auction.coverImage} 
@@ -331,13 +324,6 @@ function PlayerRegistrationPage() {
               <div className="size-24 sm:size-28 rounded-full border-4 border-white/20 shadow-xl bg-primary/20 flex items-center justify-center shrink-0">
                 <span className="text-2xl sm:text-3xl font-bold text-white">{auction.name.substring(0, 2).toUpperCase()}</span>
               </div>
-            )}
-            {auction.id === "6a8edaddd7ed74151dbafab3" && (
-              <img 
-                src={anotherImg} 
-                alt="Another Logo" 
-                className="h-24 sm:h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-white p-2"
-              />
             )}
           </div>
           <h1 className="text-3xl font-black sm:text-5xl mb-4 tracking-tight drop-shadow-md uppercase">PLAYER REGISTRATION</h1>
@@ -512,7 +498,7 @@ function PlayerRegistrationPage() {
                   {memberType === "family" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
                       <div className="space-y-2">
-                        <Label htmlFor="bniName">BNI Name *</Label>
+                        <Label htmlFor="bniName">BNI Member Name *</Label>
                         <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={registerMutation.isPending} required />
                       </div>
                       <div className="space-y-2">
