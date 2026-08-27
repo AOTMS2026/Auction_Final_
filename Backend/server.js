@@ -48,3 +48,5 @@ connectDB()
     console.error("[server] failed to start:", err.message);
     process.exit(1);
   });
+// Trigger watch reload after installing cloudinary
+
