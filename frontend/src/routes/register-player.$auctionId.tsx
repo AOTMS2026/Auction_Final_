@@ -209,8 +209,8 @@ function PlayerRegistrationPage() {
       }
     }
     */
-    if (!jerseySize || !jerseyName) {
-      toast.error("Please fill in all uniform details");
+    if (!jerseySize) {
+      toast.error("Please fill in Jersey Size");
       return;
     }
 
@@ -472,15 +472,9 @@ function PlayerRegistrationPage() {
             </div>
             */}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="jerseySize">Jersey Size *</Label>
-                <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="jerseyName">Jersey Name *</Label>
-                <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={registerMutation.isPending} required />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="jerseySize">Jersey Size *</Label>
+              <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
             </div>
 
             {auction.id === "6a8edaddd7ed74151dbafab3" ? (
