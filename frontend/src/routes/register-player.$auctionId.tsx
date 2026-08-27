@@ -86,6 +86,7 @@ function PlayerRegistrationPage() {
   const [chapterName, setChapterName] = useState("");
   const [bniName, setBniName] = useState("");
   const [relationship, setRelationship] = useState("");
+  const [bblSeasons, setBblSeasons] = useState("");
 
   // Crop state
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -244,6 +245,10 @@ function PlayerRegistrationPage() {
         toast.error("Please fill in Jersey Number");
         return;
       }
+      if (bblSeasons === "") {
+        toast.error("Please select Number of BBL seasons played");
+        return;
+      }
     }
 
     let customDataStr = "";
@@ -262,9 +267,9 @@ function PlayerRegistrationPage() {
         return;
       }
       if (memberType === "bni") {
-        customDataStr = `BNI Member | Chapter: ${chapterName}`;
+        customDataStr = `BNI Member | Chapter: ${chapterName} | BBL Seasons: ${bblSeasons}`;
       } else if (memberType === "family") {
-        customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship}`;
+        customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship} | BBL Seasons: ${bblSeasons}`;
       }
     } else {
       if (!paymentMode) {
@@ -501,7 +506,7 @@ function PlayerRegistrationPage() {
             */}
 
             {auction.id === "6a8edaddd7ed74151dbafab3" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="jerseySize">Jersey Size *</Label>
                   <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
@@ -513,6 +518,19 @@ function PlayerRegistrationPage() {
                 <div className="space-y-2">
                   <Label htmlFor="trouserSize">Jersey Number *</Label>
                   <Input id="trouserSize" placeholder="e.g. 7" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={registerMutation.isPending} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Number of BBL seasons played *</Label>
+                  <Select value={bblSeasons} onValueChange={setBblSeasons}>
+                    <SelectTrigger><SelectValue placeholder="Select seasons" /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <SelectItem key={i} value={String(i)}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             ) : (
