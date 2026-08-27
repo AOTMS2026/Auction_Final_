@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import stadiumImg from "@/assets/stadium-band.jpg";
+import bniLogoImg from "@/assets/bni-logo.png";
+import anotherImg from "@/assets/another.jpeg";
 import { auctionClient, TeamInput } from "@/lib/auction-client";
 
 export const Route = createFileRoute("/register-team/$auctionId")({
@@ -45,6 +47,7 @@ function PublicRegisterTeamPage() {
   const [ownerPhone, setOwnerPhone] = useState("");
   const [colorTheme, setColorTheme] = useState("");
   const [logo, setLogo] = useState<string | null>(null);
+  const [originalLogo, setOriginalLogo] = useState<string | null>(null);
   
   // Image cropping logic
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -78,7 +81,10 @@ function PublicRegisterTeamPage() {
       }
       const reader = new FileReader();
       reader.onload = (event) => {
-        setCropImageSrc(event.target?.result as string);
+        const rawDataUrl = event.target?.result as string;
+        setOriginalLogo(rawDataUrl);
+        setLogo(rawDataUrl);
+        setCropImageSrc(rawDataUrl);
         setZoom([1]);
         setDragOffset({ x: 0, y: 0 });
       };
@@ -128,8 +134,8 @@ function PublicRegisterTeamPage() {
         drawW = 288;
         drawH = 288 * (nH / nW);
       }
-      drawW *= zoom[0];
-      drawH *= zoom[0];
+      drawW *= zoom[0] ?? 1;
+      drawH *= zoom[0] ?? 1;
       const containerCenter = 144;
       const drawX = (containerCenter - drawW / 2) + dragOffset.x;
       const drawY = (containerCenter - drawH / 2) + dragOffset.y;
@@ -199,41 +205,62 @@ function PublicRegisterTeamPage() {
 
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden">
-        <div className="absolute inset-0 h-48 sm:h-56">
-          <img src={stadiumImg} alt="" className="size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20" />
-        </div>
-        
-        <div className="relative mx-auto max-w-3xl px-4 pt-16 pb-6 sm:pt-20">
-          <div className="flex flex-col items-center text-center">
-            {isPending ? (
-               <Skeleton className="size-20 sm:size-24 rounded-full border-4 border-background bg-muted/50 mb-4" />
-            ) : isError || !auction ? (
-              <div className="size-20 sm:size-24 rounded-full border-4 border-background bg-destructive/20 flex items-center justify-center mb-4 text-destructive font-bold text-2xl">?</div>
-            ) : (
-              <FallbackImage
-                src={auction.coverImage || ""}
-                alt={auction.name}
-                className="size-20 sm:size-24 rounded-full border-4 border-background object-cover shadow-lg mb-4"
-                fallback={
-                  <span className="display grid size-full place-items-center rounded-full bg-brand text-3xl font-bold text-brand-foreground shadow-lg">
-                    {auction.name.slice(0, 2).toUpperCase()}
-                  </span>
-                }
-              />
-            )}
-            
-            {isPending ? (
-              <Skeleton className="h-8 w-64 mb-2" />
-            ) : isError || !auction ? (
+        {isPending ? (
+          <div className="absolute inset-0 bg-slate-900" />
+        ) : (
+          <img
+            src={auction?.coverImage || stadiumImg}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-60"
+          />
+        )}
+        <div className="absolute inset-0 bg-black/70" />
+        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-white flex flex-col items-center">
+          {isPending ? (
+            <div className="flex flex-col items-center gap-4">
+              <Skeleton className="size-24 sm:size-28 rounded-full bg-white/20" />
+              <Skeleton className="h-10 w-64 bg-white/20" />
+              <Skeleton className="h-6 w-48 bg-white/20" />
+            </div>
+          ) : isError || !auction ? (
+            <div className="flex flex-col items-center gap-4">
+              <div className="size-24 sm:size-28 rounded-full border-4 border-white/20 bg-destructive/20 flex items-center justify-center text-destructive font-bold text-3xl">?</div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Auction Not Found</h1>
-            ) : (
-              <>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">{auction.name}</h1>
-                <p className="text-white/80 font-medium">Public Team Registration</p>
-              </>
-            )}
-          </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap">
+                {auction.id === "6a8edaddd7ed74151dbafab3" && (
+                  <img 
+                    src={bniLogoImg} 
+                    alt="BNI Logo" 
+                    className="h-24 sm:h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-black p-2"
+                  />
+                )}
+                {auction.coverImage ? (
+                  <img 
+                    src={auction.coverImage} 
+                    alt={auction.name} 
+                    className="size-24 sm:size-28 rounded-full border-4 border-white/20 shadow-xl object-cover bg-muted shrink-0"
+                  />
+                ) : (
+                  <div className="size-24 sm:size-28 rounded-full border-4 border-white/20 shadow-xl bg-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">{auction.name.substring(0, 2).toUpperCase()}</span>
+                  </div>
+                )}
+                {auction.id === "6a8edaddd7ed74151dbafab3" && (
+                  <img 
+                    src={anotherImg} 
+                    alt="Another Logo" 
+                    className="h-24 sm:h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-white p-2"
+                  />
+                )}
+              </div>
+              <h1 className="text-3xl font-black sm:text-5xl mb-4 tracking-tight drop-shadow-md uppercase">TEAM REGISTRATION</h1>
+              <p className="text-lg text-white/80 font-medium tracking-wide">Register your team for <span className="text-white font-bold">{auction.name}</span></p>
+            </>
+          )}
         </div>
       </section>
 
@@ -260,35 +287,57 @@ function PublicRegisterTeamPage() {
               
               <div className="space-y-6">
                 <div className="flex items-center justify-center">
-                  <div className="relative group">
-                    <Label
-                      htmlFor="team-logo"
-                      className={`relative flex size-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed transition-colors ${
-                        logo ? "border-primary" : "border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary/60"
-                      }`}
-                    >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative group">
                       {logo ? (
-                        <img src={logo} alt="Team Logo" className="size-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (originalLogo) {
+                              setCropImageSrc(originalLogo);
+                              setZoom([1]);
+                              setDragOffset({ x: 0, y: 0 });
+                            }
+                          }}
+                          className="relative flex size-32 items-center justify-center overflow-hidden rounded-full border-2 border-border/80 bg-muted hover:border-brand/40 transition-all group cursor-pointer shadow-sm"
+                          title="Crop / Zoom existing picture"
+                        >
+                          <img src={logo} alt="Team Logo" className="size-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Pencil className="size-6 text-white mb-0.5" />
+                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Crop/Zoom</span>
+                          </div>
+                        </button>
                       ) : (
-                        <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
-                          <UploadCloud className="size-8 text-primary/60" />
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo *</span>
-                        </div>
+                        <Label
+                          htmlFor="team-logo"
+                          className="relative flex size-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary/60 transition-colors"
+                        >
+                          <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
+                            <UploadCloud className="size-8 text-primary/60" />
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo *</span>
+                          </div>
+                        </Label>
                       )}
-                      
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Pencil className="size-6 text-white" />
-                      </div>
-                    </Label>
-                    <input
-                      id="team-logo"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      ref={fileInputRef}
-                      onChange={handlePhotoChange}
-                      disabled={registerMutation.isPending}
-                    />
+                      <input
+                        id="team-logo"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handlePhotoChange}
+                        disabled={registerMutation.isPending}
+                      />
+                    </div>
+                    {logo && (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-xs text-brand hover:text-brand/80 font-bold hover:underline transition-colors mt-1"
+                      >
+                        Upload New
+                      </button>
+                    )}
                   </div>
                 </div>
 

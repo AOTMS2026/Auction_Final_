@@ -173,6 +173,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       reader.onload = () => {
         const rawDataUrl = reader.result as string;
         setSportFields((prev) => ({ ...prev, originalPhoto: rawDataUrl }));
+        setPhoto(rawDataUrl);
         setCropImageSrc(rawDataUrl);
         setZoom(1);
         setDragOffset({ x: 0, y: 0 });

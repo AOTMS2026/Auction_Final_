@@ -119,10 +119,7 @@ function AuctionDetailPending() {
         </div>
       </section>
 
-      {/* Bidding Panel Skeleton */}
-      <section className="mx-auto max-w-7xl px-4 pb-16">
-        <Skeleton className="h-[400px] w-full rounded-xl" />
-      </section>
+      {/* Bidding Panel Skeleton is removed */}
 
       <SiteFooter />
     </div>
@@ -228,7 +225,7 @@ function AuctionDetailPage() {
         </div>
       </section>
 
-      <BiddingPanel auction={auction} />
+      {/* BiddingPanel is removed */}
 
       <SiteFooter />
     </div>

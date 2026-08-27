@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -144,6 +144,19 @@ function MyAuctionsPage() {
                     {visibilityLabels[a.visibility]}
                   </p>
                 </div>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}/auctions/${a.id}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    toast.success("Auction link copied to clipboard!");
+                  }}
+                  aria-label="Share auction"
+                  title="Share Auction"
+                >
+                  <Share2 className="size-4" />
+                </Button>
                 <Button asChild variant="outline" size="icon">
                   <Link to="/my-auctions/$id/edit" params={{ id: a.id }} aria-label="Edit auction">
                     <Pencil className="size-4" />

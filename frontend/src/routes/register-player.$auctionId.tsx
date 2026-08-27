@@ -146,6 +146,7 @@ function PlayerRegistrationPage() {
       reader.onload = () => {
         const rawDataUrl = reader.result as string;
         setSportFields((prev) => ({ ...prev, originalPhoto: rawDataUrl }));
+        setPhoto(rawDataUrl);
         setCropImageSrc(rawDataUrl);
         setZoom(1);
         setDragOffset({ x: 0, y: 0 });
@@ -233,8 +234,18 @@ function PlayerRegistrationPage() {
       toast.error("Please fill in Jersey Size");
       return;
     }
-
     const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3";
+    if (isBniAuction) {
+      if (!jerseyName.trim()) {
+        toast.error("Please fill in Jersey Name");
+        return;
+      }
+      if (!trouserSize.trim()) {
+        toast.error("Please fill in Jersey Number");
+        return;
+      }
+    }
+
     let customDataStr = "";
 
     if (isBniAuction) {
@@ -489,10 +500,27 @@ function PlayerRegistrationPage() {
             </div>
             */}
 
-            <div className="space-y-2">
-              <Label htmlFor="jerseySize">Jersey Size *</Label>
-              <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
-            </div>
+            {auction.id === "6a8edaddd7ed74151dbafab3" ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="jerseySize">Jersey Size *</Label>
+                  <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="jerseyName">Jersey Name *</Label>
+                  <Input id="jerseyName" placeholder="e.g. Dhoni" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={registerMutation.isPending} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="trouserSize">Jersey Number *</Label>
+                  <Input id="trouserSize" placeholder="e.g. 7" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={registerMutation.isPending} required />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="jerseySize">Jersey Size *</Label>
+                <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
+              </div>
+            )}
 
             {auction.id === "6a8edaddd7ed74151dbafab3" ? (
               <div className="rounded-lg border p-4 bg-muted/10 space-y-4">

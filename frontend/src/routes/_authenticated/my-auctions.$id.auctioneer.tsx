@@ -62,6 +62,74 @@ function AuctioneerConsole() {
   const [hasPromptedReset, setHasPromptedReset] = useState(false);
   const [lastSoldTeamId, setLastSoldTeamId] = useState<string | null>(null);
   const [viewingStatusList, setViewingStatusList] = useState<AuctionRoundStatus | null>(null);
+  const [actionHistory, setActionHistory] = useState<string[]>([]);
+
+  async function handleUndoLatestStep() {
+    let targetPlayerId: string | null = null;
+
+    if (actionHistory.length > 0) {
+      targetPlayerId = actionHistory[actionHistory.length - 1] ?? null;
+    } else {
+      // Fallback: find the non-pending player with the latest updatedAt
+      const nonPending = players.filter(
+        (p) => effectiveStatus(p) === "sold" || effectiveStatus(p) === "unsold"
+      );
+      if (nonPending.length > 0) {
+        const sorted = [...nonPending].sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+        targetPlayerId = sorted[0]?.id ?? null;
+      }
+    }
+
+    if (!targetPlayerId) {
+      toast.info("No actions to undo.");
+      return;
+    }
+
+    const playerToUndo = players.find((p) => p.id === targetPlayerId);
+    if (!playerToUndo) {
+      toast.error("Player not found for undo.");
+      return;
+    }
+
+    const previousTeamId = mode === "live" 
+      ? playerToUndo.teamId 
+      : (trialOverrides[targetPlayerId]?.teamId ?? playerToUndo.teamId);
+
+    const previousSoldPrice = mode === "live"
+      ? playerToUndo.soldPrice
+      : (trialOverrides[targetPlayerId]?.soldPrice ?? playerToUndo.soldPrice);
+
+    if (mode === "live") {
+      const toastId = toast.loading(`Undoing last action for ${playerToUndo.name}...`);
+      try {
+        await updatePlayer({
+          id: targetPlayerId,
+          patch: { teamId: null, soldPrice: null, auctionRoundStatus: "pending" },
+        });
+        toast.success(`Undid last action. ${playerToUndo.name} is now pending.`, { id: toastId });
+      } catch (error) {
+        toast.error("Failed to undo last action.", { id: toastId });
+        return;
+      }
+    } else {
+      setTrialOverrides((prev) => {
+        const next = { ...prev };
+        delete next[targetPlayerId!];
+        return next;
+      });
+      toast.success(`Undid last action. ${playerToUndo.name} is now pending.`);
+    }
+
+    // Set the undone player as the active player so they can be re-auctioned immediately
+    setCurrentPlayerId(targetPlayerId);
+    setSelectedTeamId(previousTeamId);
+    setCurrentBid(previousSoldPrice ?? auction.minimumBid);
+
+    // Remove from history
+    setActionHistory((prev) => prev.slice(0, -1));
+  }
 
   async function handleResetAllPlayers() {
     if (mode === "live") {
@@ -83,6 +151,7 @@ function AuctioneerConsole() {
         toast.success("Auction reset successfully! All players are now pending.", { id: toastId });
         setCurrentPlayerId(null);
         setSelectedTeamId(null);
+        setActionHistory([]);
       } catch (error) {
         toast.error("Failed to reset some players.", { id: toastId });
       }
@@ -90,6 +159,7 @@ function AuctioneerConsole() {
       setTrialOverrides({});
       setCurrentPlayerId(null);
       setSelectedTeamId(null);
+      setActionHistory([]);
       toast.success("Trial session cleared successfully!");
     }
   }
@@ -307,6 +377,7 @@ function AuctioneerConsole() {
     }
     toast.success(`${currentPlayer.name} sold to ${selectedTeam?.name || "Team"} for 🪙 ${currentBid.toLocaleString()}.`);
     setLastSoldTeamId(selectedTeamId);
+    setActionHistory((prev) => [...prev, currentPlayer.id]);
     advanceShuffledPlayer(currentPlayer.id, selectedTeamId);
   }
 
@@ -326,13 +397,17 @@ function AuctioneerConsole() {
       }));
     }
     toast.info(`${currentPlayer.name} marked unsold.`);
+    setActionHistory((prev) => [...prev, currentPlayer.id]);
     advanceShuffledPlayer(currentPlayer.id, null);
   }
 
   const pendingPriorityPlayers = pendingPlayers.filter(
     (p) => getSpecialPriority(p.name) !== Infinity
   );
-  const basePickerPlayers = pendingPriorityPlayers.length > 0 ? pendingPriorityPlayers : pendingPlayers;
+  const basePickerPlayers = [
+    ...pendingPriorityPlayers,
+    ...pendingPlayers.filter((p) => getSpecialPriority(p.name) === Infinity)
+  ];
   const filteredPickerPlayers = basePickerPlayers.filter((p) =>
     p.name.toLowerCase().includes(pickerQuery.trim().toLowerCase()),
   );
@@ -361,17 +436,28 @@ function AuctioneerConsole() {
             variant="ghost" 
             size="icon" 
             onClick={() => {
+              if (window.confirm("Are you sure you want to undo the latest step?")) {
+                handleUndoLatestStep();
+              }
+            }}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            aria-label="Undo Latest Step"
+            title="Undo Latest Step"
+          >
+            <RotateCcw className="size-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => {
               if (window.confirm("Are you sure you want to reset the auction and clear all sold players?")) {
                 handleResetAllPlayers();
               }
             }}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="text-foreground hover:bg-accent hover:text-accent-foreground"
             aria-label="Reset Auction"
             title="Reset Auction"
           >
-            <RotateCcw className="size-5" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => refetchPlayers()} aria-label="Refresh">
             <RefreshCw className="size-5" />
           </Button>
         </div>
