@@ -47,7 +47,7 @@ function PlayerRegistrationPage() {
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
-  const [city, setCity] = useState("Vijayawada");
+  const [city, setCity] = useState("vijayawada");
   const [playerLevel, setPlayerLevel] = useState("");
   const [baseValue, setBaseValue] = useState("0");
   const [jerseySize, setJerseySize] = useState("");
@@ -423,9 +423,9 @@ function PlayerRegistrationPage() {
                 <Select value={city} onValueChange={setCity}>
                   <SelectTrigger><SelectValue placeholder="Select City" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Vijayawada">Vijayawada</SelectItem>
-                    <SelectItem value="Tenali">Tenali</SelectItem>
-                    <SelectItem value="Guntur">Guntur</SelectItem>
+                    <SelectItem value="vijayawada">Vijayawada</SelectItem>
+                    <SelectItem value="tenali">Tenali</SelectItem>
+                    <SelectItem value="guntur">Guntur</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
