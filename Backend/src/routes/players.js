@@ -2,7 +2,7 @@ const { Router } = require("express");
 const Player = require("../models/Player");
 const Auction = require("../models/Auction");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
-const { uploadBase64Image } = require("../lib/cloudinary");
+const { uploadBase64Image, deleteImage } = require("../lib/cloudinary");
 
 const router = Router();
 
@@ -189,7 +189,11 @@ router.patch(
     for (const field of updatableFields) {
       if (req.body[field] !== undefined) {
         if (field === "photo" || field === "paymentImage") {
-          player[field] = await uploadBase64Image(req.body[field]);
+          const newUrl = await uploadBase64Image(req.body[field]);
+          if (newUrl && newUrl !== player[field] && player[field]) {
+            deleteImage(player[field]).catch(console.error);
+          }
+          player[field] = newUrl;
         } else {
           player[field] = req.body[field];
         }
@@ -238,7 +242,13 @@ router.delete(
       return res.status(403).json({ error: "You don't have permission to delete this player" });
     }
 
+    const photoToDelete = player.photo;
+    const paymentToDelete = player.paymentImage;
+    
     await player.deleteOne();
+
+    if (photoToDelete) deleteImage(photoToDelete).catch(console.error);
+    if (paymentToDelete) deleteImage(paymentToDelete).catch(console.error);
 
     const io = req.app.get("io");
     if (io) io.to(`auction:${player.auctionId}`).emit("playerUpdated", { id: player._id });

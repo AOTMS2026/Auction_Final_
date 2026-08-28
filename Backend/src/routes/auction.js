@@ -5,7 +5,7 @@ const { STATUSES: AUCTION_STATUSES } = Auction;
 const User = require("../models/User");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
 const { validateAuctionInput } = require("../lib/validateAuction");
-const { uploadBase64Image } = require("../lib/cloudinary");
+const { uploadBase64Image, deleteImage } = require("../lib/cloudinary");
 
 const router = Router();
 
@@ -139,7 +139,11 @@ router.patch(
       }
     }
     if (req.body.coverImage !== undefined) {
-      auction.coverImage = await uploadBase64Image(req.body.coverImage);
+      const newCover = await uploadBase64Image(req.body.coverImage);
+      if (newCover && newCover !== auction.coverImage && auction.coverImage) {
+        deleteImage(auction.coverImage).catch(console.error);
+      }
+      auction.coverImage = newCover;
     }
     if (typeof auction.name === "string") auction.name = auction.name.trim();
 
@@ -163,7 +167,10 @@ router.delete(
       return res.status(403).json({ error: "You don't have permission to delete this auction" });
     }
 
+    const coverToDelete = auction.coverImage;
     await auction.deleteOne();
+    if (coverToDelete) deleteImage(coverToDelete).catch(console.error);
+
     res.status(204).end();
   }),
 );

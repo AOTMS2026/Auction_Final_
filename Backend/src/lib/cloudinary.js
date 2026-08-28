@@ -14,6 +14,10 @@ async function uploadBase64Image(base64Str, folder = "pitchbid") {
   try {
     const result = await cloudinary.uploader.upload(base64Str, {
       folder,
+      transformation: [
+        { width: 1000, crop: "limit" },
+        { quality: "auto", fetch_format: "auto" }
+      ]
     });
     return result.secure_url;
   } catch (error) {
@@ -22,4 +26,21 @@ async function uploadBase64Image(base64Str, folder = "pitchbid") {
   }
 }
 
-module.exports = { cloudinary, uploadBase64Image };
+async function deleteImage(url) {
+  if (!url || !url.includes("cloudinary.com")) return;
+  try {
+    const parts = url.split("/upload/");
+    if (parts.length !== 2) return;
+    const urlPath = parts[1].split("/");
+    if (urlPath[0].match(/^v\d+$/)) {
+      urlPath.shift();
+    }
+    const publicIdWithExt = urlPath.join("/");
+    const publicId = publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf(".")) || publicIdWithExt;
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error("Cloudinary delete failed:", error);
+  }
+}
+
+module.exports = { cloudinary, uploadBase64Image, deleteImage };

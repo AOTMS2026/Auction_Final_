@@ -2,7 +2,7 @@ const { Router } = require("express");
 const Team = require("../models/Team");
 const Auction = require("../models/Auction");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
-const { uploadBase64Image } = require("../lib/cloudinary");
+const { uploadBase64Image, deleteImage } = require("../lib/cloudinary");
 
 const router = Router();
 
@@ -62,11 +62,13 @@ router.post(
       return res.status(403).json({ error: "You don't have permission to modify this auction" });
     }
 
+    const uploadedLogo = await uploadBase64Image(logo);
+
     const team = await Team.create({
       auctionId,
       name: name.trim(),
       shortName: shortName.trim(),
-      logo: logo || null,
+      logo: uploadedLogo || null,
       ownerName: ownerName ? ownerName.trim() : "",
       ownerPhone: ownerPhone ? ownerPhone.trim() : "",
       colorTheme: colorTheme ? colorTheme.trim() : "",
@@ -178,7 +180,13 @@ router.patch(
 
     if (req.body.name !== undefined) team.name = req.body.name.trim();
     if (req.body.shortName !== undefined) team.shortName = req.body.shortName.trim();
-    if (req.body.logo !== undefined) team.logo = req.body.logo;
+    if (req.body.logo !== undefined) {
+      const newLogo = await uploadBase64Image(req.body.logo);
+      if (newLogo && newLogo !== team.logo && team.logo) {
+        deleteImage(team.logo).catch(console.error);
+      }
+      team.logo = newLogo;
+    }
     if (req.body.ownerName !== undefined) team.ownerName = req.body.ownerName.trim();
     if (req.body.ownerPhone !== undefined) team.ownerPhone = req.body.ownerPhone.trim();
     if (req.body.colorTheme !== undefined) team.colorTheme = req.body.colorTheme.trim();
@@ -206,7 +214,10 @@ router.delete(
       return res.status(403).json({ error: "You don't have permission to delete this team" });
     }
 
+    const logoToDelete = team.logo;
     await team.deleteOne();
+    if (logoToDelete) deleteImage(logoToDelete).catch(console.error);
+
     // Revert players assigned to this team
     const Player = require("../models/Player");
     await Player.updateMany({ teamId: team._id }, { $set: { teamId: null, soldPrice: null } });
