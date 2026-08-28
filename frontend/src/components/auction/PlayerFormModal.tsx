@@ -380,12 +380,20 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               <Label htmlFor="age">Age</Label>
               <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={isSubmitting} />
             </div>
-            {isBni && (
-              <div className="space-y-2">
-                <Label htmlFor="category">Grade</Label>
-                <Input id="category" placeholder="e.g. A, B, C" value={category} onChange={(e) => setCategory(e.target.value)} disabled={isSubmitting} />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label>Grade</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Grade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A+">A+</SelectItem>
+                  <SelectItem value="A">A</SelectItem>
+                  <SelectItem value="B+">B+</SelectItem>
+                  <SelectItem value="B">B</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>Gender</Label>
               <Select value={gender} onValueChange={setGender}>
@@ -419,6 +427,22 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 <Input id="baseValue" type="number" placeholder="e.g. 500" value={baseValue} onChange={(e) => setBaseValue(e.target.value)} disabled={isSubmitting} />
               </div>
             )}
+            <div className="space-y-2">
+              <Label htmlFor="jerseySize">Jersey Size</Label>
+              <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={isSubmitting} />
+            </div>
+            {isBni && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="jerseyName">Jersey Name</Label>
+                  <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="trouserSize">Trouser Size</Label>
+                  <Input id="trouserSize" placeholder="e.g. 32" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={isSubmitting} />
+                </div>
+              </>
+            )}
           </div>
 
           {isBni && (
@@ -449,25 +473,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               </div>
             </div>
           )}
-
-          <div className={isBni ? "grid grid-cols-1 gap-4 sm:grid-cols-3" : "grid grid-cols-1 gap-4"}>
-            <div className="space-y-2">
-              <Label htmlFor="jerseySize">Jersey Size</Label>
-              <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={isSubmitting} />
-            </div>
-            {isBni && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="jerseyName">Jersey Name</Label>
-                  <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={isSubmitting} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="trouserSize">Trouser Size</Label>
-                  <Input id="trouserSize" placeholder="e.g. 32" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={isSubmitting} />
-                </div>
-              </>
-            )}
-          </div>
 
           <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
             {auctionId === "6a8edaddd7ed74151dbafab3" ? (
