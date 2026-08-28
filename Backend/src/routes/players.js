@@ -118,7 +118,11 @@ router.post(
       paymentImage: uploadedPayment,
     });
 
-    res.status(201).json({ player: toPublicPlayer(player) });
+    const publicPlayer = toPublicPlayer(player);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${auctionId}`).emit("playerUpdated", publicPlayer);
+
+    res.status(201).json({ player: publicPlayer });
   })
 );
 
@@ -147,7 +151,11 @@ router.post(
       paymentImage: uploadedPayment,
     });
 
-    res.status(201).json({ player: toPublicPlayer(player) });
+    const publicPlayer = toPublicPlayer(player);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${auctionId}`).emit("playerUpdated", publicPlayer);
+
+    res.status(201).json({ player: publicPlayer });
   })
 );
 
@@ -208,7 +216,12 @@ router.patch(
     }
 
     await player.save();
-    res.json({ player: toPublicPlayer(player) });
+
+    const publicPlayer = toPublicPlayer(player);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${player.auctionId}`).emit("playerUpdated", publicPlayer);
+
+    res.json({ player: publicPlayer });
   })
 );
 
@@ -226,6 +239,10 @@ router.delete(
     }
 
     await player.deleteOne();
+
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${player.auctionId}`).emit("playerUpdated", { id: player._id });
+
     res.status(204).end();
   })
 );

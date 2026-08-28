@@ -2,6 +2,8 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const { connectDB } = require("./src/db");
 const { runMigration } = require("./src/lib/migration");
@@ -10,6 +12,7 @@ const auctionRoutes = require("./src/routes/auction");
 const teamsRoutes = require("./src/routes/teams");
 
 const app = express();
+const server = http.createServer(app);
 
 // CLIENT_ORIGIN may be a comma-separated list (dev ports vary by sandbox).
 // No cookies are used for auth (Bearer JWT only), so reflecting any origin
@@ -20,6 +23,18 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
   .filter(Boolean);
 
 app.use(cors({ origin: allowedOrigins.length > 0 ? allowedOrigins : true }));
+
+const io = new Server(server, {
+  cors: { origin: allowedOrigins.length > 0 ? allowedOrigins : true },
+});
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  socket.on("join-auction", (auctionId) => {
+    if (auctionId) socket.join(`auction:${auctionId}`);
+  });
+});
+
 // Raised from the default ~100kb: cover images/avatars are inlined as base64
 // JSON strings (no file-upload storage backend), which inflates ~33% over
 // the raw image bytes. Paired with client-side downscaling before encoding.
@@ -43,12 +58,12 @@ const PORT = process.env.PORT || 5000;
 
 connectDB()
   .then(() => {
-    app.listen(PORT, () => console.log(`[server] listening on port ${PORT}`));
+    server.listen(PORT, () => console.log(`[server] listening on port ${PORT}`));
     // runMigration().catch(err => console.error("[migration] failed:", err)); // DISABLED: Causes severe DB timeouts on startup due to massive regex collection scan
   })
   .catch((err) => {
     console.error("[server] failed to start:", err.message);
     process.exit(1);
   });
-// Trigger watch reload after installing cloudinary
+// Trigger watch reload to pick up new .env database URI
 

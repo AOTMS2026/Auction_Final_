@@ -72,7 +72,11 @@ router.post(
       colorTheme: colorTheme ? colorTheme.trim() : "",
     });
 
-    res.status(201).json({ team: toPublicTeam(team) });
+    const publicTeam = toPublicTeam(team);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${auctionId}`).emit("teamUpdated", publicTeam);
+
+    res.status(201).json({ team: publicTeam });
   })
 );
 
@@ -104,7 +108,11 @@ router.post(
       colorTheme: rest.colorTheme ? rest.colorTheme.trim() : "",
     });
 
-    res.status(201).json({ team: toPublicTeam(team) });
+    const publicTeam = toPublicTeam(team);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${auctionId}`).emit("teamUpdated", publicTeam);
+
+    res.status(201).json({ team: publicTeam });
   })
 );
 
@@ -176,7 +184,12 @@ router.patch(
     if (req.body.colorTheme !== undefined) team.colorTheme = req.body.colorTheme.trim();
 
     await team.save();
-    res.json({ team: toPublicTeam(team) });
+
+    const publicTeam = toPublicTeam(team);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${team.auctionId}`).emit("teamUpdated", publicTeam);
+
+    res.json({ team: publicTeam });
   })
 );
 
@@ -197,6 +210,12 @@ router.delete(
     // Revert players assigned to this team
     const Player = require("../models/Player");
     await Player.updateMany({ teamId: team._id }, { $set: { teamId: null, soldPrice: null } });
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`auction:${team.auctionId}`).emit("teamUpdated", { id: team._id });
+      io.to(`auction:${team.auctionId}`).emit("playerUpdated", { bulk: true });
+    }
 
     res.status(204).end();
   })

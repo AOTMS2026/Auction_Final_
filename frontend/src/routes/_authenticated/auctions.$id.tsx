@@ -18,6 +18,7 @@ import { AboutTab } from "@/components/auction/AboutTab";
 
 import { usePlayers } from "@/hooks/usePlayers";
 import { useTeams } from "@/hooks/useTeams";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { computeTeamStats, formatPoints } from "@/lib/team-stats";
 import type { Player } from "@/lib/auction-client";
 
@@ -162,6 +163,7 @@ function AuctionNotFound() {
 
 function AuctionDetailPage() {
   const { auction } = Route.useLoaderData();
+  useRealtimeUpdates(auction?.id);
   const { players, isPending: playersPending, updatePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
   const { teams, isPending: teamsPending } = useTeams(auction.id);
 

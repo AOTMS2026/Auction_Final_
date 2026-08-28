@@ -11,7 +11,6 @@ async function connectDB() {
   });
 
   await mongoose.connect(uri, { 
-    family: 4,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 15000
   });

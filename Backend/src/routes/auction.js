@@ -144,7 +144,12 @@ router.patch(
     if (typeof auction.name === "string") auction.name = auction.name.trim();
 
     await auction.save();
-    res.json({ auction: toPublicAuction(auction) });
+
+    const publicAuction = toPublicAuction(auction);
+    const io = req.app.get("io");
+    if (io) io.to(`auction:${auction._id}`).emit("auctionUpdated", publicAuction);
+
+    res.json({ auction: publicAuction });
   }),
 );
 
