@@ -44,7 +44,7 @@ const PORT = process.env.PORT || 5000;
 connectDB()
   .then(() => {
     app.listen(PORT, () => console.log(`[server] listening on port ${PORT}`));
-    runMigration().catch(err => console.error("[migration] failed:", err));
+    // runMigration().catch(err => console.error("[migration] failed:", err)); // DISABLED: Causes severe DB timeouts on startup due to massive regex collection scan
   })
   .catch((err) => {
     console.error("[server] failed to start:", err.message);

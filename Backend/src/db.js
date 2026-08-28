@@ -10,7 +10,11 @@ async function connectDB() {
     console.error("[mongodb] connection error:", err.message);
   });
 
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, { 
+    family: 4,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 15000
+  });
   console.log("[mongodb] connected");
 }
 

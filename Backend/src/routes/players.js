@@ -44,7 +44,20 @@ router.get(
   "/auctions/:id/players",
   optionalAuth,
   asyncHandler(async (req, res) => {
-    const auction = await Auction.findById(req.params.id).catch(() => null);
+    const startReqTime = performance.now();
+    const mongoose = require("mongoose");
+    
+    // 1. Connection Health Check
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: "Database connection unavailable. Please try again." });
+    }
+
+    const auctionId = req.params.id;
+    if (!auctionId || auctionId.length !== 24) {
+      return res.status(400).json({ error: "Invalid auction ID" });
+    }
+
+    const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
     // Check visibility
@@ -53,8 +66,25 @@ router.get(
       return res.status(404).json({ error: "Auction not found" });
     }
 
-    const players = await Player.find({ auctionId: req.params.id }).sort({ createdAt: -1 }).lean();
-    res.json({ players: players.map(toPublicPlayer) });
+    const queryStartTime = performance.now();
+    let players = [];
+    try {
+      players = await Player.find({ auctionId })
+        .select("-paymentImage")
+        .sort({ createdAt: -1 })
+        .lean();
+    } catch (dbError) {
+      console.error("[players-api] DB Error:", dbError);
+      return res.status(500).json({ error: "Database error during query: " + dbError.message });
+    }
+    const queryEndTime = performance.now();
+
+    const response = { players: players.map(toPublicPlayer) };
+    
+    const endReqTime = performance.now();
+    console.log(`[players-api] GET /auctions/${auctionId}/players | DB Query: ${(queryEndTime - queryStartTime).toFixed(2)}ms | Total: ${(endReqTime - startReqTime).toFixed(2)}ms | Count: ${players.length}`);
+
+    res.json(response);
   })
 );
 
@@ -208,7 +238,9 @@ router.get(
     const { phone } = req.params;
     
     // Find all player instances with this phone number
-    const players = await Player.find({ phone }).sort({ createdAt: -1 }).lean();
+    const players = await Player.find({ phone })
+      .sort({ createdAt: -1 })
+      .lean();
     
     if (players.length === 0) {
       return res.status(404).json({ error: "Player not found" });

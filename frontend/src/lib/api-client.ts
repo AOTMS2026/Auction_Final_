@@ -31,22 +31,36 @@ export class ApiError extends Error {
 }
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${apiBase()}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
-      ...init?.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  if (res.status === 204) return undefined as T;
+  try {
+    const res = await fetch(`${apiBase()}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+        ...init?.headers,
+      },
+    });
 
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new ApiError(body?.error || "Request failed", res.status);
+    clearTimeout(timeoutId);
+
+    if (res.status === 204) return undefined as T;
+
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new ApiError(body?.error || "Request failed", res.status);
+    }
+    return body as T;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new ApiError("Request timed out after 15 seconds. Please check your connection.", 408);
+    }
+    throw error;
   }
-  return body as T;
 }
 
 export function onAuthChange(callback: () => void) {
