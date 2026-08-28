@@ -40,8 +40,10 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("Logo must be less than 2MB");
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+        toast.error("Logo must be less than 10MB");
+        e.target.value = "";
         return;
       }
       try {
@@ -113,7 +115,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
                 )}
               </div>
             </Label>
-            <span className="text-xs text-muted-foreground">Team Logo *</span>
+            <span className="text-xs text-muted-foreground">Team Logo * (up to 10MB)</span>
             <input
               id="logo"
               type="file"

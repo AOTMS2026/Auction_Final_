@@ -165,8 +165,10 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("Photo must be less than 2MB");
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+        toast.error("Photo must be less than 10MB");
+        e.target.value = "";
         return;
       }
       const reader = new FileReader();
@@ -354,7 +356,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   </div>
                 </Label>
               )}
-              <span className="text-xs text-muted-foreground font-semibold">Player Photo</span>
+              <span className="text-xs text-muted-foreground font-semibold">Player Photo (up to 10MB)</span>
               <input
                 id="player-photo"
                 type="file"

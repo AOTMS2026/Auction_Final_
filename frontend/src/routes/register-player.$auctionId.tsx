@@ -124,8 +124,10 @@ function PlayerRegistrationPage() {
   const handlePaymentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("Image must be less than 2MB");
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+        toast.error("Image must be less than 10MB");
+        e.target.value = "";
         return;
       }
       const reader = new FileReader();
@@ -139,8 +141,10 @@ function PlayerRegistrationPage() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("Photo must be less than 2MB");
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+        toast.error("Photo must be less than 10MB");
+        e.target.value = "";
         return;
       }
       const reader = new FileReader();
@@ -416,7 +420,7 @@ function PlayerRegistrationPage() {
                   </div>
                 </Label>
               )}
-              <span className="text-xs text-muted-foreground font-semibold">Player Photo *</span>
+              <span className="text-xs text-muted-foreground font-semibold">Player Photo * (up to 10MB)</span>
               <input
                 id="player-photo"
                 type="file"
@@ -637,7 +641,7 @@ function PlayerRegistrationPage() {
                       >
                         <UploadCloud className="size-8 text-primary/60 mb-2" />
                         <span className="text-sm font-medium text-foreground">Click to upload screenshot</span>
-                        <span className="text-xs text-muted-foreground mt-1">JPEG, PNG up to 2MB</span>
+                        <span className="text-xs text-muted-foreground mt-1">JPEG, PNG up to 10MB</span>
                       </Label>
                       <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
                     </div>

@@ -74,8 +74,9 @@ function PublicRegisterTeamPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const sizeMB = file.size / 1024 / 1024;
-      if (sizeMB > 2) {
-        toast.error("Logo must be less than 2MB.");
+      if (sizeMB > 10) {
+        alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+        toast.error("Logo must be less than 10MB.");
         e.target.value = "";
         return;
       }
@@ -315,7 +316,7 @@ function PublicRegisterTeamPage() {
                         >
                           <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
                             <UploadCloud className="size-8 text-primary/60" />
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo *</span>
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo * (up to 10MB)</span>
                           </div>
                         </Label>
                       )}

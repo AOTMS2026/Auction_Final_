@@ -28,6 +28,12 @@ function ProfilePage() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+      toast.error("Image must be 10MB or less.");
+      e.target.value = "";
+      return;
+    }
     const dataUrl = await fileToCompressedDataUrl(file, IMAGE_PRESETS.avatar);
     setAvatar(dataUrl);
   }
@@ -83,7 +89,7 @@ function ProfilePage() {
         <p className="mt-2 text-sm text-muted-foreground">{user?.email}</p>
 
         <form onSubmit={handleSave} className="mt-8 space-y-6">
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center">
             <label
               htmlFor="avatar"
               className="relative flex size-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border bg-muted/40 text-muted-foreground hover:bg-muted/60"
@@ -100,6 +106,7 @@ function ProfilePage() {
               )}
               <input id="avatar" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </label>
+            <span className="text-xs text-muted-foreground mt-2">JPEG, PNG up to 10MB</span>
           </div>
 
           <div>

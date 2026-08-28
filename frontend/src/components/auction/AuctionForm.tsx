@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, ImagePlus, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,12 @@ export function AuctionForm({
   async function handleCoverImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image size exceeds 10MB limit. Please upload an image under 10MB.");
+      toast.error("Cover image must be less than 10MB");
+      e.target.value = "";
+      return;
+    }
     const dataUrl = await fileToCompressedDataUrl(file, IMAGE_PRESETS.cover);
     form.setValue("coverImage", dataUrl, { shouldDirty: true });
   }
@@ -67,9 +74,10 @@ export function AuctionForm({
             {coverImage ? (
               <img src={coverImage} alt="Auction cover" className="size-full object-cover" />
             ) : (
-              <span className="flex flex-col items-center gap-1 text-sm">
+              <span className="flex flex-col items-center gap-1 text-sm text-center">
                 <ImagePlus className="size-6" aria-hidden="true" />
-                Add cover image
+                <span>Add cover image</span>
+                <span className="text-[10px] text-muted-foreground font-normal">JPEG, PNG up to 10MB</span>
               </span>
             )}
             <input id="coverImage" type="file" accept="image/*" className="hidden" onChange={handleCoverImageChange} />
