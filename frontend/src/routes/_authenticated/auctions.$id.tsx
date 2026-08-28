@@ -12,6 +12,7 @@ import { FallbackImage } from "@/components/ui/fallback-image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { AboutTab } from "@/components/auction/AboutTab";
 
@@ -435,22 +436,75 @@ function EditGradeModal({ player, open, onOpenChange, onSave, isSaving }: EditGr
     onOpenChange(false);
   };
 
+  // Helper variables for BNI
+  const isBniAuction = player?.auctionId === "6a8edaddd7ed74151dbafab3";
+  
+  // Custom Data / Membership
+  const initialIsBni = player?.customData?.startsWith("BNI Member");
+  const initialIsFamily = player?.customData?.startsWith("Family Member");
+  const memberType = initialIsBni ? "bni" : initialIsFamily ? "family" : "";
+  
+  let chapterName = "";
+  let bniName = "";
+  let relationship = "";
+  let bblSeasons = "";
+
+  if (player?.customData) {
+    if (initialIsBni) {
+      const match = player.customData.match(/Chapter: ([^|]*)/);
+      if (match) chapterName = match[1]?.trim() || "";
+      const bblMatch = player.customData.match(/BBL Seasons: ([^|]*)/);
+      if (bblMatch) bblSeasons = bblMatch[1]?.trim() || "";
+    } else if (initialIsFamily) {
+      const match = player.customData.match(/BNI Name: ([^,]*), Chapter: ([^,]*), Rel: ([^|]*)/);
+      if (match) {
+        bniName = match[1]?.trim() || "";
+        chapterName = match[2]?.trim() || "";
+        relationship = match[3]?.trim() || "";
+      }
+      const bblMatch = player.customData.match(/BBL Seasons: ([^|]*)/);
+      if (bblMatch) bblSeasons = bblMatch[1]?.trim() || "";
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit Player Grade</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Player Name</Label>
-              <div className="font-semibold text-foreground">{player?.name}</div>
-            </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 py-4 max-h-[70vh] overflow-y-auto px-1">
+            {/* Photo Preview */}
+            {player?.photo && (
+              <div className="sm:col-span-2 flex flex-col items-center justify-center space-y-2 mb-2">
+                <Label className="text-xs text-muted-foreground">Player Photo</Label>
+                <div className="size-28 rounded-full overflow-hidden border border-border">
+                  <img src={player.photo} alt={player.name} className="size-full object-cover object-top" />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="grade">Grade</Label>
+              <Label htmlFor="edit-name">Name</Label>
+              <Input id="edit-name" value={player?.name || ""} disabled />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-phone">Phone</Label>
+              <Input id="edit-phone" value={player?.phone || ""} disabled />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-age">Age</Label>
+              <Input id="edit-age" value={player?.age?.toString() || "-"} disabled />
+            </div>
+
+            {/* Grade (ENABLED) */}
+            <div className="space-y-2 border border-blue-200 bg-blue-50/20 p-2.5 rounded-lg dark:border-blue-900/30 dark:bg-blue-950/10">
+              <Label htmlFor="edit-grade" className="text-blue-700 dark:text-blue-400 font-bold">Grade (Editable)</Label>
               <Select value={grade} onValueChange={setGrade}>
-                <SelectTrigger id="grade">
+                <SelectTrigger id="edit-grade" className="border-blue-300 dark:border-blue-800 bg-card">
                   <SelectValue placeholder="Select Grade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -461,6 +515,103 @@ function EditGradeModal({ player, open, onOpenChange, onSave, isSaving }: EditGr
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Select value={player?.gender || ""} disabled>
+                <SelectTrigger><SelectValue placeholder="-" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-city">City</Label>
+              <Input id="edit-city" value={player?.city || "-"} disabled />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Player Level</Label>
+              <Select value={player?.playerLevel || ""} disabled>
+                <SelectTrigger><SelectValue placeholder="-" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="Professional">Professional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-jerseySize">Jersey Size</Label>
+              <Input id="edit-jerseySize" value={player?.jerseySize || "-"} disabled />
+            </div>
+
+            {isBniAuction && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-jerseyName">Jersey Name</Label>
+                  <Input id="edit-jerseyName" value={player?.jerseyName || "-"} disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-trouserSize">Jersey Number</Label>
+                  <Input id="edit-trouserSize" value={player?.trouserSize || "-"} disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label>Number of BBL seasons played</Label>
+                  <Select value={bblSeasons} disabled>
+                    <SelectTrigger><SelectValue placeholder="-" /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <SelectItem key={i} value={String(i)}>{i}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+            
+            {/* BNI Membership Details */}
+            {isBniAuction && memberType && (
+              <div className="sm:col-span-2 rounded-lg border p-4 bg-muted/10 space-y-3 mt-2">
+                <h4 className="font-semibold text-sm">Membership Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Member Type</span>
+                    <span className="font-medium capitalize">{memberType} Member</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Chapter Name</span>
+                    <span className="font-medium">{chapterName || "-"}</span>
+                  </div>
+                  {memberType === "family" && (
+                    <>
+                      <div>
+                        <span className="text-muted-foreground block text-xs">BNI Name</span>
+                        <span className="font-medium">{bniName || "-"}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-xs">Relationship</span>
+                        <span className="font-medium capitalize">{relationship || "-"}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Payment screenshot preview for non-BNI */}
+            {!isBniAuction && player?.paymentImage && (
+              <div className="sm:col-span-2 flex flex-col items-center justify-center space-y-2 mt-4">
+                <Label className="text-xs text-muted-foreground">Payment Screenshot</Label>
+                <div className="max-w-xs border rounded-lg overflow-hidden bg-muted p-1">
+                  <img src={player.paymentImage} alt="Payment screenshot" className="w-full h-auto object-contain max-h-48" />
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
