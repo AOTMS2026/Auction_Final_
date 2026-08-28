@@ -130,8 +130,15 @@ router.patch(
     if (!player) return res.status(404).json({ error: "Player not found" });
 
     const auction = await Auction.findById(player.auctionId).catch(() => null);
-    if (!auction || auction.createdBy.toString() !== req.userId) {
-      return res.status(403).json({ error: "You don't have permission to modify this player" });
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    const isCreator = auction.createdBy.toString() === req.userId;
+    if (!isCreator) {
+      const requestedUpdates = Object.keys(req.body).filter(key => req.body[key] !== undefined);
+      const isOnlyCategory = requestedUpdates.every(key => key === "category");
+      if (!isOnlyCategory) {
+        return res.status(403).json({ error: "You don't have permission to modify these details" });
+      }
     }
 
     const updatableFields = [

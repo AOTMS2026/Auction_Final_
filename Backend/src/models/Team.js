@@ -41,6 +41,8 @@ const teamSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+teamSchema.index({ auctionId: 1, createdAt: 1 });
+
 teamSchema.set("toJSON", {
   virtuals: true,
   versionKey: false,

@@ -68,6 +68,8 @@ const auctionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+auctionSchema.index({ startsAt: 1 });
+
 module.exports = mongoose.model("Auction", auctionSchema);
 module.exports.SPORT_TYPES = SPORT_TYPES;
 module.exports.VISIBILITIES = VISIBILITIES;
