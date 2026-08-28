@@ -77,7 +77,7 @@ function PlayerRegistrationPage() {
   const [sportFields, setSportFields] = useState<Record<string, any>>({});
 
   // Payment details
-  const [paymentMode, setPaymentMode] = useState("");
+  const [paymentMode, setPaymentMode] = useState("Online");
   const [utrNumber, setUtrNumber] = useState("");
   const [paymentImage, setPaymentImage] = useState<string | null>(null);
 
@@ -276,14 +276,6 @@ function PlayerRegistrationPage() {
         customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship} | BBL Seasons: ${bblSeasons}`;
       }
     } else {
-      if (!paymentMode) {
-        toast.error("Please select a payment mode");
-        return;
-      }
-      if (!utrNumber.trim() || utrNumber.trim().length !== 12) {
-        toast.error("Please provide a valid 12-digit UTR Number");
-        return;
-      }
       if (!paymentImage) {
         toast.error("Please upload the payment screenshot");
         return;

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer } from "lucide-react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -413,8 +413,9 @@ function AuctioneerConsole() {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-40">
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-card px-4 py-3">
+    <>
+      <div className="h-screen w-screen bg-background flex flex-col overflow-hidden">
+      <header className="h-14 shrink-0 flex items-center gap-3 border-b border-border bg-card px-6">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/my-auctions/$id" params={{ id: auction.id }} aria-label="Back to dashboard">
             <ArrowLeft className="size-5" />
@@ -463,136 +464,160 @@ function AuctioneerConsole() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1800px] w-full space-y-4 px-6 py-4">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left Column: Player Display */}
-          <div className="lg:col-span-5 xl:col-span-5 space-y-4">
-            {playersPending || teamsPending ? (
-              <Skeleton className="h-96 w-full rounded-2xl" />
-            ) : currentPlayer ? (
-              <CurrentPlayerCard
-                player={currentPlayer}
-                lotNumber={soldCount + unsoldCount + 1}
-                sportType={auction.sportType}
-                currentBid={currentBid}
-                onBidChange={setCurrentBid}
-                onClear={() => {
-                  setCurrentBid(auction.minimumBid);
-                  setSelectedTeamId(null);
-                }}
-                mode={mode}
-              />
-            ) : (
-              <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center text-muted-foreground bg-card shadow-sm flex items-center justify-center min-h-[300px]">
-                <p className="text-lg font-bold">Tap "New Player" below to begin.</p>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Teams Grid */}
-          <div className="lg:col-span-7 xl:col-span-7 space-y-3">
-            <div className="flex items-center justify-between border-b border-border pb-1.5">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
-              <span className="text-xs text-muted-foreground font-medium">Select bidding team below</span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3">
-              {teams.map((team) => (
-                <TeamBidCard
-                  key={team.id}
-                  team={team}
-                  stats={computeTeamStats(team, effectivePlayers, auction)}
-                  selected={selectedTeamId === team.id}
-                  onSelect={() => handleTeamSelect(team.id)}
-                  onViewPlayers={() => setViewingTeamId(team.id)}
-                />
-              ))}
-            </div>
-          </div>
+      {/* Teams Row at the Top */}
+      <div className="shrink-0 border-b border-border bg-card px-6 py-2">
+        <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between mb-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
+          <span className="text-[10px] text-muted-foreground font-medium">Select bidding team below</span>
         </div>
-      </main>
+        <div className="mx-auto max-w-[1800px] w-full grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+          {teams.map((team) => (
+            <TeamBidCard
+              key={team.id}
+              team={team}
+              stats={computeTeamStats(team, effectivePlayers, auction)}
+              selected={selectedTeamId === team.id}
+              onSelect={() => handleTeamSelect(team.id)}
+              onViewPlayers={() => setViewingTeamId(team.id)}
+            />
+          ))}
+        </div>
+      </div>
 
-      <div className="fixed inset-x-0 bottom-16 z-30 border-t border-border bg-card px-6 py-4 md:bottom-0 md:py-5">
-        <div className="mx-auto flex max-w-[1800px] w-full items-stretch gap-4">
-          <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-border px-4 py-2 bg-muted/20">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground">New Player</span>
-            <div className="flex gap-1.5">
+      {/* Main Content Area */}
+      <main className="flex-1 min-h-0 w-full px-6 py-4 flex gap-6 mx-auto max-w-[1800px]">
+        {/* Left Column: Player Display */}
+        <div className="flex-1 h-full min-w-0">
+          {playersPending || teamsPending ? (
+            <Skeleton className="h-full w-full rounded-2xl" />
+          ) : currentPlayer ? (
+            <CurrentPlayerCard
+              player={currentPlayer}
+              lotNumber={soldCount + unsoldCount + 1}
+              sportType={auction.sportType}
+              currentBid={currentBid}
+              onBidChange={setCurrentBid}
+              onClear={() => {
+                setCurrentBid(auction.minimumBid);
+                setSelectedTeamId(null);
+              }}
+              mode={mode}
+            />
+          ) : (
+            <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground shadow-sm flex items-center justify-center h-full">
+              <p className="text-lg font-bold">Tap "New Player" on the right to begin.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Controls Panel */}
+        <div className="w-80 shrink-0 flex flex-col justify-between gap-3 h-full bg-card border border-border rounded-2xl p-3 shadow-sm overflow-hidden select-none">
+          {/* New Player Mode */}
+          <div className="rounded-xl border border-border p-2 bg-muted/10 flex flex-col gap-1.5 shrink-0 items-center justify-center">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">New Player Mode</span>
+            <div className="flex gap-1.5 w-full justify-center">
               <button
                 type="button"
                 onClick={() => setSelectionMode("random")}
-                aria-pressed={selectionMode === "random"}
                 className={cn(
-                  "rounded p-1.5 transition-colors",
-                  selectionMode === "random" ? "bg-brand text-brand-foreground shadow-sm" : "text-muted-foreground hover:bg-muted",
+                  "rounded-lg p-1.5 transition-colors border flex-1 flex items-center justify-center gap-1 text-[11px] font-bold",
+                  selectionMode === "random" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
                 )}
-                aria-label="Random selection"
+                title="Random Selection"
               >
-                <Shuffle className="size-4" />
+                <Shuffle className="size-3.5" />
+                Random
               </button>
               <button
                 type="button"
                 onClick={() => setSelectionMode("manual")}
-                aria-pressed={selectionMode === "manual"}
                 className={cn(
-                  "rounded p-1.5 transition-colors",
-                  selectionMode === "manual" ? "bg-brand text-brand-foreground shadow-sm" : "text-muted-foreground hover:bg-muted",
+                  "rounded-lg p-1.5 transition-colors border flex-1 flex items-center justify-center gap-1 text-[11px] font-bold",
+                  selectionMode === "manual" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
                 )}
-                aria-label="Manual selection"
+                title="Manual Selection"
               >
-                <SquareMousePointer className="size-4" />
+                <SquareMousePointer className="size-3.5" />
+                Manual
               </button>
             </div>
-            <Button size="sm" className="h-7.5 px-3 text-xs font-bold" onClick={handleNewPlayer}>
+            <Button className="w-full text-xs font-extrabold h-8" onClick={handleNewPlayer}>
               New Player
             </Button>
           </div>
 
-          <div className="grid flex-1 grid-cols-2 gap-3">
-            <Button variant="outline" className="h-14 text-base sm:text-lg font-extrabold rounded-xl shadow-sm" disabled={!currentPlayer} onClick={() => handleBid(1)}>
-              Bid Up
+          {/* Bid Controls */}
+          <div className="flex-1 flex flex-col gap-2.5 justify-center py-1">
+            <Button 
+              variant="outline" 
+              className="h-12 text-base font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              disabled={!currentPlayer} 
+              onClick={() => handleBid(1)}
+            >
+              <Plus className="size-4" /> Bid Up
             </Button>
-            <Button variant="outline" className="h-14 text-base sm:text-lg font-extrabold rounded-xl shadow-sm" disabled={!currentPlayer} onClick={() => handleBid(-1)}>
-              Down
+            <Button 
+              variant="outline" 
+              className="h-12 text-base font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              disabled={!currentPlayer} 
+              onClick={() => handleBid(-1)}
+            >
+              <Minus className="size-4" /> Bid Down
             </Button>
+            
+            <div className="my-0.5 border-t border-border" /> {/* Separator */}
+
             <Button
-              className="h-14 text-base sm:text-lg font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm"
+              className="h-14 text-lg font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               disabled={!currentPlayer}
               onClick={handleSold}
             >
-              Sold
+              <Gavel className="size-4.5" /> Sold
             </Button>
-            <Button variant="destructive" className="h-14 text-base sm:text-lg font-extrabold rounded-xl shadow-sm" disabled={!currentPlayer} onClick={handleUnsold}>
-              Unsold
+            <Button 
+              variant="destructive" 
+              className="h-14 text-lg font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              disabled={!currentPlayer} 
+              onClick={handleUnsold}
+            >
+              <X className="size-4.5" /> Unsold
             </Button>
           </div>
-        </div>
 
-        <div className="mx-auto mt-4 flex max-w-[1800px] w-full justify-between text-xs sm:text-sm font-bold">
-          <button 
-            type="button"
-            onClick={() => setViewingStatusList("sold")}
-            className="rounded-full bg-green-600/10 px-3.5 py-1.5 text-green-600 border border-green-600/5 hover:bg-green-600/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer"
-          >
-            Sold {soldCount}
-          </button>
-          <button 
-            type="button"
-            onClick={() => setViewingStatusList("unsold")}
-            className="rounded-full bg-destructive/10 px-3.5 py-1.5 text-destructive border border-destructive/5 hover:bg-destructive/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer"
-          >
-            Unsold {unsoldCount}
-          </button>
-          <button 
-            type="button"
-            onClick={() => setViewingStatusList("pending")}
-            className="rounded-full bg-brand/10 px-3.5 py-1.5 text-brand border border-brand/5 hover:bg-brand/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer"
-          >
-            Available {pendingPlayers.length}
-          </button>
-          <span className="rounded-full bg-blue-600/10 px-3.5 py-1.5 text-blue-600 border border-blue-600/5 select-none text-xs sm:text-sm font-bold">
-            Team {teams.length}
-          </span>
+          {/* Statistics */}
+          <div className="flex flex-col gap-1.5 shrink-0 border-t border-border pt-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <button 
+                type="button"
+                onClick={() => setViewingStatusList("sold")}
+                className="rounded-xl bg-green-600/10 py-1.5 text-green-600 border border-green-600/5 hover:bg-green-600/20 active:scale-95 transition-all text-xs font-bold cursor-pointer text-center"
+              >
+                Sold {soldCount}
+              </button>
+              <button 
+                type="button"
+                onClick={() => setViewingStatusList("unsold")}
+                className="rounded-xl bg-destructive/10 py-1.5 text-destructive border border-destructive/5 hover:bg-destructive/20 active:scale-95 transition-all text-xs font-bold cursor-pointer text-center"
+              >
+                Unsold {unsoldCount}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button 
+                type="button"
+                onClick={() => setViewingStatusList("pending")}
+                className="rounded-xl bg-brand/10 py-1.5 text-brand border border-brand/5 hover:bg-brand/20 active:scale-95 transition-all text-xs font-bold cursor-pointer text-center"
+              >
+                Available {pendingPlayers.length}
+              </button>
+              <span className="rounded-xl bg-blue-600/10 py-1.5 text-blue-600 border border-blue-600/5 select-none text-xs font-bold text-center flex items-center justify-center">
+                Team {teams.length}
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
+    </div>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="sm:max-w-md">
@@ -795,6 +820,6 @@ function AuctioneerConsole() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
