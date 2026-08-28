@@ -5,6 +5,7 @@ const { STATUSES: AUCTION_STATUSES } = Auction;
 const User = require("../models/User");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
 const { validateAuctionInput } = require("../lib/validateAuction");
+const { uploadBase64Image } = require("../lib/cloudinary");
 
 const router = Router();
 
@@ -59,10 +60,11 @@ router.post(
       return res.status(400).json({ error: errors[0] });
     }
 
+    const uploadedCoverImage = await uploadBase64Image(req.body.coverImage);
     const auction = await Auction.create({
       sportType: req.body.sportType,
       name: req.body.name.trim(),
-      coverImage: req.body.coverImage || undefined,
+      coverImage: uploadedCoverImage || undefined,
       startsAt: new Date(req.body.startsAt),
       playersPerTeam: req.body.playersPerTeam,
       pointsPerTeam: req.body.pointsPerTeam,
@@ -130,11 +132,14 @@ router.patch(
       return res.status(400).json({ error: `status must be one of: ${AUCTION_STATUSES.join(", ")}` });
     }
 
-    const fields = ["sportType", "name", "coverImage", "startsAt", "playersPerTeam", "pointsPerTeam", "minimumBid", "bidIncrement", "visibility", "status"];
+    const fields = ["sportType", "name", "startsAt", "playersPerTeam", "pointsPerTeam", "minimumBid", "bidIncrement", "visibility", "status"];
     for (const field of fields) {
       if (Object.prototype.hasOwnProperty.call(req.body, field)) {
         auction[field] = field === "startsAt" ? new Date(req.body[field]) : req.body[field];
       }
+    }
+    if (req.body.coverImage !== undefined) {
+      auction.coverImage = await uploadBase64Image(req.body.coverImage);
     }
     if (typeof auction.name === "string") auction.name = auction.name.trim();
 
