@@ -464,28 +464,8 @@ function AuctioneerConsole() {
         </div>
       </header>
 
-      {/* Teams Row at the Top */}
-      <div className="shrink-0 border-b border-border bg-card px-6 py-2">
-        <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between mb-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
-          <span className="text-[10px] text-muted-foreground font-medium">Select bidding team below</span>
-        </div>
-        <div className="mx-auto max-w-[1800px] w-full grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-          {teams.map((team) => (
-            <TeamBidCard
-              key={team.id}
-              team={team}
-              stats={computeTeamStats(team, effectivePlayers, auction)}
-              selected={selectedTeamId === team.id}
-              onSelect={() => handleTeamSelect(team.id)}
-              onViewPlayers={() => setViewingTeamId(team.id)}
-            />
-          ))}
-        </div>
-      </div>
-
       {/* Main Content Area */}
-      <main className="flex-1 min-h-0 w-full px-6 py-4 flex gap-6 mx-auto max-w-[1800px]">
+      <main className="flex-1 min-h-0 w-full px-6 py-4 flex gap-6 mx-auto max-w-[1800px] overflow-hidden">
         {/* Left Column: Player Display */}
         <div className="flex-1 h-full min-w-0">
           {playersPending || teamsPending ? (
@@ -505,52 +485,79 @@ function AuctioneerConsole() {
             />
           ) : (
             <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground shadow-sm flex items-center justify-center h-full">
-              <p className="text-lg font-bold">Tap "New Player" on the right to begin.</p>
+              <p className="text-lg font-bold">Tap "New Player" at the bottom to begin.</p>
             </div>
           )}
         </div>
 
-        {/* Right Column: Controls Panel */}
-        <div className="w-80 shrink-0 flex flex-col justify-between gap-3 h-full bg-card border border-border rounded-2xl p-3 shadow-sm overflow-hidden select-none">
-          {/* New Player Mode */}
-          <div className="rounded-xl border border-border p-2 bg-muted/10 flex flex-col gap-1.5 shrink-0 items-center justify-center">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">New Player Mode</span>
-            <div className="flex gap-1.5 w-full justify-center">
-              <button
-                type="button"
-                onClick={() => setSelectionMode("random")}
-                className={cn(
-                  "rounded-lg p-1.5 transition-colors border flex-1 flex items-center justify-center gap-1 text-[11px] font-bold",
-                  selectionMode === "random" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
-                )}
-                title="Random Selection"
-              >
-                <Shuffle className="size-3.5" />
-                Random
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectionMode("manual")}
-                className={cn(
-                  "rounded-lg p-1.5 transition-colors border flex-1 flex items-center justify-center gap-1 text-[11px] font-bold",
-                  selectionMode === "manual" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
-                )}
-                title="Manual Selection"
-              >
-                <SquareMousePointer className="size-3.5" />
-                Manual
-              </button>
+        {/* Right Column: Teams List (Vertical Grid) */}
+        <div className="w-[360px] shrink-0 flex flex-col h-full bg-card border border-border rounded-2xl p-3 shadow-sm select-none overflow-hidden">
+          <div className="shrink-0 border-b border-border pb-1.5 mb-2 flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
+            <span className="text-[10px] text-muted-foreground font-medium">Bidding Team Selection</span>
+          </div>
+          <div className="flex-1 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-2">
+              {teams.map((team) => (
+                <TeamBidCard
+                  key={team.id}
+                  team={team}
+                  stats={computeTeamStats(team, effectivePlayers, auction)}
+                  selected={selectedTeamId === team.id}
+                  onSelect={() => handleTeamSelect(team.id)}
+                  onViewPlayers={() => setViewingTeamId(team.id)}
+                />
+              ))}
             </div>
-            <Button className="w-full text-xs font-extrabold h-8" onClick={handleNewPlayer}>
+          </div>
+        </div>
+      </main>
+
+      {/* Bottom Controls Row */}
+      <div className="shrink-0 border-t border-border bg-card p-3 shadow-sm select-none">
+        <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between gap-4">
+          
+          {/* New Player Mode & Button */}
+          <div className="flex items-center gap-3 bg-muted/10 border border-border p-2 rounded-xl shrink-0">
+            <div className="flex flex-col items-center gap-1.5 border-r border-border pr-3">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none">New Player Mode</span>
+              <div className="flex gap-1 w-36">
+                <button
+                  type="button"
+                  onClick={() => setSelectionMode("random")}
+                  className={cn(
+                    "rounded-lg p-1 transition-colors border flex-1 flex items-center justify-center gap-0.5 text-[10px] font-bold",
+                    selectionMode === "random" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
+                  )}
+                  title="Random Selection"
+                >
+                  <Shuffle className="size-3" />
+                  Random
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectionMode("manual")}
+                  className={cn(
+                    "rounded-lg p-1 transition-colors border flex-1 flex items-center justify-center gap-0.5 text-[10px] font-bold",
+                    selectionMode === "manual" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
+                  )}
+                  title="Manual Selection"
+                >
+                  <SquareMousePointer className="size-3" />
+                  Manual
+                </button>
+              </div>
+            </div>
+            <Button className="text-xs font-extrabold h-9 px-4 shrink-0" onClick={handleNewPlayer}>
               New Player
             </Button>
           </div>
 
-          {/* Bid Controls */}
-          <div className="flex-1 flex flex-col gap-2.5 justify-center py-1">
+          {/* Bid Controls (Horizontal Flex) */}
+          <div className="flex-1 flex items-center gap-3 justify-center">
             <Button 
               variant="outline" 
-              className="h-12 text-base font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-11 flex-1 max-w-[240px] text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(1)}
             >
@@ -558,65 +565,66 @@ function AuctioneerConsole() {
             </Button>
             <Button 
               variant="outline" 
-              className="h-12 text-base font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-11 flex-1 max-w-[240px] text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(-1)}
             >
               <Minus className="size-4" /> Bid Down
             </Button>
             
-            <div className="my-0.5 border-t border-border" /> {/* Separator */}
+            <div className="h-6 w-px bg-border mx-1" />
 
             <Button
-              className="h-14 text-lg font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              className="h-11 flex-1 max-w-[280px] text-base font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               disabled={!currentPlayer}
               onClick={handleSold}
             >
-              <Gavel className="size-4.5" /> Sold
+              <Gavel className="size-4" /> Sold
             </Button>
             <Button 
               variant="destructive" 
-              className="h-14 text-lg font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-11 flex-1 max-w-[280px] text-base font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={handleUnsold}
             >
-              <X className="size-4.5" /> Unsold
+              <X className="size-4" /> Unsold
             </Button>
           </div>
 
-          {/* Statistics */}
-          <div className="flex flex-col gap-1.5 shrink-0 border-t border-border pt-2">
-            <div className="grid grid-cols-2 gap-1.5">
+          {/* Statistics (Horizontal Row) */}
+          <div className="flex items-center gap-2 border-l border-border pl-4 shrink-0">
+            <div className="flex flex-col gap-1 w-36">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("sold")}
-                className="rounded-xl bg-green-600/10 py-1.5 text-green-600 border border-green-600/5 hover:bg-green-600/20 active:scale-95 transition-all text-xs font-bold cursor-pointer text-center"
+                className="rounded-lg bg-green-600/10 py-1 text-green-600 border border-green-600/5 hover:bg-green-600/20 active:scale-95 transition-all text-[11px] font-bold cursor-pointer text-center"
               >
                 Sold {soldCount}
               </button>
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("unsold")}
-                className="rounded-xl bg-destructive/10 py-1.5 text-destructive border border-destructive/5 hover:bg-destructive/20 active:scale-95 transition-all text-xs font-bold cursor-pointer text-center"
+                className="rounded-lg bg-destructive/10 py-1 text-destructive border border-destructive/5 hover:bg-destructive/20 active:scale-95 transition-all text-[11px] font-bold cursor-pointer text-center"
               >
                 Unsold {unsoldCount}
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="flex flex-col gap-1 w-36">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("pending")}
-                className="rounded-xl bg-brand/10 py-1.5 text-brand border border-brand/5 hover:bg-brand/20 active:scale-95 transition-all text-xs font-bold cursor-pointer text-center"
+                className="rounded-lg bg-brand/10 py-1 text-brand border border-brand/5 hover:bg-brand/20 active:scale-95 transition-all text-[11px] font-bold cursor-pointer text-center"
               >
                 Available {pendingPlayers.length}
               </button>
-              <span className="rounded-xl bg-blue-600/10 py-1.5 text-blue-600 border border-blue-600/5 select-none text-xs font-bold text-center flex items-center justify-center">
+              <span className="rounded-lg bg-blue-600/10 py-1 text-blue-600 border border-blue-600/5 select-none text-[11px] font-bold text-center flex items-center justify-center h-[26px]">
                 Team {teams.length}
               </span>
             </div>
           </div>
+          
         </div>
-      </main>
+      </div>
     </div>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>

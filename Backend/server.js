@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 
 const { connectDB } = require("./src/db");
+const { runMigration } = require("./src/lib/migration");
 const authRoutes = require("./src/routes/auth");
 const auctionRoutes = require("./src/routes/auction");
 const teamsRoutes = require("./src/routes/teams");
@@ -43,6 +44,7 @@ const PORT = process.env.PORT || 5000;
 connectDB()
   .then(() => {
     app.listen(PORT, () => console.log(`[server] listening on port ${PORT}`));
+    runMigration().catch(err => console.error("[migration] failed:", err));
   })
   .catch((err) => {
     console.error("[server] failed to start:", err.message);
