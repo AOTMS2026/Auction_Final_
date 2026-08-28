@@ -71,6 +71,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [chapterName, setChapterName] = useState("");
   const [bniName, setBniName] = useState("");
   const [relationship, setRelationship] = useState("");
+  const [bblSeasons, setBblSeasons] = useState("");
 
   const [photo, setPhoto] = useState<string | null>(player?.photo || null);
   
@@ -111,6 +112,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setJerseyName("");
       setTrouserSize("");
       setCustomData("");
+      setBblSeasons("");
       setPhoto(null);
       setTeamId("none");
       setSoldPrice("");
@@ -138,16 +140,20 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       
       if (player.customData?.startsWith("BNI Member")) {
         setMemberType("bni");
-        const match = player.customData.match(/Chapter: (.*)/);
-        if (match) setChapterName(match[1] || "");
+        const match = player.customData.match(/Chapter: ([^|]*)/);
+        if (match) setChapterName(match[1]?.trim() || "");
+        const bblMatch = player.customData.match(/BBL Seasons: ([^|]*)/);
+        if (bblMatch) setBblSeasons(bblMatch[1]?.trim() || "");
       } else if (player.customData?.startsWith("Family Member")) {
         setMemberType("family");
-        const match = player.customData.match(/BNI Name: (.*), Chapter: (.*), Rel: (.*)/);
+        const match = player.customData.match(/BNI Name: ([^,]*), Chapter: ([^,]*), Rel: ([^|]*)/);
         if (match) {
-          setBniName(match[1] || "");
-          setChapterName(match[2] || "");
-          setRelationship(match[3] || "");
+          setBniName(match[1]?.trim() || "");
+          setChapterName(match[2]?.trim() || "");
+          setRelationship(match[3]?.trim() || "");
         }
+        const bblMatch = player.customData.match(/BBL Seasons: ([^|]*)/);
+        if (bblMatch) setBblSeasons(bblMatch[1]?.trim() || "");
       }
     }
   }, [open, player]);
@@ -243,6 +249,10 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     let customDataStr = customData;
 
     if (isBniAuction) {
+      if (bblSeasons === "") {
+        toast.error("Please select Number of BBL seasons played");
+        return;
+      }
       if (memberType === "bni" && !chapterName.trim()) {
         toast.error("Please provide Chapter Name");
         return;
@@ -252,9 +262,9 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
         return;
       }
       if (memberType === "bni") {
-        customDataStr = `BNI Member | Chapter: ${chapterName}`;
+        customDataStr = `BNI Member | Chapter: ${chapterName} | BBL Seasons: ${bblSeasons}`;
       } else if (memberType === "family") {
-        customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship}`;
+        customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship} | BBL Seasons: ${bblSeasons}`;
       }
     } else {
       if (!paymentMode && paymentImage) {
@@ -401,7 +411,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 <SelectContent>
                   <SelectItem value="Male">Male</SelectItem>
                   <SelectItem value="Female">Female</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -421,12 +430,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 </SelectContent>
               </Select>
             </div>
-            {isBni && (
-              <div className="space-y-2">
-                <Label htmlFor="baseValue">Base Value</Label>
-                <Input id="baseValue" type="number" placeholder="e.g. 500" value={baseValue} onChange={(e) => setBaseValue(e.target.value)} disabled={isSubmitting} />
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="jerseySize">Jersey Size</Label>
               <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={isSubmitting} />
@@ -434,45 +437,29 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             {isBni && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="jerseyName">Jersey Name</Label>
-                  <Input id="jerseyName" placeholder="e.g. KOHLI" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={isSubmitting} />
+                  <Label htmlFor="jerseyName">Jersey Name *</Label>
+                  <Input id="jerseyName" placeholder="e.g. Dhoni" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={isSubmitting} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trouserSize">Trouser Size</Label>
-                  <Input id="trouserSize" placeholder="e.g. 32" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={isSubmitting} />
+                  <Label htmlFor="trouserSize">Jersey Number *</Label>
+                  <Input id="trouserSize" placeholder="e.g. 7" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={isSubmitting} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Number of BBL seasons played *</Label>
+                  <Select value={bblSeasons} onValueChange={setBblSeasons}>
+                    <SelectTrigger><SelectValue placeholder="Select seasons" /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <SelectItem key={i} value={String(i)}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </>
             )}
           </div>
-
-          {isBni && (
-            <div className="rounded-lg border p-4">
-              <h3 className="mb-4 font-semibold">{sportType.charAt(0).toUpperCase() + sportType.slice(1)} Specific Details</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Role/Skill</Label>
-                  <Select value={sportFields["role"] || ""} onValueChange={(v) => handleSportFieldChange("role", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
-                    <SelectContent>
-                      {config.roles.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {config.stats.map(stat => (
-                  <div key={stat} className="space-y-2">
-                    <Label>{stat}</Label>
-                    <Input type="number" placeholder="e.g. 0" value={sportFields[stat] || ""} onChange={(e) => handleSportFieldChange(stat, e.target.value)} disabled={isSubmitting} />
-                  </div>
-                ))}
-                {config.specs.map(spec => (
-                  <div key={spec} className="space-y-2">
-                    <Label>{spec}</Label>
-                    <Input placeholder={getSpecPlaceholder(spec)} value={sportFields[spec] || ""} onChange={(e) => handleSportFieldChange(spec, e.target.value)} disabled={isSubmitting} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
             {auctionId === "6a8edaddd7ed74151dbafab3" ? (
@@ -559,44 +546,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             )}
           </div>
 
-          {isBni && player && (
-            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
-              <h3 className="mb-4 font-semibold text-yellow-800 dark:text-yellow-200">Manual Assignment</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Sold To Team</Label>
-                  <Select value={teamId} onValueChange={(val) => {
-                    if (val !== "none") {
-                      const count = rosterCount(val);
-                      if (count >= playersPerTeam && val !== player?.teamId) {
-                        toast.error(`This team already has the maximum ${playersPerTeam} players.`);
-                        return; // Prevent selection
-                      }
-                    }
-                    setTeamId(val);
-                  }}>
-                    <SelectTrigger><SelectValue placeholder="Unsold" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Unsold</SelectItem>
-                      {teams.map((t) => {
-                        const count = rosterCount(t.id);
-                        const full = count >= playersPerTeam && t.id !== teamId;
-                        return (
-                          <SelectItem key={t.id} value={t.id}>
-                            {t.name} {full ? `(Full ${count}/${playersPerTeam})` : `(${count}/${playersPerTeam})`}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="soldPrice">Sold Price</Label>
-                  <Input id="soldPrice" type="number" placeholder="e.g. 1200" value={soldPrice} onChange={(e) => setSoldPrice(e.target.value)} disabled={isSubmitting} />
-                </div>
-              </div>
-            </div>
-          )}
+
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
