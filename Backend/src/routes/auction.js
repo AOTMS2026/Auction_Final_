@@ -92,7 +92,7 @@ router.get(
     if (typeof req.query.sportType === "string") query.sportType = req.query.sportType;
     if (typeof req.query.visibility === "string") query.visibility = req.query.visibility;
 
-    const auctions = await Auction.find(query).sort({ startsAt: 1 });
+    const auctions = await Auction.find(query).sort({ startsAt: 1 }).lean();
     res.json({ auctions: auctions.map(toPublicAuction) });
   }),
 );

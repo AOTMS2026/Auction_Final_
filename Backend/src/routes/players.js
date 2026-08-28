@@ -53,7 +53,7 @@ router.get(
       return res.status(404).json({ error: "Auction not found" });
     }
 
-    const players = await Player.find({ auctionId: req.params.id }).sort({ createdAt: -1 });
+    const players = await Player.find({ auctionId: req.params.id }).sort({ createdAt: -1 }).lean();
     res.json({ players: players.map(toPublicPlayer) });
   })
 );
@@ -208,7 +208,7 @@ router.get(
     const { phone } = req.params;
     
     // Find all player instances with this phone number
-    const players = await Player.find({ phone }).sort({ createdAt: -1 });
+    const players = await Player.find({ phone }).sort({ createdAt: -1 }).lean();
     
     if (players.length === 0) {
       return res.status(404).json({ error: "Player not found" });
