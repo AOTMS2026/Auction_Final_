@@ -32,7 +32,8 @@ export class ApiError extends Error {
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  // Increased timeout to 60 seconds (60000ms) to allow large image uploads to Cloudinary
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
     const res = await fetch(`${apiBase()}${path}`, {
@@ -57,7 +58,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch (error: any) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new ApiError("Request timed out after 15 seconds. Please check your connection.", 408);
+      throw new ApiError("Request timed out after 60 seconds. Please check your connection.", 408);
     }
     throw error;
   }
