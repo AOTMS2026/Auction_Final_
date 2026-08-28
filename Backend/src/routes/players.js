@@ -102,7 +102,7 @@ router.post(
     const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    if (auction.createdBy.toString() !== req.userId) {
+    if (auction.createdBy.toString() !== req.userId && !req.isAdmin) {
       return res.status(403).json({ error: "You don't have permission to modify this auction" });
     }
 
@@ -170,7 +170,7 @@ router.patch(
     const auction = await Auction.findById(player.auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    const isCreator = auction.createdBy.toString() === req.userId;
+    const isCreator = auction.createdBy.toString() === req.userId || req.isAdmin;
     if (!isCreator) {
       const requestedUpdates = Object.keys(req.body).filter(key => req.body[key] !== undefined);
       const isOnlyCategory = requestedUpdates.every(key => key === "category");
@@ -238,7 +238,7 @@ router.delete(
     if (!player) return res.status(404).json({ error: "Player not found" });
 
     const auction = await Auction.findById(player.auctionId).catch(() => null);
-    if (!auction || auction.createdBy.toString() !== req.userId) {
+    if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
       return res.status(403).json({ error: "You don't have permission to delete this player" });
     }
 

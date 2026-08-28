@@ -58,7 +58,7 @@ router.post(
     const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    if (auction.createdBy.toString() !== req.userId) {
+    if (auction.createdBy.toString() !== req.userId && !req.isAdmin) {
       return res.status(403).json({ error: "You don't have permission to modify this auction" });
     }
 
@@ -174,7 +174,7 @@ router.patch(
     if (!team) return res.status(404).json({ error: "Team not found" });
 
     const auction = await Auction.findById(team.auctionId).catch(() => null);
-    if (!auction || auction.createdBy.toString() !== req.userId) {
+    if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
       return res.status(403).json({ error: "You don't have permission to modify this team" });
     }
 
@@ -210,7 +210,7 @@ router.delete(
     if (!team) return res.status(404).json({ error: "Team not found" });
 
     const auction = await Auction.findById(team.auctionId).catch(() => null);
-    if (!auction || auction.createdBy.toString() !== req.userId) {
+    if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
       return res.status(403).json({ error: "You don't have permission to delete this team" });
     }
 

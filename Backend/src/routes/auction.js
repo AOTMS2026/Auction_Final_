@@ -32,12 +32,12 @@ function toPublicAuction(doc) {
   };
 }
 
-function isOwnAuction(auction, userId) {
-  return userId && auction.createdBy.toString() === userId;
+function isOwnAuction(auction, req) {
+  return req.userId && (auction.createdBy.toString() === req.userId || req.isAdmin);
 }
 
-function visibleTo(auction, userId) {
-  return auction.visibility === "public" || isOwnAuction(auction, userId);
+function visibleTo(auction, req) {
+  return auction.visibility === "public" || isOwnAuction(auction, req);
 }
 
 // Registered before "/:id" so "bookmarked" isn't matched as an id param.
@@ -86,9 +86,13 @@ router.get(
 
     if (req.query.mine === "true") {
       if (!req.userId) return res.status(401).json({ error: "Sign in required for mine=true" });
-      query.createdBy = req.userId;
+      if (!req.isAdmin) {
+        query.createdBy = req.userId;
+      }
     } else {
-      query.$or = req.userId ? [{ visibility: "public" }, { createdBy: req.userId }] : [{ visibility: "public" }];
+      if (!req.isAdmin) {
+        query.$or = req.userId ? [{ visibility: "public" }, { createdBy: req.userId }] : [{ visibility: "public" }];
+      }
     }
 
     if (typeof req.query.sportType === "string") query.sportType = req.query.sportType;
@@ -104,7 +108,7 @@ router.get(
   optionalAuth,
   asyncHandler(async (req, res) => {
     const auction = await Auction.findById(req.params.id).catch(() => null);
-    if (!auction || !visibleTo(auction, req.userId)) {
+    if (!auction || !visibleTo(auction, req)) {
       return res.status(404).json({ error: "Auction not found" });
     }
     res.json({ auction: toPublicAuction(auction) });
@@ -117,7 +121,7 @@ router.patch(
   asyncHandler(async (req, res) => {
     const auction = await Auction.findById(req.params.id).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
-    if (!isOwnAuction(auction, req.userId)) {
+    if (!isOwnAuction(auction, req)) {
       return res.status(403).json({ error: "You don't have permission to edit this auction" });
     }
 
@@ -163,7 +167,7 @@ router.delete(
   asyncHandler(async (req, res) => {
     const auction = await Auction.findById(req.params.id).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
-    if (!isOwnAuction(auction, req.userId)) {
+    if (!isOwnAuction(auction, req)) {
       return res.status(403).json({ error: "You don't have permission to delete this auction" });
     }
 
@@ -180,7 +184,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const auction = await Auction.findById(req.params.id).catch(() => null);
-    if (!auction || !visibleTo(auction, req.userId)) {
+    if (!auction || !visibleTo(auction, req)) {
       return res.status(404).json({ error: "Auction not found" });
     }
     await User.findByIdAndUpdate(req.userId, { $addToSet: { bookmarkedAuctionIds: auction._id } });
