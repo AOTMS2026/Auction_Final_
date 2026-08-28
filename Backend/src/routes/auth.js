@@ -31,24 +31,7 @@ function signToken(user) {
 }
 
 router.post("/signup", asyncHandler(async (req, res) => {
-  const { email, password } = req.body ?? {};
-  if (typeof email !== "string" || !EMAIL_RE.test(email)) {
-    return res.status(400).json({ error: "A valid email is required" });
-  }
-  if (typeof password !== "string" || password.length < 6) {
-    return res.status(400).json({ error: "Password must be at least 6 characters" });
-  }
-
-  const normalizedEmail = email.trim().toLowerCase();
-  const existing = await User.findOne({ email: normalizedEmail });
-  if (existing) {
-    return res.status(409).json({ error: "An account with that email already exists" });
-  }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({ email: normalizedEmail, passwordHash });
-
-  res.status(201).json({ token: signToken(user), user: toPublicUser(user) });
+  return res.status(403).json({ error: "Registration is disabled. Please use your provided franchise credentials." });
 }));
 
 router.post("/login", asyncHandler(async (req, res) => {

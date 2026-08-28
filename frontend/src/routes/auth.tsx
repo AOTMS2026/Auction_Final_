@@ -18,7 +18,6 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -61,8 +60,6 @@ function AuthPage() {
   const target = safeNext(next);
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
-  
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
   useEffect(() => {
     if (!loading && isAuthenticated) void navigate({ to: target, replace: true });
@@ -71,11 +68,6 @@ function AuthPage() {
   const signInForm = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "", rememberMe: false },
-  });
-
-  const signUpForm = useForm<SignUpValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { email: "", password: "" },
   });
 
   async function onSignIn(data: SignInValues) {
@@ -87,155 +79,87 @@ function AuthPage() {
     }
   }
 
-  async function onSignUp(data: SignUpValues) {
-    try {
-      await authClient.signUp(data.email, data.password);
-      toast.success("Account created successfully.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Registration failed.");
-    }
-  }
-
   const redirectContext = next 
     ? `Sign in to continue to your destination.` 
     : null;
 
   return (
     <AuthLayout redirectContext={redirectContext}>
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "signin" | "signup")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="signin">Sign In</TabsTrigger>
-          <TabsTrigger value="signup">Create Account</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="signin" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
-          <div className="space-y-2 text-center mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your credentials to access your franchise.
-            </p>
-          </div>
+      <div className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+        <div className="space-y-2 text-center mb-6">
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your credentials to access your franchise.
+          </p>
+        </div>
 
-          <Form {...signInForm}>
-            <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
-              <FormField
-                control={signInForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" type="email" autoComplete="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={signInForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
-                      {/* Forgot password flow to be implemented in future phase */}
-                      <Link to="/auth" search={next ? { next } : {}} className="text-xs font-medium text-brand hover:underline">
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <PasswordField autoComplete="current-password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={signInForm.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0 py-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={!!field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal text-sm">
-                      Remember me for 30 days
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" className="w-full mt-2 bg-brand text-brand-foreground hover:bg-brand-dark" disabled={signInForm.formState.isSubmitting}>
-                {signInForm.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </TabsContent>
-        
-        <TabsContent value="signup" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
-          <div className="space-y-2 text-center mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
-            <p className="text-sm text-muted-foreground">
-              Register as a franchise owner to start bidding.
-            </p>
-          </div>
-
-          <Form {...signUpForm}>
-            <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4">
-              <FormField
-                control={signUpForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" type="email" autoComplete="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={signUpForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
+        <Form {...signInForm}>
+          <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
+            <FormField
+              control={signInForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="name@example.com" type="email" autoComplete="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={signInForm.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
                     <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <PasswordField showStrength autoComplete="new-password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="w-full mt-6 bg-brand text-brand-foreground hover:bg-brand-dark" disabled={signUpForm.formState.isSubmitting}>
-                {signUpForm.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </TabsContent>
-      </Tabs>
+                    {/* Forgot password flow to be implemented in future phase */}
+                    <Link to="/auth" search={next ? { next } : {}} className="text-xs font-medium text-brand hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <FormControl>
+                    <PasswordField autoComplete="current-password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={signInForm.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0 py-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal text-sm">
+                    Remember me for 30 days
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full mt-2 bg-brand text-brand-foreground hover:bg-brand-dark" disabled={signInForm.formState.isSubmitting}>
+              {signInForm.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
+        </Form>
+      </div>
     </AuthLayout>
   );
 }
