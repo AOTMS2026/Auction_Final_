@@ -66,4 +66,4 @@ connectDB()
     process.exit(1);
   });
 // Trigger watch reload to pick up new .env database URI
-
+// Trigger reload after npm install

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -226,9 +226,12 @@ function AuctionDetailPage() {
                   <CalendarDays className="size-4" />
                   {format(new Date(auction.startsAt), "dd-MM-yyyy, h:mm a")}
                 </p>
-                <div className="flex items-center gap-6 text-white/80">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-white/80">
                   <span className="flex items-center gap-2">
                     <Users className="size-4" /> {auction.playersPerTeam} Player Per Team
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <UserCheck className="size-4 text-emerald-400" /> {players ? players.length : 0} Registered
                   </span>
                   <Countdown targetDate={auction.startsAt} />
                 </div>
@@ -255,7 +258,7 @@ function AuctionDetailPage() {
                 activeTab === tab ? "border-b-2 border-orange-500 text-white" : "text-white/60 hover:text-white"
               }`}
             >
-              {tab}
+              {tab === "TEAMS" && teams ? `TEAMS (${teams.length})` : tab === "PLAYERS" && players ? `PLAYERS (${players.length})` : tab}
             </button>
           ))}
         </div>
@@ -312,7 +315,9 @@ function AuctionDetailPage() {
                         <div className="flex items-center gap-3 sm:gap-4 mt-3 overflow-x-auto hide-scrollbar">
                           <div>
                             <div className="text-[10px] text-muted-foreground uppercase mb-0.5 whitespace-nowrap">Total Pl</div>
-                            <div className="font-semibold text-sm sm:text-base">{totalPlayers.toString().padStart(2, '0')}</div>
+                            <div className="font-semibold text-sm sm:text-base">
+                              {totalPlayers.toString().padStart(2, '0')} / {auction.playersPerTeam.toString().padStart(2, '0')}
+                            </div>
                           </div>
                           <div className="w-px h-6 bg-border shrink-0" />
                           <div>
