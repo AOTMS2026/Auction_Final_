@@ -70,6 +70,7 @@ router.get(
     let players = [];
     try {
       players = await Player.find({ auctionId })
+        .select("-paymentImage -sportFields.originalPhoto")
         .sort({ createdAt: -1 })
         .lean();
     } catch (dbError) {
@@ -226,7 +227,7 @@ router.patch(
             .json({ error: `Sale price (🪙 ${newPrice.toLocaleString()}) cannot be below the configured minimum bid (🪙 ${auction.minimumBid.toLocaleString()}).` });
         }
 
-        const otherPlayers = await Player.find({ teamId: targetTeamId, _id: { $ne: player._id } });
+        const otherPlayers = await Player.find({ teamId: targetTeamId, _id: { $ne: player._id } }).select("soldPrice");
         let usedPoints = 0;
         for (const op of otherPlayers) {
           if (op.soldPrice) usedPoints += op.soldPrice;
@@ -294,6 +295,26 @@ router.delete(
     if (io) io.to(`auction:${player.auctionId}`).emit("playerUpdated", { id: player._id });
 
     res.status(204).end();
+  })
+);
+
+// Get single player details (including payment screenshot) for authorized users
+router.get(
+  "/players/:id",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const player = await Player.findById(req.params.id).catch(() => null);
+    if (!player) return res.status(404).json({ error: "Player not found" });
+
+    const auction = await Auction.findById(player.auctionId).catch(() => null);
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    const isOwn = req.userId && (auction.createdBy.toString() === req.userId || req.isAdmin);
+    if (!isOwn) {
+      return res.status(403).json({ error: "You don't have permission to access these details" });
+    }
+
+    res.json({ player: toPublicPlayer(player) });
   })
 );
 

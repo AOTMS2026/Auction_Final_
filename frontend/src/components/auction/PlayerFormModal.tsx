@@ -23,6 +23,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePlayers } from "@/hooks/usePlayers";
 import { useTeams } from "@/hooks/useTeams";
 import { SPORT_CONFIGS } from "@/lib/validations/player";
+import { auctionClient } from "@/lib/auction-client";
 import type { SportType, Player, PlayerInput } from "@/lib/auction-client";
 import { fileToCompressedDataUrl, IMAGE_PRESETS } from "@/lib/image";
 
@@ -56,6 +57,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [paymentMode, setPaymentMode] = useState(player?.paymentMode || "");
   const [utrNumber, setUtrNumber] = useState(player?.utrNumber || "");
   const [paymentImage, setPaymentImage] = useState<string | null>(player?.paymentImage || null);
+  const [loadingFullDetails, setLoadingFullDetails] = useState(false);
   
   const [baseValue, setBaseValue] = useState(player?.baseValue?.toString() || "0");
   const [jerseySize, setJerseySize] = useState(player?.jerseySize || "");
@@ -129,6 +131,21 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setUtrNumber(player.utrNumber || "");
       setPaymentImage(player.paymentImage || null);
       setBaseValue(player.baseValue.toString());
+      
+      const fetchFullDetails = async () => {
+        setLoadingFullDetails(true);
+        try {
+          const fullPlayer = await auctionClient.getPlayerById(player.id);
+          if (fullPlayer && fullPlayer.paymentImage) {
+            setPaymentImage(fullPlayer.paymentImage);
+          }
+        } catch (err) {
+          console.error("Failed to fetch full player details for payment screenshot:", err);
+        } finally {
+          setLoadingFullDetails(false);
+        }
+      };
+      fetchFullDetails();
       setJerseySize(player.jerseySize);
       setJerseyName(player.jerseyName);
       setTrouserSize(player.trouserSize);
@@ -525,7 +542,12 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             ) : (
               <>
                 <h3 className="font-semibold text-lg">Payment Details</h3>
-                {paymentImage && (
+                {loadingFullDetails ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                    <Loader2 className="size-4 animate-spin text-brand" />
+                    Loading payment details...
+                  </div>
+                ) : paymentImage ? (
                   <div className="space-y-2">
                     <Label>Payment Screenshot</Label>
                     <div className="relative w-full max-w-sm">
@@ -541,6 +563,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                       </Button>
                     </div>
                   </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground pt-1">No payment screenshot uploaded.</p>
                 )}
               </>
             )}

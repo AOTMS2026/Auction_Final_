@@ -255,6 +255,11 @@ export const auctionClient = {
     return players;
   },
 
+  async getPlayerById(id: string): Promise<Player> {
+    const { player } = await request<{ player: Player }>(`/api/players/${id}`);
+    return player;
+  },
+
   async createPlayer(input: PlayerInput): Promise<Player> {
     const { player } = await request<{ player: Player }>("/api/players", {
       method: "POST",

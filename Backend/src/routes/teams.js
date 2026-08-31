@@ -135,7 +135,7 @@ router.get(
     }
 
     const Player = require("../models/Player");
-    const players = await Player.find({ teamId: team._id, auctionId: auction._id }).sort({ updatedAt: -1 });
+    const players = await Player.find({ teamId: team._id, auctionId: auction._id }).select("soldPrice").sort({ updatedAt: -1 });
     
     // Compute stats
     let usedPoints = 0;

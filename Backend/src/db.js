@@ -6,15 +6,29 @@ async function connectDB() {
     throw new Error("Missing MONGODB_URI environment variable");
   }
 
+  // Connection Event Listeners
+  mongoose.connection.on("connecting", () => {
+    console.log("[mongodb] Connection process initiated...");
+  });
+
+  mongoose.connection.on("connected", () => {
+    console.log("[mongodb] Connection established successfully.");
+  });
+
+  mongoose.connection.on("disconnected", () => {
+    console.log("[mongodb] Connection lost/disconnected.");
+  });
+
   mongoose.connection.on("error", (err) => {
-    console.error("[mongodb] connection error:", err.message);
+    console.error("[mongodb] Connection error occurred:", err.message);
   });
 
   await mongoose.connect(uri, { 
     serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 15000
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
+    minPoolSize: 2,
   });
-  console.log("[mongodb] connected");
 }
 
 module.exports = { connectDB };
