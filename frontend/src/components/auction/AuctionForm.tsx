@@ -42,6 +42,7 @@ export function AuctionForm({
       playersPerTeam: 7,
       pointsPerTeam: 100000,
       minimumBid: 500,
+      maxBid: 30000,
       bidIncrement: 100,
       visibility: "public",
       ...defaultValues,
@@ -203,7 +204,7 @@ export function AuctionForm({
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <FormField
             control={form.control}
             name="minimumBid"
@@ -212,6 +213,20 @@ export function AuctionForm({
                 <FormLabel>Minimum Bid</FormLabel>
                 <FormControl>
                   <Input type="number" min={0} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="maxBid"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum Bid</FormLabel>
+                <FormControl>
+                  <Input type="number" min={1} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

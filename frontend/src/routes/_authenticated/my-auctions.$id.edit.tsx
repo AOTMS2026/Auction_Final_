@@ -52,6 +52,7 @@ function EditAuctionPage() {
         playersPerTeam: values.playersPerTeam,
         pointsPerTeam: values.pointsPerTeam,
         minimumBid: values.minimumBid,
+        maxBid: values.maxBid,
         bidIncrement: values.bidIncrement,
         visibility: values.visibility,
       });
@@ -82,6 +83,7 @@ function EditAuctionPage() {
               playersPerTeam: auction.playersPerTeam,
               pointsPerTeam: auction.pointsPerTeam,
               minimumBid: auction.minimumBid,
+              maxBid: auction.maxBid,
               bidIncrement: auction.bidIncrement,
               visibility: auction.visibility,
             }}

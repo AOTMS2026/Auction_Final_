@@ -20,7 +20,9 @@ export function computeTeamStats(team: Team, players: Player[], auction: Auction
   const totalPlayers = teamPlayers.length;
   const reservedPlayers = auction.playersPerTeam - totalPlayers;
   const maxBidPoints =
-    reservedPlayers > 0 ? Math.min(30000, availablePoints - (reservedPlayers - 1) * auction.minimumBid) : 0;
+    reservedPlayers > 0
+      ? Math.min(auction.maxBid, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
+      : 0;
 
   return {
     usedPoints,

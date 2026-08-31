@@ -13,6 +13,7 @@ export type Auction = {
   playersPerTeam: number;
   pointsPerTeam: number;
   minimumBid: number;
+  maxBid: number;
   bidIncrement: number;
   visibility: Visibility;
   status: AuctionStatus;
@@ -100,6 +101,7 @@ export type AuctionInput = {
   playersPerTeam: number;
   pointsPerTeam: number;
   minimumBid: number;
+  maxBid: number;
   bidIncrement: number;
   visibility: Visibility;
   status?: AuctionStatus;

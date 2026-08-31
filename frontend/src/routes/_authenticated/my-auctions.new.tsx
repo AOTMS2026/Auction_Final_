@@ -34,6 +34,7 @@ function NewAuctionPage() {
         playersPerTeam: values.playersPerTeam,
         pointsPerTeam: values.pointsPerTeam,
         minimumBid: values.minimumBid,
+        maxBid: values.maxBid,
         bidIncrement: values.bidIncrement,
         visibility: values.visibility,
       });

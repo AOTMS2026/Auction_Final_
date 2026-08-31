@@ -23,6 +23,7 @@ function toPublicAuction(doc) {
     playersPerTeam: doc.playersPerTeam,
     pointsPerTeam: doc.pointsPerTeam,
     minimumBid: doc.minimumBid,
+    maxBid: doc.maxBid ?? 30000,
     bidIncrement: doc.bidIncrement,
     visibility: doc.visibility,
     status: doc.status,
@@ -69,6 +70,7 @@ router.post(
       playersPerTeam: req.body.playersPerTeam,
       pointsPerTeam: req.body.pointsPerTeam,
       minimumBid: req.body.minimumBid,
+      maxBid: req.body.maxBid ?? 30000,
       bidIncrement: req.body.bidIncrement,
       visibility: req.body.visibility,
       createdBy: req.userId,
@@ -136,7 +138,7 @@ router.patch(
       return res.status(400).json({ error: `status must be one of: ${AUCTION_STATUSES.join(", ")}` });
     }
 
-    const fields = ["sportType", "name", "startsAt", "playersPerTeam", "pointsPerTeam", "minimumBid", "bidIncrement", "visibility", "status"];
+    const fields = ["sportType", "name", "startsAt", "playersPerTeam", "pointsPerTeam", "minimumBid", "maxBid", "bidIncrement", "visibility", "status"];
     for (const field of fields) {
       if (Object.prototype.hasOwnProperty.call(req.body, field)) {
         auction[field] = field === "startsAt" ? new Date(req.body[field]) : req.body[field];

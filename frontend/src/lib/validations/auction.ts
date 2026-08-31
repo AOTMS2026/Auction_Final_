@@ -26,6 +26,7 @@ export const auctionFormSchema = z.object({
   playersPerTeam: z.coerce.number().min(1, "Must be at least 1"),
   pointsPerTeam: z.coerce.number().min(1, "Must be at least 1"),
   minimumBid: z.coerce.number().min(0, "Must be 0 or more"),
+  maxBid: z.coerce.number().min(1, "Must be at least 1"),
   bidIncrement: z.coerce.number().min(1, "Must be at least 1"),
   visibility: z.enum(VISIBILITIES),
 });

@@ -40,6 +40,12 @@ const auctionSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    maxBid: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 30000,
+    },
     bidIncrement: {
       type: Number,
       default: 100,

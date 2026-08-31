@@ -51,6 +51,12 @@ function validateAuctionInput(body, { partial = false } = {}) {
   );
 
   requireOrCheck(
+    "maxBid",
+    (v) => typeof v === "number" && Number.isFinite(v) && v >= 1,
+    "maxBid must be a number >= 1",
+  );
+
+  requireOrCheck(
     "bidIncrement",
     (v) => typeof v === "number" && Number.isFinite(v) && v >= 1,
     "bidIncrement must be a number >= 1",

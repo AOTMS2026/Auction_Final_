@@ -70,7 +70,6 @@ router.get(
     let players = [];
     try {
       players = await Player.find({ auctionId })
-        .select("-paymentImage")
         .sort({ createdAt: -1 })
         .lean();
     } catch (dbError) {
@@ -200,13 +199,13 @@ router.patch(
       }
     }
 
-    // Special handling for teamId (can be explicitly set to null).
-    // Enforce the auction's Players/Team cap here — the real check has to
-    // live server-side since any client-side guard can be bypassed.
-    if (req.body.teamId !== undefined) {
+    // Perform validations before modifying the player object if we are assigning a team or if soldPrice/auctionRoundStatus is changing.
+    const targetTeamId = req.body.teamId !== undefined ? req.body.teamId : player.teamId;
+    if (targetTeamId) {
       const currentTeamId = player.teamId ? player.teamId.toString() : null;
-      const nextTeamId = req.body.teamId === null ? null : req.body.teamId;
+      const nextTeamId = targetTeamId ? targetTeamId.toString() : null;
 
+      // 1. Enforce roster count check if team changes
       if (nextTeamId && nextTeamId !== currentTeamId) {
         const rosterCount = await Player.countDocuments({ teamId: nextTeamId, _id: { $ne: player._id } });
         if (rosterCount >= auction.playersPerTeam) {
@@ -216,7 +215,48 @@ router.patch(
         }
       }
 
-      player.teamId = nextTeamId;
+      // 2. Validate sale budget constraints if a price is specified or updated
+      const newPrice = req.body.soldPrice !== undefined ? req.body.soldPrice : player.soldPrice;
+      const newStatus = req.body.auctionRoundStatus !== undefined ? req.body.auctionRoundStatus : player.auctionRoundStatus;
+
+      if (newStatus === "sold" && newPrice !== null && newPrice !== undefined) {
+        if (newPrice < auction.minimumBid) {
+          return res
+            .status(400)
+            .json({ error: `Sale price (🪙 ${newPrice.toLocaleString()}) cannot be below the configured minimum bid (🪙 ${auction.minimumBid.toLocaleString()}).` });
+        }
+
+        const otherPlayers = await Player.find({ teamId: targetTeamId, _id: { $ne: player._id } });
+        let usedPoints = 0;
+        for (const op of otherPlayers) {
+          if (op.soldPrice) usedPoints += op.soldPrice;
+        }
+
+        const remainingPurse = auction.pointsPerTeam - usedPoints;
+        const rosterCount = otherPlayers.length;
+        const playersRemaining = auction.playersPerTeam - rosterCount;
+
+        const configuredMaximumBid = auction.maxBid ?? 30000;
+        const reserveForOtherPlayers = playersRemaining > 1 ? (playersRemaining - 1) * auction.minimumBid : 0;
+        const affordableBid = remainingPurse - reserveForOtherPlayers;
+        const actualMaximumBid = Math.max(0, Math.min(configuredMaximumBid, affordableBid));
+
+        if (newPrice > remainingPurse) {
+          return res
+            .status(400)
+            .json({ error: `Insufficient funds: Team only has 🪙 ${remainingPurse.toLocaleString()} remaining, but bid is 🪙 ${newPrice.toLocaleString()}.` });
+        }
+
+        if (newPrice > actualMaximumBid) {
+          return res
+            .status(400)
+            .json({ error: `Bid of 🪙 ${newPrice.toLocaleString()} exceeds the team's maximum allowed bid of 🪙 ${actualMaximumBid.toLocaleString()} (reserving 🪙 ${reserveForOtherPlayers.toLocaleString()} for ${playersRemaining - 1} remaining spots).` });
+        }
+      }
+    }
+
+    if (req.body.teamId !== undefined) {
+      player.teamId = req.body.teamId === null ? null : req.body.teamId;
     }
 
     await player.save();

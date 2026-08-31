@@ -148,7 +148,7 @@ router.get(
     const totalPlayers = players.length;
     const reservedPlayers = auction.playersPerTeam - totalPlayers;
     const maxBidPoints = reservedPlayers > 0 
-      ? availablePoints - ((reservedPlayers - 1) * auction.minimumBid)
+      ? Math.max(0, Math.min(auction.maxBid ?? 30000, availablePoints - ((reservedPlayers - 1) * auction.minimumBid)))
       : 0;
 
     res.json({
@@ -157,7 +157,7 @@ router.get(
         totalPoints,
         usedPoints,
         availablePoints,
-        maxBidPoints: maxBidPoints > 0 ? maxBidPoints : 0,
+        maxBidPoints,
         totalPlayers,
         reservedPlayers: reservedPlayers > 0 ? reservedPlayers : 0,
       }
