@@ -21,6 +21,7 @@
 @theme inline {
   --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
   --font-sans: "Barlow", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono, monospace);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -32,6 +33,171 @@
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-dark: var(--brand-dark);
   --color-ink: var(--ink);
+
+  --color-olive-leaf: #606c38;
+  --color-olive-leaf-100: #13160b;
+  --color-olive-leaf-200: #262b16;
+  --color-olive-leaf-300: #394121;
+  --color-olive-leaf-400: #4c562c;
+  --color-olive-leaf-500: #606c38;
+  --color-olive-leaf-600: #88994f;
+  --color-olive-leaf-700: #a9b876;
+  --color-olive-leaf-800: #c5d0a3;
+  --color-olive-leaf-900: #e2e7d1;
+
+  --color-black-forest: #283618;
+  --color-black-forest-100: #080b05;
+  --color-black-forest-200: #101509;
+  --color-black-forest-300: #18200e;
+  --color-black-forest-400: #1f2a13;
+  --color-black-forest-500: #283618;
+  --color-black-forest-600: #547133;
+  --color-black-forest-700: #80ac4d;
+  --color-black-forest-800: #aac987;
+  --color-black-forest-900: #d5e4c3;
+
+  --color-cornsilk: #fefae0;
+  --color-cornsilk-100: #5d5103;
+  --color-cornsilk-200: #baa206;
+  --color-cornsilk-300: #f8dc27;
+  --color-cornsilk-400: #fbeb84;
+  --color-cornsilk-500: #fefae0;
+  --color-cornsilk-600: #fefbe7;
+  --color-cornsilk-700: #fefced;
+  --color-cornsilk-800: #fffdf3;
+  --color-cornsilk-900: #fffef9;
+
+  --color-sunlit-clay: #dda15e;
+  --color-sunlit-clay-100: #34210b;
+  --color-sunlit-clay-200: #684216;
+  --color-sunlit-clay-300: #9d6321;
+  --color-sunlit-clay-400: #d1842c;
+  --color-sunlit-clay-500: #dda15e;
+  --color-sunlit-clay-600: #e4b57f;
+  --color-sunlit-clay-700: #ebc79f;
+  --color-sunlit-clay-800: #f1dabf;
+  --color-sunlit-clay-900: #f8ecdf;
+
+  --color-copperwood: #bc6c25;
+  --color-copperwood-100: #251507;
+  --color-copperwood-200: #4b2b0f;
+  --color-copperwood-300: #704016;
+  --color-copperwood-400: #96561e;
+  --color-copperwood-500: #bc6c25;
+  --color-copperwood-600: #d98840;
+  --color-copperwood-700: #e3a570;
+  --color-copperwood-800: #ecc3a0;
+  --color-copperwood-900: #f6e1cf;
+
+  --color-ink-black: #000814;
+  --color-ink-black-100: #000204;
+  --color-ink-black-200: #000308;
+  --color-ink-black-300: #00050c;
+  --color-ink-black-400: #000710;
+  --color-ink-black-500: #000814;
+  --color-ink-black-600: #002f76;
+  --color-ink-black-700: #0056d8;
+  --color-ink-black-800: #3b89ff;
+  --color-ink-black-900: #9dc4ff;
+
+  --color-prussian-blue: #001d3d;
+  --color-prussian-blue-100: #00060c;
+  --color-prussian-blue-200: #000c18;
+  --color-prussian-blue-300: #001225;
+  --color-prussian-blue-400: #001831;
+  --color-prussian-blue-500: #001d3d;
+  --color-prussian-blue-600: #004997;
+  --color-prussian-blue-700: #0074f1;
+  --color-prussian-blue-800: #4ba2ff;
+  --color-prussian-blue-900: #a5d1ff;
+
+  --color-regal-navy: #003566;
+  --color-regal-navy-100: #000b14;
+  --color-regal-navy-200: #001529;
+  --color-regal-navy-300: #00203d;
+  --color-regal-navy-400: #002a52;
+  --color-regal-navy-500: #003566;
+  --color-regal-navy-600: #005fb8;
+  --color-regal-navy-700: #0a89ff;
+  --color-regal-navy-800: #5cb0ff;
+  --color-regal-navy-900: #add8ff;
+
+  --color-school-bus-yellow: #ffc300;
+  --color-school-bus-yellow-100: #332700;
+  --color-school-bus-yellow-200: #664e00;
+  --color-school-bus-yellow-300: #997500;
+  --color-school-bus-yellow-400: #cc9c00;
+  --color-school-bus-yellow-500: #ffc300;
+  --color-school-bus-yellow-600: #ffcf33;
+  --color-school-bus-yellow-700: #ffdb66;
+  --color-school-bus-yellow-800: #ffe799;
+  --color-school-bus-yellow-900: #fff3cc;
+
+  --color-gold: #ffd60a;
+  --color-gold-100: #352c00;
+  --color-gold-200: #6a5800;
+  --color-gold-300: #9f8500;
+  --color-gold-400: #d4b100;
+  --color-gold-500: #ffd60a;
+  --color-gold-600: #ffde3b;
+  --color-gold-700: #ffe76c;
+  --color-gold-800: #ffef9d;
+  --color-gold-900: #fff7ce;
+
+  --color-dust-grey: #dad7cd;
+  --color-dust-grey-100: #312e24;
+  --color-dust-grey-200: #615b48;
+  --color-dust-grey-300: #92896c;
+  --color-dust-grey-400: #b6b09c;
+  --color-dust-grey-500: #dad7cd;
+  --color-dust-grey-600: #e2dfd7;
+  --color-dust-grey-700: #e9e7e1;
+  --color-dust-grey-800: #f0efeb;
+  --color-dust-grey-900: #f8f7f5;
+
+  --color-dry-sage: #a3b18a;
+  --color-dry-sage-100: #212619;
+  --color-dry-sage-200: #434c33;
+  --color-dry-sage-300: #64724c;
+  --color-dry-sage-400: #859865;
+  --color-dry-sage-500: #a3b18a;
+  --color-dry-sage-600: #b6c1a2;
+  --color-dry-sage-700: #c8d0b9;
+  --color-dry-sage-800: #dae0d0;
+  --color-dry-sage-900: #edefe8;
+
+  --color-fern: #588157;
+  --color-fern-100: #111911;
+  --color-fern-200: #233323;
+  --color-fern-300: #344c34;
+  --color-fern-400: #466645;
+  --color-fern-500: #588157;
+  --color-fern-600: #739f72;
+  --color-fern-700: #96b795;
+  --color-fern-800: #b9cfb9;
+  --color-fern-900: #dce7dc;
+
+  --color-hunter-green: #3a5a40;
+  --color-hunter-green-100: #0c120d;
+  --color-hunter-green-200: #172419;
+  --color-hunter-green-300: #233626;
+  --color-hunter-green-400: #2e4833;
+  --color-hunter-green-500: #3a5a40;
+  --color-hunter-green-600: #56865f;
+  --color-hunter-green-700: #7aaa83;
+  --color-hunter-green-800: #a7c7ac;
+  --color-hunter-green-900: #d3e3d6;
+
+  --color-pine-teal: #344e41;
+  --color-pine-teal-100: #0a0f0d;
+  --color-pine-teal-200: #141f1a;
+  --color-pine-teal-300: #1f2e26;
+  --color-pine-teal-400: #293d33;
+  --color-pine-teal-500: #344e41;
+  --color-pine-teal-600: #527a66;
+  --color-pine-teal-700: #75a38c;
+  --color-pine-teal-800: #a3c2b3;
+  --color-pine-teal-900: #d1e0d9;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -178,8 +344,186 @@
 @utility ribbon {
   background-image: linear-gradient(
     135deg,
-    var(--brand) 0%,
-    var(--accent) 100%
+    #0a0f0d 0%,
+    #172419 35%,
+    #293d33 70%,
+    #3a5a40 100%
   );
-  color: var(--brand-foreground);
+  color: #f8f7f5;
+}
+
+/* ==========================================================================
+   Pencil Loader Animation
+   ========================================================================== */
+
+.pencil {
+  display: block;
+  width: 10em;
+  height: 10em;
+}
+
+.pencil__body1,
+.pencil__body2,
+.pencil__body3,
+.pencil__eraser,
+.pencil__eraser-skew,
+.pencil__point,
+.pencil__rotate,
+.pencil__stroke {
+  animation-duration: 3s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.pencil__body1,
+.pencil__body2,
+.pencil__body3 {
+  transform: rotate(-90deg);
+}
+
+.pencil__body1 {
+  animation-name: pencilBody1;
+}
+
+.pencil__body2 {
+  animation-name: pencilBody2;
+}
+
+.pencil__body3 {
+  animation-name: pencilBody3;
+}
+
+.pencil__eraser {
+  animation-name: pencilEraser;
+  transform: rotate(-90deg) translate(49px, 0);
+}
+
+.pencil__eraser-skew {
+  animation-name: pencilEraserSkew;
+  animation-timing-function: ease-in-out;
+}
+
+.pencil__point {
+  animation-name: pencilPoint;
+  transform: rotate(-90deg) translate(49px, -30px);
+}
+
+.pencil__rotate {
+  animation-name: pencilRotate;
+}
+
+.pencil__stroke {
+  animation-name: pencilStroke;
+  transform: translate(100px, 100px) rotate(-113deg);
+}
+
+@keyframes pencilBody1 {
+  from,
+  to {
+    stroke-dashoffset: 351.86;
+    transform: rotate(-90deg);
+  }
+  50% {
+    stroke-dashoffset: 150.8;
+    transform: rotate(-225deg);
+  }
+}
+
+@keyframes pencilBody2 {
+  from,
+  to {
+    stroke-dashoffset: 406.84;
+    transform: rotate(-90deg);
+  }
+  50% {
+    stroke-dashoffset: 174.36;
+    transform: rotate(-225deg);
+  }
+}
+
+@keyframes pencilBody3 {
+  from,
+  to {
+    stroke-dashoffset: 296.88;
+    transform: rotate(-90deg);
+  }
+  50% {
+    stroke-dashoffset: 127.23;
+    transform: rotate(-225deg);
+  }
+}
+
+@keyframes pencilEraser {
+  from,
+  to {
+    transform: rotate(-45deg) translate(49px, 0);
+  }
+  50% {
+    transform: rotate(0deg) translate(49px, 0);
+  }
+}
+
+@keyframes pencilEraserSkew {
+  from,
+  32.5%,
+  67.5%,
+  to {
+    transform: skewX(0);
+  }
+  35%,
+  65% {
+    transform: skewX(-4deg);
+  }
+  37.5%,
+  62.5% {
+    transform: skewX(8deg);
+  }
+  40%,
+  45%,
+  50%,
+  55%,
+  60% {
+    transform: skewX(-15deg);
+  }
+  42.5%,
+  47.5%,
+  52.5%,
+  57.5% {
+    transform: skewX(15deg);
+  }
+}
+
+@keyframes pencilPoint {
+  from,
+  to {
+    transform: rotate(-90deg) translate(49px, -30px);
+  }
+  50% {
+    transform: rotate(-225deg) translate(49px, -30px);
+  }
+}
+
+@keyframes pencilRotate {
+  from {
+    transform: translate(100px, 100px) rotate(0);
+  }
+  to {
+    transform: translate(100px, 100px) rotate(720deg);
+  }
+}
+
+@keyframes pencilStroke {
+  from {
+    stroke-dashoffset: 439.82;
+    transform: translate(100px, 100px) rotate(-113deg);
+  }
+  50% {
+    stroke-dashoffset: 164.93;
+    transform: translate(100px, 100px) rotate(-113deg);
+  }
+  75%,
+  to {
+    stroke-dashoffset: 439.82;
+    transform: translate(100px, 100px) rotate(112deg);
+  }
 }

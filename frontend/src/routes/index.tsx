@@ -15,7 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import heroImg from "@/assets/hero-auction.jpg";
+import Demo from "@/components/ui/demo";
 import stadiumImg from "@/assets/stadium-band.jpg";
 import stepCreate from "@/assets/step-create.jpg";
 import stepTeams from "@/assets/step-teams.jpg";
@@ -112,51 +112,8 @@ function Index() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative isolate">
-        <img
-          src={heroImg}
-          alt="Team owners bidding at a live cricket player auction"
-          width={1920}
-          height={1088}
-          className="absolute inset-0 size-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/70 to-ink/30" aria-hidden="true" />
-        <div className="relative mx-auto max-w-7xl px-4 py-24 md:py-32">
-          <p className="text-sm font-semibold tracking-widest text-brand-foreground/80 uppercase">
-            Live cricket auction platform
-          </p>
-          <h1 className="mt-3 max-w-2xl text-4xl leading-tight text-secondary md:text-6xl">
-            Online cricket auction app for live player bidding
-          </h1>
-          <p className="mt-4 max-w-xl text-secondary/80">
-            Host a professional player auction for your league — real-time bids, team purses and instant squad
-            sheets, with no setup on auction day.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/pricing"
-              className="rounded-md bg-brand px-6 py-3 font-semibold text-brand-foreground hover:bg-brand-dark"
-            >
-              Start an auction
-            </Link>
-            {isAuthenticated ? (
-              <Link
-                to="/my-auctions/new"
-                className="rounded-md bg-secondary px-6 py-3 font-semibold text-secondary-foreground hover:bg-secondary/80 border border-border shadow-sm"
-              >
-                Create Auction
-              </Link>
-            ) : (
-              <Link
-                to="/auth"
-                search={{ next: "/my-auctions/new" }}
-                className="rounded-md bg-secondary px-6 py-3 font-semibold text-secondary-foreground hover:bg-secondary/80 border border-border shadow-sm"
-              >
-                Create Auction
-              </Link>
-            )}
-          </div>
-        </div>
+      <section className="relative isolate overflow-hidden border-b border-border">
+        <Demo />
       </section>
 
       {/* Today's auctions */}
