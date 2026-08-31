@@ -293,7 +293,7 @@ function PlayerRegistrationPage() {
       toast.error("Please fill in Jersey Size");
       return;
     }
-    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.id === "6a8ed4afb1d04e719c5866a6";
+    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3";
     if (isBniAuction) {
       if (!jerseyName.trim()) {
         toast.error("Please fill in Jersey Name");
@@ -549,7 +549,7 @@ function PlayerRegistrationPage() {
             </div>
             */}
 
-            {(auction.id === "6a8edaddd7ed74151dbafab3" || auction.id === "6a8ed4afb1d04e719c5866a6") ? (
+            {auction.id === "6a8edaddd7ed74151dbafab3" ? (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="jerseySize">Jersey Size <span className="text-red-500 font-bold ml-0.5">*</span></Label>
@@ -584,7 +584,7 @@ function PlayerRegistrationPage() {
               </div>
             )}
 
-            {(auction.id === "6a8edaddd7ed74151dbafab3" || auction.id === "6a8ed4afb1d04e719c5866a6") && (
+            {auction.id === "6a8edaddd7ed74151dbafab3" && (
               <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
                 <h3 className="font-semibold text-lg">Membership Details</h3>
                 <div className="space-y-4">

@@ -41,7 +41,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = setControlledOpen || setInternalOpen;
-  const isBni = auctionId === "6a8edaddd7ed74151dbafab3" || auctionId === "6a8ed4afb1d04e719c5866a6";
+  const isBni = auctionId === "6a8edaddd7ed74151dbafab3";
 
   
   // Base fields
@@ -287,7 +287,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       return;
     }
 
-    const isBniAuction = auctionId === "6a8edaddd7ed74151dbafab3" || auctionId === "6a8ed4afb1d04e719c5866a6";
+    const isBniAuction = auctionId === "6a8edaddd7ed74151dbafab3";
     let customDataStr = customData;
 
     if (isBniAuction) {
