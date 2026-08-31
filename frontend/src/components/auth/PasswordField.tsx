@@ -37,7 +37,10 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
         <div className="relative">
           <Input
             type={showPassword ? "text" : "password"}
-            className={cn("pr-10", className)}
+            className={cn(
+              "pr-10 bg-[#18200e]/80 border-[#4c562c]/60 text-[#fefae0] placeholder:text-[#a9b876]/50 focus-visible:ring-[#dda15e] focus-visible:border-[#dda15e]",
+              className
+            )}
             ref={ref}
             value={value}
             onChange={onChange}
@@ -46,8 +49,8 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
           <button
             type="button"
             onClick={togglePasswordVisibility}
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            tabIndex={-1} // Don't allow tab focus on the icon to keep form navigation smooth
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent flex items-center justify-center text-[#a9b876] hover:text-[#fefae0] transition-colors"
+            tabIndex={-1}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
@@ -59,19 +62,19 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
         </div>
         
         {showStrength && passwordValue.length > 0 && (
-          <div className="flex gap-1 h-1.5 w-full mt-2">
+          <div className="flex gap-1.5 h-1.5 w-full mt-2">
             {[1, 2, 3].map((level) => (
               <div
                 key={level}
                 className={cn(
-                  "h-full w-full rounded-full transition-all",
+                  "h-full w-full rounded-full transition-all duration-300",
                   strength >= level
                     ? strength === 1
-                      ? "bg-destructive"
+                      ? "bg-[#bc6c25]"
                       : strength === 2
-                      ? "bg-yellow-500"
-                      : "bg-green-500"
-                    : "bg-muted"
+                      ? "bg-[#dda15e]"
+                      : "bg-[#88994f]"
+                    : "bg-[#18200e]/60"
                 )}
               />
             ))}
@@ -82,3 +85,5 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
   }
 );
 PasswordField.displayName = "PasswordField";
+
+export default PasswordField;

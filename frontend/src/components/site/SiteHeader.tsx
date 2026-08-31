@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Bookmark, LayoutDashboard, LogOut, Menu, Phone, Settings, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -31,20 +32,34 @@ const anchors = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [hideMiniNav, setHideMiniNav] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setHideMiniNav(window.scrollY > 25);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   async function signOut() {
     authClient.signOut();
     void navigate({ to: "/auth", replace: true });
   }
 
-
   return (
-    <header className="sticky top-0 z-50 shadow-[0_4px_30px_rgba(10,15,13,0.7)]">
-      {/* Top Banner */}
-      <div className="bg-[#0a0f0d] text-[#dad7cd]/90 text-xs border-b border-[#141f1a]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1.5">
+    <header className="sticky top-0 z-50 shadow-[0_4px_30px_rgba(10,15,13,0.7)] transition-all duration-300">
+      {/* Top Banner (Mini Navbar) with smooth auto-hide on scroll down */}
+      <div
+        className={cn(
+          "bg-[#0a0f0d] text-[#dad7cd]/90 text-xs border-b border-[#141f1a] transition-all duration-300 ease-in-out overflow-hidden",
+          hideMiniNav ? "max-h-0 opacity-0 py-0 border-transparent pointer-events-none" : "max-h-12 opacity-100 py-1.5"
+        )}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4">
           <p className="truncate font-medium tracking-wide text-[#dad7cd]/90">
             World #1 cricket auction platform for local &amp; league player auctions
           </p>

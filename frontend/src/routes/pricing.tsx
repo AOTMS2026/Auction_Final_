@@ -1,9 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check } from "lucide-react";
+import { useState } from "react";
 
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { Pricing, type PricingPlan } from "@/components/ui/pricing";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -24,13 +35,70 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-const plans = [
-  { name: "Plan 1", teams: "3 Teams", price: "Free", squad: "Up to 5 players" },
-  { name: "Plan 2", teams: "4 Teams", price: "₹999", squad: "Up to 8 players" },
-  { name: "Plan 3", teams: "6 Teams", price: "₹1,499", squad: "Up to 12 players" },
-  { name: "Plan 4", teams: "8 Teams", price: "₹2,499", squad: "Up to 14 players" },
-  { name: "Plan 5", teams: "12 Teams", price: "₹3,499", squad: "Up to 18 players" },
-  { name: "Plan 6", teams: "16 Teams", price: "₹4,999", squad: "Up to 22 players" },
+const cricketPlans: PricingPlan[] = [
+  {
+    name: "Gully & Club",
+    price: "499",
+    yearlyPrice: "399",
+    period: "month",
+    features: [
+      "Up to 6 Franchises / Teams",
+      "Up to 100 Players Roster",
+      "Live Real-Time Bidding Screen",
+      "Auto Purse & Squad Tracking",
+      "Mobile & Laptop Bidding Access",
+      "Room Code Instant Join",
+    ],
+    description: "Ideal for local turf, community clubs, and colony cricket tournaments",
+    buttonText: "Start Club Plan",
+    href: "/auth",
+    isPopular: false,
+  },
+  {
+    name: "Premier League",
+    price: "1499",
+    yearlyPrice: "1199",
+    period: "month",
+    features: [
+      "Up to 16 Franchises / Teams",
+      "Unlimited Player Import (Excel / CSV)",
+      "Projector & Live Stream Broadcast Overlay",
+      "Marquee & Tiered Lot Ordering",
+      "Custom Bid Increments & Retention",
+      "Priority Support & Timer Controls",
+    ],
+    description: "Most popular for corporate, district & premier cricket tournaments",
+    buttonText: "Get Premier Access",
+    href: "/auth",
+    isPopular: true,
+  },
+  {
+    name: "Mega Tournament",
+    price: "3499",
+    yearlyPrice: "2799",
+    period: "month",
+    features: [
+      "Unlimited Teams & Division Brackets",
+      "Multiple Auctioneers & Sub-Rooms",
+      "Custom Team Branding & Sponsor Logos",
+      "Full WhatsApp & SMS Player Alerts",
+      "Dedicated Event Specialist On Call",
+      "Custom Roster Export & Certificates",
+    ],
+    description: "Complete turnkey solution for large-scale state & academy tournaments",
+    buttonText: "Launch Mega Event",
+    href: "/auth",
+    isPopular: false,
+  },
+];
+
+const teamPlans = [
+  { name: "Tier 1", teams: "3 Teams", price: "Free", squad: "Up to 5 players per team" },
+  { name: "Tier 2", teams: "4 Teams", price: "₹999", squad: "Up to 8 players per team" },
+  { name: "Tier 3", teams: "6 Teams", price: "₹1,499", squad: "Up to 12 players per team" },
+  { name: "Tier 4", teams: "8 Teams", price: "₹2,499", squad: "Up to 14 players per team" },
+  { name: "Tier 5", teams: "12 Teams", price: "₹3,499", squad: "Up to 18 players per team" },
+  { name: "Tier 6", teams: "16 Teams", price: "₹4,999", squad: "Up to 22 players per team" },
 ];
 
 const included = [
@@ -42,17 +110,6 @@ const included = [
   "Downloadable final squad sheets",
 ];
 
-import { useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
 function PricingPage() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
 
@@ -60,33 +117,35 @@ function PricingPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
 
-      <section className="ribbon py-16">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <h1 className="text-4xl text-brand-foreground md:text-5xl">Auction plans &amp; pricing</h1>
-          <p className="mt-3 text-brand-foreground/85">
-            One-time price per auction. Start free with three teams and upgrade when your league grows.
-          </p>
-        </div>
+      {/* Interactive Pricing in INR */}
+      <section className="pt-8">
+        <Pricing
+          plans={cricketPlans}
+          title="Simple, Transparent Pricing"
+          description={"Choose the plan that fits your cricket tournament scale.\nAll plans include live bidding, squad trackers, and real-time purse calculations."}
+          currencySymbol="₹"
+        />
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16">
-        <SectionHeading lead="Choose your" highlight="Plan" subtitle="Priced by team count and squad size." />
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.map((p) => (
-            <article key={p.name} className="overflow-hidden rounded-lg border border-border bg-card card-shadow">
+      {/* Team-based packages */}
+      <section className="mx-auto max-w-7xl px-4 py-16 border-t border-border">
+        <SectionHeading lead="Single Tournament" highlight="Packages" subtitle="One-time flat fee per tournament by team count and squad size." />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
+          {teamPlans.map((p) => (
+            <article key={p.name} className="overflow-hidden rounded-2xl border border-border bg-card card-shadow hover:border-[#4f772d] transition-all">
               <div className="p-6 text-center">
-                <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{p.name}</p>
+                <p className="text-xs font-bold tracking-widest text-[#4f772d] dark:text-[#90a955] uppercase">{p.name}</p>
                 <h2 className="display mt-2 text-3xl text-card-foreground">{p.teams}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{p.squad}</p>
               </div>
-              <p className="ribbon py-3 text-center text-xl font-semibold">{p.price}</p>
+              <p className="bg-gradient-to-r from-[#132a13] to-[#31572c] py-3 text-center text-xl font-bold text-[#ecf39e]">{p.price}</p>
               <div className="p-5">
                 <button
                   type="button"
                   onClick={() => setComingSoonOpen(true)}
-                  className="w-full rounded-md border border-brand px-4 py-2 font-semibold text-brand hover:bg-accent transition-colors"
+                  className="w-full rounded-full border-2 border-[#4f772d] px-4 py-2.5 font-bold text-[#31572c] dark:text-[#90a955] hover:bg-[#4f772d] hover:text-white transition-all shadow-sm"
                 >
-                  Select plan
+                  Select package
                 </button>
               </div>
             </article>
@@ -94,14 +153,14 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="bg-secondary py-16">
+      <section className="bg-secondary/60 py-16 border-t border-border">
         <div className="mx-auto max-w-3xl px-4">
           <SectionHeading lead="Included in" highlight="Every Plan" />
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid gap-3 sm:grid-cols-2 mt-8">
             {included.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-md bg-card p-4 text-sm card-shadow">
-                <Check className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-                {item}
+              <li key={item} className="flex items-start gap-2.5 rounded-xl bg-card p-4 text-sm card-shadow border border-border/80">
+                <Check className="mt-0.5 size-4 shrink-0 text-[#4f772d]" aria-hidden="true" />
+                <span className="font-medium text-foreground">{item}</span>
               </li>
             ))}
           </ul>
@@ -109,15 +168,15 @@ function PricingPage() {
       </section>
 
       <AlertDialog open={comingSoonOpen} onOpenChange={setComingSoonOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Coming Soon</AlertDialogTitle>
+            <AlertDialogTitle>Instant Activation</AlertDialogTitle>
             <AlertDialogDescription>
-              We're currently rolling out our payment system. Upgraded plans will be available for purchase very soon!
+              We're currently rolling out our integrated UPI &amp; card payment gateway. You can host up to 3 teams free right now or contact support for immediate enterprise tournament activation!
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction>OK</AlertDialogAction>
+            <AlertDialogAction className="rounded-full bg-[#31572c] text-white">Got it</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -126,3 +185,5 @@ function PricingPage() {
     </div>
   );
 }
+
+export default PricingPage;

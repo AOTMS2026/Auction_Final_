@@ -25,32 +25,32 @@ export function TeamBidCard({
         if (!isFull) onSelect();
       }}
       className={cn(
-        "relative flex w-full items-center gap-2 rounded-lg border bg-card p-1.5 sm:p-2 text-left transition-colors shadow-sm select-none",
+        "relative flex w-full items-center gap-2.5 rounded-2xl border p-2 sm:p-2.5 text-left transition-all shadow-sm select-none",
         isFull
-          ? "border-border opacity-50"
+          ? "border-[#5c6875]/20 bg-[#171a1d]/40 opacity-40 cursor-not-allowed"
           : selected
-            ? "border-green-500 bg-green-500/5 cursor-pointer ring-2 ring-green-500/10"
-            : "border-border hover:bg-muted/50 cursor-pointer",
+            ? "border-[#a1b5d8] bg-[#162235] text-[#fffcf7] ring-2 ring-[#a1b5d8]/40 shadow-[0_0_20px_rgba(161,181,216,0.25)] cursor-pointer"
+            : "border-[#5c6875]/30 bg-[#171a1d]/75 text-[#fffcf7] hover:border-[#a1b5d8]/50 hover:bg-[#2e343a]/75 cursor-pointer",
       )}
     >
-      <div className="flex size-8 sm:size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1e2329] border border-white/5 shadow-sm">
+      <div className="flex size-9 sm:size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#162235] border border-[#a1b5d8]/30 shadow-md">
         <FallbackImage
           src={team.logo || ""}
           alt={team.name}
           className="size-full object-cover"
-          fallback={<span className="text-xs font-bold text-white/50">{team.shortName.slice(0, 3)}</span>}
+          fallback={<span className="text-xs font-black text-[#a1b5d8]">{team.shortName.slice(0, 3)}</span>}
         />
       </div>
       <div className="min-w-0 flex-1 pr-3">
-        <p className="truncate text-xs sm:text-sm font-extrabold text-foreground leading-tight">{team.name}</p>
-        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-bold">
+        <p className="truncate text-xs sm:text-sm font-black text-[#fffcf7] leading-tight">{team.name}</p>
+        <p className="text-[10px] sm:text-xs text-[#a1b5d8] mt-0.5 font-bold">
           🪙 {formatPoints(stats.availablePoints)}
         </p>
         {isFull ? (
-          <p className="text-[9px] font-black text-destructive mt-0.5">Full</p>
+          <p className="text-[9px] font-black text-red-400 mt-0.5">Full</p>
         ) : (
-          <p className="text-[9px] text-muted-foreground mt-0.5 font-semibold">
-            Max: <span className="font-black text-orange-500">{formatPoints(stats.maxBidPoints)}</span>
+          <p className="text-[9px] text-[#abb4bd] mt-0.5 font-semibold">
+            Max: <span className="font-bold text-[#c2d8b9]">{formatPoints(stats.maxBidPoints)}</span>
           </p>
         )}
       </div>
@@ -62,7 +62,7 @@ export function TeamBidCard({
             e.stopPropagation();
             onViewPlayers();
           }}
-          className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#abb4bd] hover:bg-[#2e343a] hover:text-[#fffcf7] transition-colors"
           aria-label="View sold players"
         >
           <Eye className="size-3.5" />

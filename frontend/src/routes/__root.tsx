@@ -104,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
       { rel: "icon", href: "/new_logo.jpg", type: "image/jpeg" },
     ],
@@ -134,7 +134,18 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const showBottomNav = pathname !== "/auth";
+
+  // Hide footer tab bar on all My Auction, auction rooms, registration, and redirect pages
+  const isMyAuctionOrRedirect =
+    pathname.startsWith("/my-auctions") ||
+    pathname.startsWith("/auctions") ||
+    pathname.startsWith("/register-") ||
+    pathname.startsWith("/auctioneer") ||
+    pathname.startsWith("/bookmarks") ||
+    pathname.startsWith("/profile") ||
+    pathname === "/auth";
+
+  const showBottomNav = !isMyAuctionOrRedirect;
 
   useEffect(() => {
     return authClient.onAuthChange(() => {

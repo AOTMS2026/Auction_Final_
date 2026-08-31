@@ -43,5 +43,7 @@ export function teamsQueryOptions(auctionId: string) {
   return queryOptions({
     queryKey: auctionKeys.teams(auctionId),
     queryFn: () => auctionClient.getTeams(auctionId),
+    staleTime: 30 * 1000, // 30 seconds fresh in client memory
+    gcTime: 5 * 60 * 1000,
   });
 }

@@ -721,9 +721,22 @@ export function RobotHero({
 }: RobotHeroProps = {}) {
   const containerRef = useRef<HTMLElement>(null);
   const [isClient, setIsClient] = useState(false);
+  const [isInView, setIsInView] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
+
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) {
+          setIsInView(entry.isIntersecting);
+        }
+      },
+      { threshold: 0.05 },
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -806,10 +819,16 @@ export function RobotHero({
         </h1>
       </div>
 
-      {/* 3D Canvas with Warm Ambient Studio Setup */}
+      {/* 3D Canvas with High-Performance Ambient Studio Setup */}
       <div className="absolute inset-0 z-10">
         {isClient && (
-          <Canvas shadows camera={{ position: [0, 0.2, 6], fov: 40 }}>
+          <Canvas
+            shadows
+            frameloop={isInView ? "always" : "never"}
+            dpr={[1, 1.5]}
+            gl={{ powerPreference: "high-performance", antialias: true, alpha: true }}
+            camera={{ position: [0, 0.2, 6], fov: 40 }}
+          >
             {/* Cornsilk Warm Ambient Light */}
             <ambientLight intensity={0.95} color="#fefae0" />
 
@@ -819,7 +838,7 @@ export function RobotHero({
               intensity={1.5}
               color="#fffdf3"
               castShadow
-              shadow-mapSize={[2048, 2048]}
+              shadow-mapSize={[1024, 1024]}
               shadow-bias={-0.0005}
             >
               <orthographicCamera
@@ -846,9 +865,10 @@ export function RobotHero({
               <ResponsiveGroup scale={scale}>
                 <ContactShadows
                   position={[0, -0.79, 0]}
-                  opacity={0.8}
+                  opacity={0.75}
                   scale={12}
-                  resolution={1024}
+                  resolution={512}
+                  frames={1}
                   blur={2.2}
                   far={2.5}
                   color="#080b05"

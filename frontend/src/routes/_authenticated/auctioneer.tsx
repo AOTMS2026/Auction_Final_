@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Mic2 } from "lucide-react";
 
-import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 
 export const Route = createFileRoute("/_authenticated/auctioneer")({
@@ -19,7 +18,6 @@ function AuctioneerPage() {
           A live bidding console for running an auction in real time is coming soon.
         </p>
       </main>
-      <SiteFooter />
     </div>
   );
 }

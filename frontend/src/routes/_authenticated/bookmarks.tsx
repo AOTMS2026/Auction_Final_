@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { AuctionCard, AuctionCardSkeleton } from "@/components/site/AuctionCard";
 import { Button } from "@/components/ui/button";
@@ -43,8 +42,6 @@ function BookmarksPage() {
           )}
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }
