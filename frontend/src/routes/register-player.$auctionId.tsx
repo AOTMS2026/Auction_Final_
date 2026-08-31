@@ -281,11 +281,19 @@ function PlayerRegistrationPage() {
       }
     }
     */
+    if (!photo) {
+      toast.error("Please upload player photo");
+      return;
+    }
+    if (auction.id !== "6a8edaddd7ed74151dbafab3" && !paymentImage) {
+      toast.error("Please upload the payment screenshot");
+      return;
+    }
     if (!jerseySize) {
       toast.error("Please fill in Jersey Size");
       return;
     }
-    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3";
+    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.id === "6a8ed4afb1d04e719c5866a6";
     if (isBniAuction) {
       if (!jerseyName.trim()) {
         toast.error("Please fill in Jersey Name");
@@ -296,7 +304,7 @@ function PlayerRegistrationPage() {
         return;
       }
       if (bblSeasons === "") {
-        toast.error("Please select Number of BBL seasons played");
+        toast.error("Please select Number of seasons played");
         return;
       }
     }
@@ -313,18 +321,13 @@ function PlayerRegistrationPage() {
         return;
       }
       if (memberType === "family" && (!bniName.trim() || !chapterName.trim() || !relationship)) {
-        toast.error("Please provide BNI Name, Chapter Name and Relationship");
+        toast.error("Please provide Member Name, Chapter Name and Relationship");
         return;
       }
       if (memberType === "bni") {
         customDataStr = `BNI Member | Chapter: ${chapterName} | BBL Seasons: ${bblSeasons}`;
       } else if (memberType === "family") {
         customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship} | BBL Seasons: ${bblSeasons}`;
-      }
-    } else {
-      if (!paymentImage) {
-        toast.error("Please upload the payment screenshot");
-        return;
       }
     }
 
@@ -458,7 +461,7 @@ function PlayerRegistrationPage() {
                   </div>
                 </Label>
               )}
-              <span className="text-xs text-muted-foreground font-semibold">Player Photo * (up to 10MB)</span>
+              <span className="text-xs text-muted-foreground font-semibold">Player Photo <span className="text-red-500 font-bold ml-0.5">*</span> (up to 10MB)</span>
               <input
                 id="player-photo"
                 type="file"
@@ -471,19 +474,19 @@ function PlayerRegistrationPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Input id="name" placeholder="e.g. Virat Kohli" value={name} onChange={(e) => setName(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone (10 digits) *</Label>
+                <Label htmlFor="phone">Phone (10 digits) <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Input id="phone" placeholder="e.g. 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={registerMutation.isPending} maxLength={10} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age">Age *</Label>
+                <Label htmlFor="age">Age <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
               <div className="space-y-2">
-                <Label>Gender *</Label>
+                <Label>Gender <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Select value={gender} onValueChange={setGender}>
                   <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
                   <SelectContent>
@@ -493,7 +496,7 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>City *</Label>
+                <Label>City <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Select value={city} onValueChange={setCity}>
                   <SelectTrigger><SelectValue placeholder="Select City" /></SelectTrigger>
                   <SelectContent>
@@ -504,7 +507,7 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Player Level *</Label>
+                <Label>Player Level <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Select value={playerLevel} onValueChange={setPlayerLevel}>
                   <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
                   <SelectContent>
@@ -546,22 +549,22 @@ function PlayerRegistrationPage() {
             </div>
             */}
 
-            {auction.id === "6a8edaddd7ed74151dbafab3" ? (
+            {(auction.id === "6a8edaddd7ed74151dbafab3" || auction.id === "6a8ed4afb1d04e719c5866a6") ? (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="jerseySize">Jersey Size *</Label>
+                  <Label htmlFor="jerseySize">Jersey Size <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="jerseyName">Jersey Name *</Label>
+                  <Label htmlFor="jerseyName">Jersey Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Input id="jerseyName" placeholder="e.g. Dhoni" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={registerMutation.isPending} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trouserSize">Jersey Number *</Label>
+                  <Label htmlFor="trouserSize">Jersey Number <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Input id="trouserSize" placeholder="e.g. 7" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={registerMutation.isPending} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Number of BBL seasons played *</Label>
+                  <Label>Number of seasons played <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Select value={bblSeasons} onValueChange={setBblSeasons}>
                     <SelectTrigger><SelectValue placeholder="Select seasons" /></SelectTrigger>
                     <SelectContent>
@@ -576,12 +579,12 @@ function PlayerRegistrationPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="jerseySize">Jersey Size *</Label>
+                <Label htmlFor="jerseySize">Jersey Size <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                 <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={registerMutation.isPending} required />
               </div>
             )}
 
-            {auction.id === "6a8edaddd7ed74151dbafab3" ? (
+            {(auction.id === "6a8edaddd7ed74151dbafab3" || auction.id === "6a8ed4afb1d04e719c5866a6") && (
               <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
                 <h3 className="font-semibold text-lg">Membership Details</h3>
                 <div className="space-y-4">
@@ -608,7 +611,7 @@ function PlayerRegistrationPage() {
 
                   {memberType === "bni" && (
                     <div className="space-y-2 pt-2 animate-in fade-in">
-                      <Label>Chapter Name *</Label>
+                      <Label>Chapter Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                       <Select value={chapterName} onValueChange={setChapterName}>
                         <SelectTrigger><SelectValue placeholder="Select Chapter" /></SelectTrigger>
                         <SelectContent>
@@ -621,11 +624,11 @@ function PlayerRegistrationPage() {
                   {memberType === "family" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
                       <div className="space-y-2">
-                        <Label htmlFor="bniName">BNI Member Name *</Label>
+                        <Label htmlFor="bniName">Member Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                         <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={registerMutation.isPending} required />
                       </div>
                       <div className="space-y-2">
-                        <Label>Chapter Name *</Label>
+                        <Label>Chapter Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                         <Select value={chapterName} onValueChange={setChapterName}>
                           <SelectTrigger><SelectValue placeholder="Select Chapter" /></SelectTrigger>
                           <SelectContent>
@@ -634,7 +637,7 @@ function PlayerRegistrationPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Relationship *</Label>
+                        <Label>Relationship <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                         <Select value={relationship} onValueChange={setRelationship}>
                           <SelectTrigger><SelectValue placeholder="Select Relationship" /></SelectTrigger>
                           <SelectContent>
@@ -649,14 +652,17 @@ function PlayerRegistrationPage() {
                   )}
                 </div>
               </div>
-            ) : (
+            )}
+
+            {/* Payment Details - Only for JSE / other auctions, NOT for BNI */}
+            {auction.id !== "6a8edaddd7ed74151dbafab3" && (
               <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
                 <h3 className="font-semibold text-lg">Payment Details</h3>
-                {/* UPI details and Amount instructions box is removed */}
-
 
                 <div className="space-y-2 pt-2">
-                  <Label htmlFor="paymentImage">Payment Screenshot *</Label>
+                  <Label htmlFor="paymentImage">
+                    Payment Screenshot <span className="text-red-500 font-bold ml-0.5">*</span>
+                  </Label>
                   {paymentImage ? (
                     <div className="relative w-full max-w-sm group">
                       <img src={paymentImage} alt="Payment screenshot" className="rounded-xl border-2 border-primary/20 object-contain w-full h-48 bg-muted shadow-sm transition-all group-hover:border-primary/50" />

@@ -41,7 +41,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = setControlledOpen || setInternalOpen;
-  const isBni = auctionId === "6a8edaddd7ed74151dbafab3";
+  const isBni = auctionId === "6a8edaddd7ed74151dbafab3" || auctionId === "6a8ed4afb1d04e719c5866a6";
 
   
   // Base fields
@@ -287,7 +287,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       return;
     }
 
-    const isBniAuction = auctionId === "6a8edaddd7ed74151dbafab3";
+    const isBniAuction = auctionId === "6a8edaddd7ed74151dbafab3" || auctionId === "6a8ed4afb1d04e719c5866a6";
     let customDataStr = customData;
 
     if (isBniAuction) {
@@ -419,11 +419,11 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
               <Input id="name" placeholder="e.g. Virat Kohli" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone (10 digits) *</Label>
+              <Label htmlFor="phone">Phone (10 digits) <span className="text-red-500 font-bold ml-0.5">*</span></Label>
               <Input id="phone" placeholder="e.g. 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isSubmitting} maxLength={10} required />
             </div>
             <div className="space-y-2">
@@ -477,15 +477,15 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             {isBni && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="jerseyName">Jersey Name *</Label>
+                  <Label htmlFor="jerseyName">Jersey Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Input id="jerseyName" placeholder="e.g. Dhoni" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={isSubmitting} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trouserSize">Jersey Number *</Label>
+                  <Label htmlFor="trouserSize">Jersey Number <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Input id="trouserSize" placeholder="e.g. 7" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={isSubmitting} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Number of BBL seasons played *</Label>
+                  <Label>Number of seasons played <span className="text-red-500 font-bold ml-0.5">*</span></Label>
                   <Select value={bblSeasons} onValueChange={setBblSeasons}>
                     <SelectTrigger><SelectValue placeholder="Select seasons" /></SelectTrigger>
                     <SelectContent>
@@ -501,235 +501,235 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             )}
           </div>
 
-          <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
-            {auctionId === "6a8edaddd7ed74151dbafab3" ? (
-              <>
-                <h3 className="font-semibold text-lg">Membership Details</h3>
-                <div className="space-y-4">
-                  <RadioGroup 
-                    value={memberType} 
-                    onValueChange={(val) => {
-                      setMemberType(val as "bni" | "family");
-                      if (!player) {
-                        setChapterName("");
-                        setBniName("");
-                        setRelationship("");
-                      }
-                    }} 
-                    className="flex gap-6"
-                    disabled={isSubmitting}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="bni" id="modal-r-bni" />
-                      <Label htmlFor="modal-r-bni" className="cursor-pointer">BNI Member</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="family" id="modal-r-family" />
-                      <Label htmlFor="modal-r-family" className="cursor-pointer">Family Member</Label>
-                    </div>
-                  </RadioGroup>
-
-                  {memberType === "bni" && (
-                    <div className="space-y-2 pt-2 animate-in fade-in">
-                      <Label htmlFor="chapterName">Chapter Name *</Label>
-                      <Input id="chapterName" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
-                    </div>
-                  )}
-
-                  {memberType === "family" && (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
-                      <div className="space-y-2">
-                        <Label htmlFor="bniName">BNI Name *</Label>
-                        <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={isSubmitting} required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="chapterNameFam">Chapter Name *</Label>
-                        <Input id="chapterNameFam" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Relationship *</Label>
-                        <Select value={relationship} onValueChange={setRelationship}>
-                          <SelectTrigger><SelectValue placeholder="Select Relationship" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Child">Child</SelectItem>
-                            <SelectItem value="Spouse">Spouse</SelectItem>
-                            <SelectItem value="Parents">Parents</SelectItem>
-                            <SelectItem value="Siblings">Siblings</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-lg">Payment Details</h3>
-                  {paymentImage && (
-                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      Screenshot Uploaded
-                    </span>
-                  )}
-                </div>
-
-                {loadingFullDetails ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-                    <Loader2 className="size-4 animate-spin text-brand" />
-                    Loading payment details...
+          {isBni && (
+            <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
+              <h3 className="font-semibold text-lg">Membership Details</h3>
+              <div className="space-y-4">
+                <RadioGroup 
+                  value={memberType} 
+                  onValueChange={(val) => {
+                    setMemberType(val as "bni" | "family");
+                    if (!player) {
+                      setChapterName("");
+                      setBniName("");
+                      setRelationship("");
+                    }
+                  }} 
+                  className="flex gap-6"
+                  disabled={isSubmitting}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="bni" id="modal-r-bni" />
+                    <Label htmlFor="modal-r-bni" className="cursor-pointer">BNI Member</Label>
                   </div>
-                ) : paymentImage ? (
-                  <div className="space-y-3 pt-1">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Payment Screenshot</Label>
-                      {paymentImage.startsWith("http") && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="family" id="modal-r-family" />
+                    <Label htmlFor="modal-r-family" className="cursor-pointer">Family Member</Label>
+                  </div>
+                </RadioGroup>
+
+                {memberType === "bni" && (
+                  <div className="space-y-2 pt-2 animate-in fade-in">
+                    <Label htmlFor="chapterName">Chapter Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
+                    <Input id="chapterName" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
+                  </div>
+                )}
+
+                {memberType === "family" && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
+                    <div className="space-y-2">
+                      <Label htmlFor="bniName">Member Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
+                      <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={isSubmitting} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="chapterNameFam">Chapter Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
+                      <Input id="chapterNameFam" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Relationship <span className="text-red-500 font-bold ml-0.5">*</span></Label>
+                      <Select value={relationship} onValueChange={setRelationship}>
+                        <SelectTrigger><SelectValue placeholder="Select Relationship" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Child">Child</SelectItem>
+                          <SelectItem value="Spouse">Spouse</SelectItem>
+                          <SelectItem value="Parents">Parents</SelectItem>
+                          <SelectItem value="Siblings">Siblings</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {auctionId !== "6a8edaddd7ed74151dbafab3" && (
+            <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
+              <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg">Payment Details</h3>
+              {paymentImage && (
+                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  Screenshot Uploaded
+                </span>
+              )}
+            </div>
+
+            {loadingFullDetails ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                <Loader2 className="size-4 animate-spin text-brand" />
+                Loading payment details...
+              </div>
+            ) : paymentImage ? (
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Payment Screenshot</Label>
+                  {paymentImage.startsWith("http") && (
+                    <a 
+                      href={paymentImage} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-xs text-brand hover:underline flex items-center gap-1 font-medium"
+                    >
+                      <ExternalLink className="size-3" /> Open in New Tab
+                    </a>
+                  )}
+                </div>
+
+                <div className="relative w-full max-w-sm rounded-xl border border-border bg-card p-3 shadow-sm space-y-2.5">
+                  {/* Image Preview Container with Loading & Error Handlers */}
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
+                    {imgLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/80 backdrop-blur-xs z-10">
+                        <Loader2 className="size-6 animate-spin text-brand mb-1" />
+                        <span className="text-xs text-muted-foreground">Loading image...</span>
+                      </div>
+                    )}
+                    {imgError ? (
+                      <div className="flex flex-col items-center justify-center p-4 text-center">
+                        <AlertCircle className="size-7 text-amber-500 mb-1" />
+                        <span className="text-xs font-medium text-foreground">Preview unavailable</span>
+                        <span className="text-[11px] text-muted-foreground mt-0.5">Image URL is valid but preview failed to render in browser</span>
                         <a 
                           href={paymentImage} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-xs text-brand hover:underline flex items-center gap-1 font-medium"
+                          className="text-xs text-brand hover:underline mt-2 font-medium flex items-center gap-1"
                         >
-                          <ExternalLink className="size-3" /> Open in New Tab
+                          <ExternalLink className="size-3" /> View Image URL directly
                         </a>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <img 
+                        src={paymentImage} 
+                        alt="Payment screenshot" 
+                        className={`size-full object-contain cursor-pointer hover:opacity-95 transition-opacity ${imgLoading ? "opacity-0" : "opacity-100"}`}
+                        onLoad={() => setImgLoading(false)}
+                        onError={() => { setImgLoading(false); setImgError(true); }}
+                        onClick={() => window.open(paymentImage, "_blank")}
+                        title="Click to open full screenshot" 
+                      />
+                    )}
+                  </div>
 
-                    <div className="relative w-full max-w-sm rounded-xl border border-border bg-card p-3 shadow-sm space-y-2.5">
-                      {/* Image Preview Container with Loading & Error Handlers */}
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
-                        {imgLoading && (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/80 backdrop-blur-xs z-10">
-                            <Loader2 className="size-6 animate-spin text-brand mb-1" />
-                            <span className="text-xs text-muted-foreground">Loading image...</span>
-                          </div>
-                        )}
-                        {imgError ? (
-                          <div className="flex flex-col items-center justify-center p-4 text-center">
-                            <AlertCircle className="size-7 text-amber-500 mb-1" />
-                            <span className="text-xs font-medium text-foreground">Preview unavailable</span>
-                            <span className="text-[11px] text-muted-foreground mt-0.5">Image URL is valid but preview failed to render in browser</span>
-                            <a 
-                              href={paymentImage} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-xs text-brand hover:underline mt-2 font-medium flex items-center gap-1"
-                            >
-                              <ExternalLink className="size-3" /> View Image URL directly
-                            </a>
-                          </div>
-                        ) : (
-                          <img 
-                            src={paymentImage} 
-                            alt="Payment screenshot" 
-                            className={`size-full object-contain cursor-pointer hover:opacity-95 transition-opacity ${imgLoading ? "opacity-0" : "opacity-100"}`}
-                            onLoad={() => setImgLoading(false)}
-                            onError={() => { setImgLoading(false); setImgError(true); }}
+                  {/* Display Image URL with Copy and Open Buttons */}
+                  {paymentImage.startsWith("http") && (
+                    <div className="space-y-1">
+                      <Label className="text-[11px] text-muted-foreground">Image URL</Label>
+                      <div className="rounded-lg bg-muted/70 px-2.5 py-1.5 flex items-center justify-between gap-2 border text-[11px]">
+                        <a
+                          href={paymentImage}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-brand hover:underline truncate font-mono select-all cursor-pointer font-medium"
+                          title="Click to redirect to image URL"
+                        >
+                          {paymentImage}
+                        </a>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 px-1.5 text-[11px]" 
+                            onClick={() => {
+                              navigator.clipboard.writeText(paymentImage);
+                              toast.success("Image URL copied to clipboard");
+                            }}
+                            title="Copy URL"
+                          >
+                            <Copy className="size-3" />
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 px-1.5 text-[11px]" 
                             onClick={() => window.open(paymentImage, "_blank")}
-                            title="Click to open full screenshot" 
-                          />
-                        )}
-                      </div>
-
-                      {/* Display Image URL with Copy and Open Buttons */}
-                      {paymentImage.startsWith("http") && (
-                        <div className="space-y-1">
-                          <Label className="text-[11px] text-muted-foreground">Image URL</Label>
-                          <div className="rounded-lg bg-muted/70 px-2.5 py-1.5 flex items-center justify-between gap-2 border text-[11px]">
-                            <a
-                              href={paymentImage}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-brand hover:underline truncate font-mono select-all cursor-pointer font-medium"
-                              title="Click to redirect to image URL"
-                            >
-                              {paymentImage}
-                            </a>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-6 px-1.5 text-[11px]" 
-                                onClick={() => {
-                                  navigator.clipboard.writeText(paymentImage);
-                                  toast.success("Image URL copied to clipboard");
-                                }}
-                                title="Copy URL"
-                              >
-                                <Copy className="size-3" />
-                              </Button>
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-6 px-1.5 text-[11px]" 
-                                onClick={() => window.open(paymentImage, "_blank")}
-                                title="Open URL in new tab"
-                              >
-                                <ExternalLink className="size-3" />
-                              </Button>
-                            </div>
-                          </div>
+                            title="Open URL in new tab"
+                          >
+                            <ExternalLink className="size-3" />
+                          </Button>
                         </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-1.5 border-t text-xs">
-                        <Label 
-                          htmlFor="modalPaymentImageChangeInput" 
-                          className="cursor-pointer font-medium text-brand hover:underline flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-brand/10 transition-colors"
-                        >
-                          <Pencil className="size-3" /> Change Screenshot
-                        </Label>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => {
-                            setPaymentImage(null);
-                            setImgLoading(false);
-                            setImgError(false);
-                          }}
-                        >
-                          Remove
-                        </Button>
                       </div>
-                      <input 
-                        id="modalPaymentImageChangeInput" 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handlePaymentImageChange} 
-                        disabled={isSubmitting} 
-                      />
                     </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-1.5 border-t text-xs">
+                    <Label 
+                      htmlFor="modalPaymentImageChangeInput" 
+                      className="cursor-pointer font-medium text-brand hover:underline flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-brand/10 transition-colors"
+                    >
+                      <Pencil className="size-3" /> Change Screenshot
+                    </Label>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        setPaymentImage(null);
+                        setImgLoading(false);
+                        setImgError(false);
+                      }}
+                    >
+                      Remove
+                    </Button>
                   </div>
-                ) : (
-                  <div className="space-y-2 pt-1">
-                    <p className="text-xs text-muted-foreground">No payment screenshot uploaded.</p>
-                    <div>
-                      <Label 
-                        htmlFor="modalPaymentImageUpload" 
-                        className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
-                      >
-                        <UploadCloud className="size-8 text-primary/60 mb-1.5" />
-                        <span className="text-sm font-semibold text-foreground">Upload Screenshot / Update Here</span>
-                        <span className="text-xs text-muted-foreground mt-0.5">Click to browse image (JPEG, PNG up to 10MB)</span>
-                      </Label>
-                      <input 
-                        id="modalPaymentImageUpload" 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handlePaymentImageChange} 
-                        disabled={isSubmitting} 
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
+                  <input 
+                    id="modalPaymentImageChangeInput" 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handlePaymentImageChange} 
+                    disabled={isSubmitting} 
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 pt-1">
+                <p className="text-xs text-muted-foreground">No payment screenshot uploaded.</p>
+                <div>
+                  <Label 
+                    htmlFor="modalPaymentImageUpload" 
+                    className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+                  >
+                    <UploadCloud className="size-8 text-primary/60 mb-1.5" />
+                    <span className="text-sm font-semibold text-foreground">Upload Screenshot / Update Here</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">Click to browse image (JPEG, PNG up to 10MB)</span>
+                  </Label>
+                  <input 
+                    id="modalPaymentImageUpload" 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handlePaymentImageChange} 
+                    disabled={isSubmitting} 
+                  />
+                </div>
+              </div>
             )}
           </div>
+        )}
 
 
 
