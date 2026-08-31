@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Loader2, Plus, Pencil } from "lucide-react";
+import { Loader2, Plus, Pencil, UploadCloud, Copy, ExternalLink, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -31,10 +31,10 @@ type PlayerFormModalProps = {
   auctionId: string;
   sportType: SportType;
   playersPerTeam: number;
-  player?: Player;
-  trigger?: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  player?: Player | undefined;
+  trigger?: React.ReactNode | undefined;
+  open?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
 };
 
 export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: PlayerFormModalProps) {
@@ -58,6 +58,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [utrNumber, setUtrNumber] = useState(player?.utrNumber || "");
   const [paymentImage, setPaymentImage] = useState<string | null>(player?.paymentImage || null);
   const [loadingFullDetails, setLoadingFullDetails] = useState(false);
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgError, setImgError] = useState(false);
   
   const [baseValue, setBaseValue] = useState(player?.baseValue?.toString() || "0");
   const [jerseySize, setJerseySize] = useState(player?.jerseySize || "");
@@ -138,6 +140,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           const fullPlayer = await auctionClient.getPlayerById(player.id);
           if (fullPlayer && fullPlayer.paymentImage) {
             setPaymentImage(fullPlayer.paymentImage);
+            setImgLoading(true);
+            setImgError(false);
           }
         } catch (err) {
           console.error("Failed to fetch full player details for payment screenshot:", err);
@@ -203,6 +207,27 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
         setCropImageSrc(rawDataUrl);
         setZoom(1);
         setDragOffset({ x: 0, y: 0 });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePaymentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Payment screenshot must be less than 10MB");
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPaymentImage(reader.result as string);
+        setImgLoading(false);
+        setImgError(false);
+        if (!paymentMode) {
+          setPaymentMode("Online");
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -284,15 +309,13 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
         customDataStr = `Family Member | BNI Name: ${bniName}, Chapter: ${chapterName}, Rel: ${relationship} | BBL Seasons: ${bblSeasons}`;
       }
     } else {
-      if (!paymentMode && paymentImage) {
-        toast.error("Please select a payment mode");
-        return;
-      }
       if (utrNumber && utrNumber.length !== 12) {
         toast.error("UTR Number must be 12 digits if provided");
         return;
       }
     }
+
+    const effectivePaymentMode = isBniAuction ? "" : (paymentMode || (paymentImage ? "Online" : ""));
 
     const input: PlayerInput = {
       auctionId,
@@ -303,7 +326,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       gender,
       city,
       playerLevel,
-      paymentMode: isBniAuction ? "" : paymentMode,
+      paymentMode: effectivePaymentMode,
       utrNumber: isBniAuction ? "" : utrNumber,
       paymentImage: isBniAuction ? null : paymentImage,
       baseValue: parseFloat(baseValue) || 0,
@@ -541,30 +564,168 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               </>
             ) : (
               <>
-                <h3 className="font-semibold text-lg">Payment Details</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Payment Details</h3>
+                  {paymentImage && (
+                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      Screenshot Uploaded
+                    </span>
+                  )}
+                </div>
+
                 {loadingFullDetails ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
                     <Loader2 className="size-4 animate-spin text-brand" />
                     Loading payment details...
                   </div>
                 ) : paymentImage ? (
-                  <div className="space-y-2">
-                    <Label>Payment Screenshot</Label>
-                    <div className="relative w-full max-w-sm">
-                      <img src={paymentImage} alt="Payment screenshot" className="rounded-md border object-contain w-full h-40" />
-                      <Button 
-                        type="button" 
-                        variant="secondary" 
-                        size="sm" 
-                        className="absolute top-2 right-2"
-                        onClick={() => setPaymentImage(null)}
-                      >
-                        Remove
-                      </Button>
+                  <div className="space-y-3 pt-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Payment Screenshot</Label>
+                      {paymentImage.startsWith("http") && (
+                        <a 
+                          href={paymentImage} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-xs text-brand hover:underline flex items-center gap-1 font-medium"
+                        >
+                          <ExternalLink className="size-3" /> Open in New Tab
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="relative w-full max-w-sm rounded-xl border border-border bg-card p-3 shadow-sm space-y-2.5">
+                      {/* Image Preview Container with Loading & Error Handlers */}
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
+                        {imgLoading && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/80 backdrop-blur-xs z-10">
+                            <Loader2 className="size-6 animate-spin text-brand mb-1" />
+                            <span className="text-xs text-muted-foreground">Loading image...</span>
+                          </div>
+                        )}
+                        {imgError ? (
+                          <div className="flex flex-col items-center justify-center p-4 text-center">
+                            <AlertCircle className="size-7 text-amber-500 mb-1" />
+                            <span className="text-xs font-medium text-foreground">Preview unavailable</span>
+                            <span className="text-[11px] text-muted-foreground mt-0.5">Image URL is valid but preview failed to render in browser</span>
+                            <a 
+                              href={paymentImage} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-xs text-brand hover:underline mt-2 font-medium flex items-center gap-1"
+                            >
+                              <ExternalLink className="size-3" /> View Image URL directly
+                            </a>
+                          </div>
+                        ) : (
+                          <img 
+                            src={paymentImage} 
+                            alt="Payment screenshot" 
+                            className={`size-full object-contain cursor-pointer hover:opacity-95 transition-opacity ${imgLoading ? "opacity-0" : "opacity-100"}`}
+                            onLoad={() => setImgLoading(false)}
+                            onError={() => { setImgLoading(false); setImgError(true); }}
+                            onClick={() => window.open(paymentImage, "_blank")}
+                            title="Click to open full screenshot" 
+                          />
+                        )}
+                      </div>
+
+                      {/* Display Image URL with Copy and Open Buttons */}
+                      {paymentImage.startsWith("http") && (
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-muted-foreground">Image URL</Label>
+                          <div className="rounded-lg bg-muted/70 px-2.5 py-1.5 flex items-center justify-between gap-2 border text-[11px]">
+                            <a
+                              href={paymentImage}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-brand hover:underline truncate font-mono select-all cursor-pointer font-medium"
+                              title="Click to redirect to image URL"
+                            >
+                              {paymentImage}
+                            </a>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-1.5 text-[11px]" 
+                                onClick={() => {
+                                  navigator.clipboard.writeText(paymentImage);
+                                  toast.success("Image URL copied to clipboard");
+                                }}
+                                title="Copy URL"
+                              >
+                                <Copy className="size-3" />
+                              </Button>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-1.5 text-[11px]" 
+                                onClick={() => window.open(paymentImage, "_blank")}
+                                title="Open URL in new tab"
+                              >
+                                <ExternalLink className="size-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-1.5 border-t text-xs">
+                        <Label 
+                          htmlFor="modalPaymentImageChangeInput" 
+                          className="cursor-pointer font-medium text-brand hover:underline flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-brand/10 transition-colors"
+                        >
+                          <Pencil className="size-3" /> Change Screenshot
+                        </Label>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            setPaymentImage(null);
+                            setImgLoading(false);
+                            setImgError(false);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <input 
+                        id="modalPaymentImageChangeInput" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handlePaymentImageChange} 
+                        disabled={isSubmitting} 
+                      />
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground pt-1">No payment screenshot uploaded.</p>
+                  <div className="space-y-2 pt-1">
+                    <p className="text-xs text-muted-foreground">No payment screenshot uploaded.</p>
+                    <div>
+                      <Label 
+                        htmlFor="modalPaymentImageUpload" 
+                        className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+                      >
+                        <UploadCloud className="size-8 text-primary/60 mb-1.5" />
+                        <span className="text-sm font-semibold text-foreground">Upload Screenshot / Update Here</span>
+                        <span className="text-xs text-muted-foreground mt-0.5">Click to browse image (JPEG, PNG up to 10MB)</span>
+                      </Label>
+                      <input 
+                        id="modalPaymentImageUpload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handlePaymentImageChange} 
+                        disabled={isSubmitting} 
+                      />
+                    </div>
+                  </div>
                 )}
               </>
             )}

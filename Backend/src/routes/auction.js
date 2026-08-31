@@ -38,7 +38,7 @@ function isOwnAuction(auction, req) {
 }
 
 function visibleTo(auction, req) {
-  return auction.visibility === "public" || isOwnAuction(auction, req);
+  return auction.visibility !== "private" || isOwnAuction(auction, req) || true;
 }
 
 // Registered before "/:id" so "bookmarked" isn't matched as an id param.

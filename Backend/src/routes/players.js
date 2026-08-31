@@ -1,6 +1,8 @@
 const { Router } = require("express");
+const mongoose = require("mongoose");
 const Player = require("../models/Player");
 const Auction = require("../models/Auction");
+const Team = require("../models/Team");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
 const { uploadBase64Image, deleteImage } = require("../lib/cloudinary");
 
@@ -45,7 +47,6 @@ router.get(
   optionalAuth,
   asyncHandler(async (req, res) => {
     const startReqTime = performance.now();
-    const mongoose = require("mongoose");
     
     // 1. Connection Health Check
     if (mongoose.connection.readyState !== 1) {
@@ -298,26 +299,6 @@ router.delete(
   })
 );
 
-// Get single player details (including payment screenshot) for authorized users
-router.get(
-  "/players/:id",
-  requireAuth,
-  asyncHandler(async (req, res) => {
-    const player = await Player.findById(req.params.id).catch(() => null);
-    if (!player) return res.status(404).json({ error: "Player not found" });
-
-    const auction = await Auction.findById(player.auctionId).catch(() => null);
-    if (!auction) return res.status(404).json({ error: "Auction not found" });
-
-    const isOwn = req.userId && (auction.createdBy.toString() === req.userId || req.isAdmin);
-    if (!isOwn) {
-      return res.status(403).json({ error: "You don't have permission to access these details" });
-    }
-
-    res.json({ player: toPublicPlayer(player) });
-  })
-);
-
 // Get player profile across all auctions by phone
 router.get(
   "/players/profile/:phone",
@@ -337,8 +318,6 @@ router.get(
     // Get unique auctions and teams to populate context
     const auctionIds = [...new Set(players.map(p => p.auctionId.toString()))];
     const teamIds = [...new Set(players.filter(p => p.teamId).map(p => p.teamId.toString()))];
-
-    const Team = require("../models/Team");
 
     const [auctions, teams] = await Promise.all([
       Auction.find({ _id: { $in: auctionIds } }),
@@ -404,6 +383,26 @@ router.get(
       },
       history: auctionHistory
     });
+  })
+);
+
+// Get single player details (including payment screenshot)
+router.get(
+  "/players/:id",
+  optionalAuth,
+  asyncHandler(async (req, res) => {
+    const player = await Player.findById(req.params.id).catch(() => null);
+    if (!player) return res.status(404).json({ error: "Player not found" });
+
+    const auction = await Auction.findById(player.auctionId).catch(() => null);
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    const isOwn = req.userId && auction.createdBy.toString() === req.userId;
+    if (auction.visibility === "private" && !isOwn && !req.isAdmin) {
+      return res.status(404).json({ error: "Auction not found" });
+    }
+
+    res.json({ player: toPublicPlayer(player) });
   })
 );
 

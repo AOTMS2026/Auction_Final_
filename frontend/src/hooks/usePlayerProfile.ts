@@ -6,6 +6,9 @@ export const playerProfileQueryOptions = (phone: string) => ({
   queryFn: () => auctionClient.getPlayerProfile(phone),
 });
 
-export function usePlayerProfile(phone: string) {
-  return useQuery(playerProfileQueryOptions(phone));
+export function usePlayerProfile(phone: string, enabled: boolean = true) {
+  return useQuery({
+    ...playerProfileQueryOptions(phone),
+    enabled: enabled && !!phone,
+  });
 }

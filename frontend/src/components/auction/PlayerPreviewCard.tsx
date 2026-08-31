@@ -15,7 +15,7 @@ type PlayerPreviewCardProps = {
 
 export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: PlayerPreviewCardProps) {
   // We only fetch the full profile if the dialog is open to save unnecessary requests
-  const { data: profile, isLoading } = usePlayerProfile(player.phone);
+  const { data: profile, isLoading } = usePlayerProfile(player.phone, open);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -33,7 +33,8 @@ export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: Playe
             <FallbackImage
               src={player.photo || ""}
               alt={player.name}
-              className="size-full object-cover"
+              className="size-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
+              onClick={() => player.photo && window.open(player.photo, "_blank")}
               fallback={
                 <span className="display grid size-full place-items-center bg-brand/10 text-6xl font-bold text-brand">
                   {player.name.slice(0, 2).toUpperCase()}

@@ -614,8 +614,14 @@ function EditGradeModal({ player, open, onOpenChange, onSave, isSaving }: EditGr
             {!isBniAuction && player?.paymentImage && (
               <div className="sm:col-span-2 flex flex-col items-center justify-center space-y-2 mt-4">
                 <Label className="text-xs text-muted-foreground">Payment Screenshot</Label>
-                <div className="max-w-xs border rounded-lg overflow-hidden bg-muted p-1">
-                  <img src={player.paymentImage} alt="Payment screenshot" className="w-full h-auto object-contain max-h-48" />
+                <div className="max-w-xs border rounded-lg overflow-hidden bg-muted p-1 shadow-sm">
+                  <img 
+                    src={player.paymentImage} 
+                    alt="Payment screenshot" 
+                    className="w-full h-auto object-contain max-h-48 rounded cursor-pointer hover:opacity-95 transition-opacity"
+                    onClick={() => window.open(player.paymentImage!, "_blank")}
+                    title="Click to view full screenshot" 
+                  />
                 </div>
               </div>
             )}

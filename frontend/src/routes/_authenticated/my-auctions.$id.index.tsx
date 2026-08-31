@@ -393,14 +393,6 @@ function ManageAuctionPage() {
                       </button>
                     }
                   />
-                  <PlayerFormModal
-                    auctionId={auction.id}
-                    sportType={auction.sportType}
-                    playersPerTeam={auction.playersPerTeam}
-                    player={player}
-                    open={editPlayerId === player.id}
-                    onOpenChange={(open) => !open && setEditPlayerId(null)}
-                  />
                   <div className="shrink-0 mr-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -420,6 +412,19 @@ function ManageAuctionPage() {
                   </div>
                 </div>
               ))
+            )}
+            {/* Only trigger player modal & API image fetch when editing a specific player */}
+            {editPlayerId && (
+              <PlayerFormModal
+                auctionId={auction.id}
+                sportType={auction.sportType}
+                playersPerTeam={auction.playersPerTeam}
+                player={players.find((p) => p.id === editPlayerId)}
+                open={!!editPlayerId}
+                onOpenChange={(open) => {
+                  if (!open) setEditPlayerId(null);
+                }}
+              />
             )}
             <PlayerFormModal auctionId={auction.id} sportType={auction.sportType} playersPerTeam={auction.playersPerTeam} />
           </div>

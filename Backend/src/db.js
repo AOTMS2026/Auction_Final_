@@ -24,10 +24,12 @@ async function connectDB() {
   });
 
   await mongoose.connect(uri, { 
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
+    serverSelectionTimeoutMS: 30000,
+    connectTimeoutMS: 30000,
+    socketTimeoutMS: 60000,
     maxPoolSize: 10,
-    minPoolSize: 2,
+    minPoolSize: 1,
+    heartbeatFrequencyMS: 10000,
   });
 }
 
