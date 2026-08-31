@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Pencil, CheckCircle2, Copy, UploadCloud } from "lucide-react";
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/register-player/$auctionId")({
       const auction = await context.queryClient.ensureQueryData(auctionDetailQueryOptions(params.auctionId));
       return { auction };
     } catch {
-      throw new Error("Auction not found");
+      return { auction: null };
     }
   },
   component: PlayerRegistrationPage,
@@ -59,7 +59,17 @@ const CHAPTERS = [
 ];
 
 function PlayerRegistrationPage() {
-  const { auction } = Route.useLoaderData();
+  const loaderData = Route.useLoaderData();
+  const { auctionId } = Route.useParams();
+
+  // Load the auction with fallback and auto-retry
+  const { data: auction, isPending, isError, refetch } = useQuery({
+    queryKey: ["public-auction", auctionId],
+    queryFn: () => auctionClient.getById(auctionId),
+    initialData: loaderData?.auction ?? undefined,
+    retry: 2,
+  });
+
   const [success, setSuccess] = useState(false);
 
   // Form state
@@ -95,6 +105,42 @@ function PlayerRegistrationPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imgRef = useRef<HTMLImageElement | null>(null);
+
+  if (isPending && !auction) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <SiteHeader />
+        <main className="flex-1 flex flex-col items-center justify-center p-4">
+          <Loader2 className="size-8 animate-spin text-brand mb-3" />
+          <p className="text-sm text-muted-foreground">Loading registration details...</p>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (isError || !auction) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <SiteHeader />
+        <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+          <div className="max-w-md w-full bg-card rounded-2xl p-8 card-shadow border border-border">
+            <h2 className="text-xl font-bold text-foreground mb-2">Auction Not Available</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              This auction registration link may be expired, invalid, or temporarily unavailable.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button onClick={() => refetch()}>Try Again</Button>
+              <Button asChild variant="outline">
+                <Link to="/">Go Home</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   const config = SPORT_CONFIGS[auction.sportType] || SPORT_CONFIGS["cricket"];
 
