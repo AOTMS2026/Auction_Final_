@@ -38,7 +38,7 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
           <Input
             type={showPassword ? "text" : "password"}
             className={cn(
-              "pr-10 bg-[#18200e]/80 border-[#4c562c]/60 text-[#fefae0] placeholder:text-[#a9b876]/50 focus-visible:ring-[#dda15e] focus-visible:border-[#dda15e]",
+              "pr-10 bg-[#2e343a]/75 border-[#5c6875]/50 text-[#fffcf7] placeholder:text-[#abb4bd]/50 focus-visible:ring-[#a1b5d8] focus-visible:border-[#a1b5d8]",
               className
             )}
             ref={ref}
@@ -49,7 +49,7 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
           <button
             type="button"
             onClick={togglePasswordVisibility}
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent flex items-center justify-center text-[#a9b876] hover:text-[#fefae0] transition-colors"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent flex items-center justify-center text-[#abb4bd] hover:text-[#fffcf7] transition-colors"
             tabIndex={-1}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
@@ -70,11 +70,11 @@ export const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldPro
                   "h-full w-full rounded-full transition-all duration-300",
                   strength >= level
                     ? strength === 1
-                      ? "bg-[#bc6c25]"
+                      ? "bg-rose-500"
                       : strength === 2
-                      ? "bg-[#dda15e]"
-                      : "bg-[#88994f]"
-                    : "bg-[#18200e]/60"
+                      ? "bg-[#ffd791]"
+                      : "bg-[#a1b5d8]"
+                    : "bg-[#2e343a]/60"
                 )}
               />
             ))}

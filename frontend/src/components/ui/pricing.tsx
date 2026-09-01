@@ -136,30 +136,41 @@ export function Pricing({
                 {plan.name}
               </p>
 
-              <div className="mt-6 flex items-center justify-center gap-x-1.5">
-                <span className="text-4xl md:text-5xl font-black tracking-tight text-[#fffcf7] flex items-center">
-                  <span className="text-3xl md:text-4xl font-bold mr-1 text-[#fffcf7]">{currencySymbol}</span>
-                  <NumberFlow
-                    value={
-                      isMonthly ? Number(plan.price) : Number(plan.yearlyPrice)
-                    }
-                    formatter={(value) => value.toLocaleString("en-IN")}
-                    transformTiming={{
-                      duration: 400,
-                      easing: "ease-out",
-                    }}
-                    willChange
-                    className="tabular-nums bg-gradient-to-r from-[#fffcf7] via-[#ecf0f7] to-[#a1b5d8] bg-clip-text text-transparent"
-                  />
-                </span>
-                {plan.period !== "Next 3 months" && (
-                  <span className="text-sm font-semibold leading-6 tracking-wide text-[#abb4bd]">
-                    /{plan.period}
+              <div className="mt-6 flex items-center justify-center">
+                <div
+                  className={cn(
+                    "inline-flex items-center px-4 py-2.5 rounded-2xl shadow-inner border transition-all",
+                    plan.isPopular
+                      ? "bg-[#162235] border-[#a1b5d8]/50 shadow-[0_0_25px_rgba(161,181,216,0.2)]"
+                      : "bg-[#162235]/90 border-[#5c6875]/40"
+                  )}
+                >
+                  <span className="text-2xl md:text-3xl font-black text-[#ffd791] mr-1.5 drop-shadow-[0_0_10px_rgba(255,215,145,0.3)]">
+                    {currencySymbol}
                   </span>
-                )}
+                  <span className="text-4xl md:text-5xl font-black tracking-tight text-[#fffcf7] drop-shadow-sm">
+                    <NumberFlow
+                      value={
+                        isMonthly ? Number(plan.price) : Number(plan.yearlyPrice)
+                      }
+                      formatter={(value) => value.toLocaleString("en-IN")}
+                      transformTiming={{
+                        duration: 400,
+                        easing: "ease-out",
+                      }}
+                      willChange
+                      className="tabular-nums font-black text-[#fffcf7]"
+                    />
+                  </span>
+                  {plan.period !== "Next 3 months" && (
+                    <span className="text-xs md:text-sm font-extrabold text-[#a1b5d8] ml-2 tracking-wide">
+                      /{plan.period}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <p className="mt-1 text-xs text-[#abb4bd] font-medium">
+              <p className="mt-2.5 text-xs text-[#abb4bd] font-medium">
                 {isMonthly ? "billed monthly" : "billed annually"}
               </p>
 
