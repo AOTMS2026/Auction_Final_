@@ -1,7 +1,8 @@
 import { Eye } from "lucide-react";
+
 import { FallbackImage } from "@/components/ui/fallback-image";
-import { formatPoints, type ComputedTeamStats } from "@/lib/team-stats";
 import type { Team } from "@/lib/auction-client";
+import { formatPoints, type ComputedTeamStats } from "@/lib/team-stats";
 import { cn } from "@/lib/utils";
 
 export function TeamBidCard({
@@ -26,12 +27,12 @@ export function TeamBidCard({
   onSelect: () => void;
   onViewPlayers?: () => void;
   draggable?: boolean;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDragEnter?: (e: React.DragEvent) => void;
-  onDragLeave?: (e: React.DragEvent) => void;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnter?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd?: () => void;
-  onDrop?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
   isDragging?: boolean;
   isDragOver?: boolean;
 }) {
@@ -50,24 +51,15 @@ export function TeamBidCard({
       onDragEnd={onDragEnd}
       onDrop={onDrop}
       className={cn(
-<<<<<<< HEAD
-        "relative flex w-full items-center gap-2 rounded-lg border bg-card p-1.5 sm:p-2 text-left transition-all shadow-sm select-none",
-        draggable && "cursor-grab active:cursor-grabbing",
-=======
         "relative flex w-full items-center gap-2.5 rounded-2xl border p-2 sm:p-2.5 text-left transition-all shadow-sm select-none",
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+        draggable && "cursor-grab active:cursor-grabbing",
         isFull
           ? "border-[#5c6875]/20 bg-[#171a1d]/40 opacity-40 cursor-not-allowed"
           : selected
-<<<<<<< HEAD
-            ? "border-green-500 bg-green-500/5 ring-2 ring-green-500/10"
-            : "border-border hover:bg-muted/50",
-        isDragging && "opacity-30 border-dashed border-primary scale-95",
-        isDragOver && "border-primary border-2 scale-[1.03] bg-primary/10 shadow-lg ring-2 ring-primary/20",
-=======
             ? "border-[#a1b5d8] bg-[#162235] text-[#fffcf7] ring-2 ring-[#a1b5d8]/40 shadow-[0_0_20px_rgba(161,181,216,0.25)] cursor-pointer"
             : "border-[#5c6875]/30 bg-[#171a1d]/75 text-[#fffcf7] hover:border-[#a1b5d8]/50 hover:bg-[#2e343a]/75 cursor-pointer",
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+        isDragging && "opacity-30 border-dashed border-[#a1b5d8] scale-95",
+        isDragOver && "border-[#a1b5d8] border-2 scale-[1.03] bg-[#2d436a]/30 shadow-lg ring-2 ring-[#a1b5d8]/30",
       )}
     >
       <div className="flex size-9 sm:size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#162235] border border-[#a1b5d8]/30 shadow-md">
@@ -78,37 +70,22 @@ export function TeamBidCard({
           fallback={<span className="text-xs font-black text-[#a1b5d8]">{team.shortName.slice(0, 3)}</span>}
         />
       </div>
-<<<<<<< HEAD
-      <div className="min-w-0 flex-1 pr-5">
-        <p className="truncate text-xs sm:text-sm font-extrabold text-foreground leading-tight">{team.name}</p>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-xs font-bold text-muted-foreground truncate">
+      <div className="min-w-0 flex-1 pr-6">
+        <p className="truncate text-xs sm:text-sm font-black text-[#fffcf7] leading-tight">{team.name}</p>
+        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-xs font-bold text-[#a1b5d8] truncate">
           <span>🪙 {formatPoints(stats.availablePoints)}</span>
-          <span className="text-muted-foreground/30 font-normal">•</span>
+          <span className="text-[#5c6875] font-normal">•</span>
           {isFull ? (
-            <span className="font-black text-destructive">Full</span>
+            <span className="font-black text-rose-400">Full</span>
           ) : (
-            <span>Max: <span className="font-black text-orange-500">{formatPoints(stats.maxBidPoints)}</span></span>
+            <span className="text-[#abb4bd]">Max: <span className="font-bold text-[#c2d8b9]">{formatPoints(stats.maxBidPoints)}</span></span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-bold text-muted-foreground truncate">
-          <span>Sold: <span className="text-foreground font-black">{stats.totalPlayers}</span></span>
-          <span className="text-muted-foreground/30 font-normal">•</span>
-          <span>Left: <span className="text-foreground font-black">{stats.reservedPlayers}</span></span>
+        <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-bold text-[#abb4bd] truncate">
+          <span>Sold: <span className="text-[#fffcf7] font-black">{stats.totalPlayers}</span></span>
+          <span className="text-[#5c6875] font-normal">•</span>
+          <span>Left: <span className="text-[#ffd791] font-black">{stats.reservedPlayers}</span></span>
         </div>
-=======
-      <div className="min-w-0 flex-1 pr-3">
-        <p className="truncate text-xs sm:text-sm font-black text-[#fffcf7] leading-tight">{team.name}</p>
-        <p className="text-[10px] sm:text-xs text-[#a1b5d8] mt-0.5 font-bold">
-          🪙 {formatPoints(stats.availablePoints)}
-        </p>
-        {isFull ? (
-          <p className="text-[9px] font-black text-red-400 mt-0.5">Full</p>
-        ) : (
-          <p className="text-[9px] text-[#abb4bd] mt-0.5 font-semibold">
-            Max: <span className="font-bold text-[#c2d8b9]">{formatPoints(stats.maxBidPoints)}</span>
-          </p>
-        )}
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
       </div>
 
       {onViewPlayers && (
@@ -118,7 +95,7 @@ export function TeamBidCard({
             e.stopPropagation();
             onViewPlayers();
           }}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#abb4bd] hover:bg-[#2e343a] hover:text-[#fffcf7] transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#abb4bd] hover:bg-[#2e343a] hover:text-[#fffcf7] border border-transparent hover:border-[#5c6875]/40 transition-colors"
           aria-label="View sold players"
         >
           <Eye className="size-3.5" />
@@ -127,3 +104,5 @@ export function TeamBidCard({
     </div>
   );
 }
+
+export default TeamBidCard;

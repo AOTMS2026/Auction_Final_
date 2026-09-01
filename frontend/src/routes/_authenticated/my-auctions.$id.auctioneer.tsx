@@ -488,24 +488,15 @@ function AuctioneerConsole() {
         <FallbackImage
           src={auction.coverImage || ""}
           alt=""
-<<<<<<< HEAD
-          className="size-12 shrink-0 rounded-md object-contain"
-=======
           className="size-10 shrink-0 rounded-xl border border-[#a1b5d8]/40 object-cover"
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           fallback={
             <span className="display grid size-full place-items-center rounded-xl bg-[#162235] text-sm font-black text-[#a1b5d8] shadow-sm">
               {auction.name.slice(0, 2).toUpperCase()}
             </span>
           }
         />
-<<<<<<< HEAD
-        <h1 className="flex-1 truncate text-xl font-extrabold tracking-wide text-foreground">{auction.name}</h1>
-        <div className="flex items-center gap-1">
-=======
         <h1 className="flex-1 truncate text-xl font-black tracking-tight text-[#fffcf7]">{auction.name}</h1>
         <div className="flex items-center gap-2">
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           <Button 
             variant="ghost" 
             size="icon" 
@@ -565,17 +556,10 @@ function AuctioneerConsole() {
         </div>
 
         {/* Right Column: Teams List (Vertical Grid) */}
-<<<<<<< HEAD
-        <div className="w-[480px] shrink-0 flex flex-col h-full bg-card border border-border rounded-2xl p-3 shadow-sm select-none overflow-hidden">
-          <div className="shrink-0 border-b border-border pb-1.5 mb-2 flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
-            <span className="text-[10px] text-muted-foreground font-medium">Bidding Team Selection</span>
-=======
-        <div className="w-[360px] shrink-0 flex flex-col h-full bg-[#2e343a]/75 backdrop-blur-xl border border-[#5c6875]/40 rounded-3xl p-3 shadow-[0_15px_45px_rgba(23,26,29,0.8)] select-none overflow-hidden text-[#fffcf7]">
+        <div className="w-[480px] shrink-0 flex flex-col h-full bg-[#2e343a]/75 backdrop-blur-xl border border-[#5c6875]/40 rounded-3xl p-3 shadow-[0_15px_45px_rgba(23,26,29,0.8)] select-none overflow-hidden text-[#fffcf7]">
           <div className="shrink-0 border-b border-[#5c6875]/30 pb-2 mb-2 flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Teams</h2>
             <span className="text-[10px] text-[#a1b5d8] font-bold">Bidding Team Selection</span>
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-2">
@@ -640,65 +624,44 @@ function AuctioneerConsole() {
         <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between gap-4">
           
           {/* New Player Mode & Button */}
-<<<<<<< HEAD
-          <div className="flex items-center gap-3 bg-muted/10 border border-border p-2 sm:p-2.5 rounded-xl shrink-0">
-            <div className="flex flex-col items-center gap-1.5 border-r border-border pr-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground leading-none">New Player Mode</span>
-              <div className="flex gap-1.5 w-44 sm:w-48">
-=======
           <div className="flex items-center gap-3 bg-[#2e343a]/60 border border-[#5c6875]/40 p-2 rounded-2xl shrink-0">
             <div className="flex flex-col items-center gap-1.5 border-r border-[#5c6875]/30 pr-3">
               <span className="text-[9px] font-bold uppercase tracking-wider text-[#abb4bd] leading-none">New Player Mode</span>
               <div className="flex gap-1 w-36">
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
                 <button
                   type="button"
                   onClick={() => setSelectionMode("random")}
                   className={cn(
-<<<<<<< HEAD
-                    "rounded-lg py-1.5 px-2 transition-all border flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold active:scale-95 cursor-pointer",
-                    selectionMode === "random" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
-=======
                     "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
                     selectionMode === "random"
                       ? "bg-[#a1b5d8] text-[#162235] border-[#a1b5d8] shadow-md"
-                      : "bg-[#171a1d]/70 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+                      : "bg-[#171a1d]/80 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
                   )}
                   title="Random Selection"
                 >
-                  <Shuffle className="size-3.5 sm:size-4" />
+                  <Shuffle className="size-3" />
                   Random
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectionMode("manual")}
                   className={cn(
-<<<<<<< HEAD
-                    "rounded-lg py-1.5 px-2 transition-all border flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold active:scale-95 cursor-pointer",
-                    selectionMode === "manual" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
-=======
                     "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
                     selectionMode === "manual"
                       ? "bg-[#a1b5d8] text-[#162235] border-[#a1b5d8] shadow-md"
-                      : "bg-[#171a1d]/70 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+                      : "bg-[#171a1d]/80 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
                   )}
                   title="Manual Selection"
                 >
-                  <SquareMousePointer className="size-3.5 sm:size-4" />
+                  <SquareMousePointer className="size-3" />
                   Manual
                 </button>
               </div>
             </div>
-<<<<<<< HEAD
-            <Button className="text-sm sm:text-base font-extrabold h-11 px-5 shrink-0 shadow-sm" onClick={handleNewPlayer}>
-=======
             <Button
               className="rounded-xl px-5 h-9 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_15px_rgba(161,181,216,0.35)] shrink-0"
               onClick={handleNewPlayer}
             >
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               New Player
             </Button>
           </div>
@@ -707,28 +670,7 @@ function AuctioneerConsole() {
           <div className="flex-1 flex items-center gap-2.5 justify-center max-w-[680px]">
             <Button 
               variant="outline" 
-<<<<<<< HEAD
-              className="h-9.5 sm:h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
-              disabled={!currentPlayer} 
-              onClick={() => handleBid(1)}
-            >
-              <Plus className="size-3.5 sm:size-4" /> Bid Up
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-9.5 sm:h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
-              disabled={!currentPlayer} 
-              onClick={() => handleBid(-1)}
-            >
-              <Minus className="size-3.5 sm:size-4" /> Bid Down
-            </Button>
-            
-            <div className="h-6 w-px bg-border mx-0.5" />
-
-            <Button
-              className="h-9.5 sm:h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-=======
-              className="h-11 flex-1 max-w-[240px] text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(1)}
             >
@@ -736,7 +678,7 @@ function AuctioneerConsole() {
             </Button>
             <Button 
               variant="outline" 
-              className="h-11 flex-1 max-w-[240px] text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(-1)}
             >
@@ -746,75 +688,49 @@ function AuctioneerConsole() {
             <div className="h-6 w-px bg-[#5c6875]/40 mx-1" />
 
             <Button
-              className="h-11 flex-1 max-w-[280px] text-base font-black bg-gradient-to-r from-[#47673a] to-[#71b368] hover:from-[#31572c] hover:to-[#4e8a46] text-white rounded-xl shadow-[0_0_20px_rgba(113,179,104,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-[#47673a] to-[#71b368] hover:from-[#31572c] hover:to-[#4e8a46] text-white rounded-xl shadow-[0_0_20px_rgba(113,179,104,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               disabled={!currentPlayer}
               onClick={handleSold}
             >
-              <Gavel className="size-3.5 sm:size-4" /> Sold
+              <Gavel className="size-4" /> Sold
             </Button>
             <Button 
-<<<<<<< HEAD
               variant="destructive" 
-              className="h-9.5 sm:h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
-=======
-              className="h-11 flex-1 max-w-[280px] text-base font-black bg-gradient-to-r from-[#8b2635] to-[#c93b51] hover:from-[#721f2c] hover:to-[#b03446] text-white rounded-xl shadow-[0_0_20px_rgba(201,59,81,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-[#8b2635] to-[#c93b51] hover:from-[#721f2c] hover:to-[#b03446] text-white rounded-xl shadow-[0_0_20px_rgba(201,59,81,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={handleUnsold}
             >
-              <X className="size-3.5 sm:size-4" /> Unsold
+              <X className="size-4" /> Unsold
             </Button>
           </div>
 
           {/* Statistics (Horizontal Row) */}
-<<<<<<< HEAD
-          <div className="flex items-center gap-2 border-l border-border pl-4 shrink-0">
-            <div className="flex flex-col gap-1.5 w-40 sm:w-44">
+          <div className="flex items-center gap-2.5 border-l border-[#5c6875]/40 pl-4 shrink-0">
+            <div className="flex flex-col gap-1.5 w-48 sm:w-56">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("sold")}
-                className="rounded-lg bg-green-600/10 py-1.5 text-green-600 border border-green-600/15 hover:bg-green-600/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
-=======
-          <div className="flex items-center gap-2 border-l border-[#5c6875]/40 pl-4 shrink-0">
-            <div className="flex flex-col gap-1 w-36">
-              <button 
-                type="button"
-                onClick={() => setViewingStatusList("sold")}
-                className="rounded-xl bg-[#23341d]/70 py-1.5 text-[#c2d8b9] border border-[#47673a] hover:bg-[#23341d] active:scale-95 transition-all text-[11px] font-black cursor-pointer text-center"
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+                className="rounded-full bg-[#23341d]/85 hover:bg-[#23341d] h-9 px-4 text-[#c2d8b9] border border-[#47673a] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
               >
                 Sold {soldCount}
               </button>
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("unsold")}
-<<<<<<< HEAD
-                className="rounded-lg bg-destructive/10 py-1.5 text-destructive border border-destructive/15 hover:bg-destructive/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
-=======
-                className="rounded-xl bg-[#45191f]/70 py-1.5 text-[#fca5a5] border border-[#8b2635] hover:bg-[#45191f] active:scale-95 transition-all text-[11px] font-black cursor-pointer text-center"
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+                className="rounded-full bg-[#45191f]/85 hover:bg-[#45191f] h-9 px-4 text-[#fca5a5] border border-[#8b2635] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
               >
                 Unsold {unsoldCount}
               </button>
             </div>
-            <div className="flex flex-col gap-1.5 w-40 sm:w-44">
+            <div className="flex flex-col gap-1.5 w-48 sm:w-56">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("pending")}
-<<<<<<< HEAD
-                className="rounded-lg bg-brand/10 py-1.5 text-brand border border-brand/15 hover:bg-brand/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
+                className="rounded-full bg-[#162235]/90 hover:bg-[#162235] h-9 px-4 text-[#a1b5d8] border border-[#4365a0] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
               >
                 Available {pendingPlayers.length}
               </button>
-              <span className="rounded-lg bg-blue-600/10 py-1.5 text-blue-600 border border-blue-600/15 select-none text-xs sm:text-sm font-bold text-center flex items-center justify-center">
-=======
-                className="rounded-xl bg-[#162235]/70 py-1.5 text-[#a1b5d8] border border-[#4365a0] hover:bg-[#162235] active:scale-95 transition-all text-[11px] font-black cursor-pointer text-center"
-              >
-                Available {pendingPlayers.length}
-              </button>
-              <span className="rounded-xl bg-[#2e343a]/70 py-1.5 text-[#fffcf7] border border-[#5c6875]/40 select-none text-[11px] font-black text-center flex items-center justify-center h-[28px]">
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
+              <span className="rounded-full bg-[#2e343a]/80 h-9 px-4 text-[#fffcf7] border border-[#5c6875]/40 select-none text-xs sm:text-sm font-black text-center flex items-center justify-center shadow-sm">
                 Team {teams.length}
               </span>
             </div>
@@ -825,62 +741,76 @@ function AuctioneerConsole() {
     </div>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Pick a player</DialogTitle>
+        <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[88vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-5 sm:p-6">
+          <DialogHeader className="shrink-0">
+            <div className="flex items-center justify-between border-b border-[#5c6875]/30 pb-3">
+              <DialogTitle className="text-xl sm:text-2xl font-black text-[#fffcf7] tracking-tight">
+                Pick a player <span className="text-base text-[#a1b5d8] font-bold">({filteredPickerPlayers.length})</span>
+              </DialogTitle>
+            </div>
           </DialogHeader>
-          <div className="relative mt-2">
+          <div className="relative mt-2 shrink-0">
             <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#abb4bd]" />
             <Input
-              placeholder="Search players..."
+              placeholder="Search by player name, number, or role..."
               value={pickerQuery}
               onChange={(e) => setPickerQuery(e.target.value)}
-              className="pl-10 rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              className="pl-10 h-10 rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/60 focus-visible:ring-[#a1b5d8]"
             />
           </div>
-          <div className="max-h-80 space-y-2 overflow-y-auto mt-2 pr-1">
+          <div className="flex-1 overflow-y-auto mt-2 pr-1 min-h-[300px] max-h-[65vh]">
             {filteredPickerPlayers.length === 0 ? (
-              <p className="py-6 text-center text-sm text-[#abb4bd]">No pending players found.</p>
+              <div className="flex flex-col items-center justify-center min-h-[250px]">
+                <p className="text-sm sm:text-base text-[#abb4bd] font-bold">No pending players found.</p>
+              </div>
             ) : (
-              filteredPickerPlayers.map((p) => {
-               const isDummy = p.phone.startsWith("90000000");
-               const pNumber = isDummy ? parseInt(p.phone.slice(8)) : null;
-               return (
-                 <button
-                   key={p.id}
-                   type="button"
-                   onClick={() => {
-                     startNewLot(p);
-                     setPickerOpen(false);
-                     setPickerQuery("");
-                   }}
-                   className="flex w-full items-center gap-3 rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-2.5 text-left hover:bg-[#2e343a]/80 hover:border-[#a1b5d8]/40 transition-colors text-[#fffcf7] cursor-pointer"
-                 >
-                   <FallbackImage
-                     src={p.photo || ""}
-                     alt={p.name}
-                     className="size-11 shrink-0 rounded-xl object-cover object-top border border-[#a1b5d8]/30"
-                     fallback={
-                       <span className="display grid size-full place-items-center rounded-xl bg-[#162235] text-xs font-black text-[#a1b5d8]">
-                         {p.name.slice(0, 2).toUpperCase()}
-                       </span>
-                     }
-                   />
-                   <div className="min-w-0 flex-1">
-                     <div className="text-sm font-bold text-[#fffcf7]">{p.name}</div>
-                     <div className="text-xs text-[#abb4bd] font-medium mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
-                       {pNumber && <span className="font-bold text-[#a1b5d8]">Player {pNumber}</span>}
-                       {pNumber && <span className="text-[#5c6875]">•</span>}
-                       <span>{p.sportFields?.["role"] || "-"}</span>
-                       <span className="text-[#5c6875]">•</span>
-                       <span>Grade {p.category || "-"}</span>
-                       <span className="text-[#5c6875]">•</span>
-                       <span>{p.customData ? p.customData.replace("Dominated Hand: ", "") : "-"}</span>
-                     </div>
-                   </div>
-                 </button>
-               );
-             })
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {filteredPickerPlayers.map((p) => {
+                  const isDummy = p.phone.startsWith("90000000");
+                  const pNumber = isDummy ? parseInt(p.phone.slice(8)) : null;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        startNewLot(p);
+                        setPickerOpen(false);
+                        setPickerQuery("");
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-2xl border border-[#5c6875]/35 bg-[#2e343a]/50 p-2 text-left hover:bg-[#2e343a] hover:border-[#a1b5d8] active:scale-[0.99] transition-all text-[#fffcf7] cursor-pointer group shadow-sm"
+                    >
+                      <FallbackImage
+                        src={p.photo || ""}
+                        alt={p.name}
+                        className="size-11 sm:size-12 shrink-0 rounded-xl object-cover object-top border border-[#a1b5d8]/30 group-hover:border-[#a1b5d8] transition-colors"
+                        fallback={
+                          <span className="display grid size-full place-items-center rounded-xl bg-[#162235] text-xs font-black text-[#a1b5d8]">
+                            {p.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        }
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs sm:text-sm font-black text-[#fffcf7] truncate group-hover:text-[#a1b5d8] transition-colors">
+                          {p.name}
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 truncate">
+                          {pNumber && <span className="font-black text-[#a1b5d8]">#{pNumber}</span>}
+                          {pNumber && <span className="text-[#5c6875]">•</span>}
+                          <span className="text-[#ecf0f7]">{p.sportFields?.["role"] || "-"}</span>
+                          <span className="text-[#5c6875]">•</span>
+                          <span className="text-[#c2d8b9]">Grade {p.category || "-"}</span>
+                          {p.customData && (
+                            <>
+                              <span className="text-[#5c6875]">•</span>
+                              <span>{p.customData.replace("Dominated Hand: ", "")}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
         </DialogContent>

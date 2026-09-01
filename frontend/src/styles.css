@@ -478,12 +478,7 @@
   }
   h1, h2, h3, .display {
     font-family: var(--font-display);
-<<<<<<< HEAD
-    letter-spacing: 0.06em;
-    word-spacing: 0.12em;
-=======
     letter-spacing: -0.022em;
->>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
   }
 }
 
