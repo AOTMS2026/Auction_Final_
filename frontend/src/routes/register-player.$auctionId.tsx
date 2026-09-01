@@ -292,7 +292,7 @@ function PlayerRegistrationPage() {
       toast.error("Please fill in Jersey Size");
       return;
     }
-    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3";
+    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.name?.toLowerCase().includes("bni") || auction.name?.toLowerCase().includes("bbl");
     if (isBniAuction) {
       if (!jerseyName.trim()) {
         toast.error("Please fill in Jersey Name");
@@ -375,6 +375,8 @@ function PlayerRegistrationPage() {
     );
   }
 
+  const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.name?.toLowerCase().includes("bni") || auction.name?.toLowerCase().includes("bbl");
+
   return (
     <div
       className="min-h-screen text-[#fffcf7] flex flex-col selection:bg-[#a1b5d8] selection:text-[#162235]"
@@ -396,7 +398,7 @@ function PlayerRegistrationPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#171a1d]/80 via-[#171a1d]/90 to-[#171a1d]" />
         <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#fffcf7] flex flex-col items-center">
           <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap">
-            {auction.id === "6a8edaddd7ed74151dbafab3" && (
+            {isBniAuction && (
               <img
                 src={bniLogoImg}
                 alt="BNI Logo"
@@ -414,7 +416,7 @@ function PlayerRegistrationPage() {
                 <span className="text-2xl sm:text-3xl font-black text-[#a1b5d8]">{auction.name.substring(0, 2).toUpperCase()}</span>
               </div>
             )}
-            {auction.id === "6a8edaddd7ed74151dbafab3" && (
+            {isBniAuction && (
               <img
                 src={anotherImg}
                 alt="Another Logo"
@@ -478,7 +480,7 @@ function PlayerRegistrationPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Input
                   id="name"
                   placeholder="e.g. Virat Kohli"
@@ -490,7 +492,7 @@ function PlayerRegistrationPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Phone (10 digits) <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PHONE (10 DIGITS) <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Input
                   id="phone"
                   placeholder="e.g. 9876543210"
@@ -503,7 +505,7 @@ function PlayerRegistrationPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Age <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">AGE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Input
                   id="age"
                   type="number"
@@ -516,7 +518,7 @@ function PlayerRegistrationPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Gender <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">GENDER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Select value={gender} onValueChange={setGender}>
                   <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
                     <SelectValue placeholder="Select Gender" />
@@ -528,7 +530,7 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">City <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">CITY <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Select value={city} onValueChange={setCity}>
                   <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
                     <SelectValue placeholder="Select City" />
@@ -541,7 +543,7 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Player Level <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PLAYER LEVEL <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Select value={playerLevel} onValueChange={setPlayerLevel}>
                   <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
                     <SelectValue placeholder="Select Level" />
@@ -556,39 +558,10 @@ function PlayerRegistrationPage() {
               </div>
             </div>
 
-            {/* Sport-specific details are hidden in the code
-            <div className="rounded-lg border p-4 bg-muted/10">
-              <h3 className="mb-4 font-semibold">{auction.sportType.charAt(0).toUpperCase() + auction.sportType.slice(1)} Specific Details</h3>
+            {isBniAuction ? (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Role/Skill *</Label>
-                  <Select value={sportFields["role"] || ""} onValueChange={(v) => handleSportFieldChange("role", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
-                    <SelectContent>
-                      {config.roles.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {config.stats.map(stat => (
-                  <div key={stat} className="space-y-2">
-                    <Label>{stat} *</Label>
-                    <Input type="number" placeholder="e.g. 0" value={sportFields[stat] || ""} onChange={(e) => handleSportFieldChange(stat, e.target.value)} disabled={registerMutation.isPending} required />
-                  </div>
-                ))}
-                {config.specs.map(spec => (
-                  <div key={spec} className="space-y-2">
-                    <Label>{spec} *</Label>
-                    <Input placeholder={getSpecPlaceholder(spec)} value={sportFields[spec] || ""} onChange={(e) => handleSportFieldChange(spec, e.target.value)} disabled={registerMutation.isPending} required />
-                  </div>
-                ))}
-              </div>
-            </div>
-            */}
-
-            {auction.id === "6a8edaddd7ed74151dbafab3" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Size <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Input
                     id="jerseySize"
                     placeholder="e.g. M, L, XL"
@@ -600,7 +573,7 @@ function PlayerRegistrationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Input
                     id="jerseyName"
                     placeholder="e.g. Dhoni"
@@ -612,7 +585,7 @@ function PlayerRegistrationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Number <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NUMBER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Input
                     id="trouserSize"
                     placeholder="e.g. 7"
@@ -624,7 +597,7 @@ function PlayerRegistrationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Number of seasons played <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">NUMBER OF SEASONS PLAYED <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Select value={bblSeasons} onValueChange={setBblSeasons}>
                     <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
                       <SelectValue placeholder="Select seasons" />
@@ -641,7 +614,7 @@ function PlayerRegistrationPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Size <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Input
                   id="jerseySize"
                   placeholder="e.g. M, L, XL"
@@ -654,7 +627,7 @@ function PlayerRegistrationPage() {
               </div>
             )}
 
-            {auction.id === "6a8edaddd7ed74151dbafab3" && (
+            {isBniAuction && (
               <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
                 <h3 className="font-bold text-base text-[#fffcf7]">Membership Details</h3>
                 <div className="space-y-4">
