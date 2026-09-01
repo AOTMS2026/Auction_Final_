@@ -104,8 +104,10 @@ const playerSchema = new mongoose.Schema(
 );
 
 playerSchema.index({ auctionId: 1, createdAt: -1 });
+playerSchema.index({ auctionId: 1, teamId: 1, auctionRoundStatus: 1 });
+playerSchema.index({ auctionId: 1, auctionRoundStatus: 1 });
+playerSchema.index({ auctionId: 1, category: 1 });
 playerSchema.index({ phone: 1, createdAt: -1 });
-playerSchema.index({ teamId: 1, auctionId: 1, updatedAt: -1 });
 
 playerSchema.set("toJSON", {
   virtuals: true,

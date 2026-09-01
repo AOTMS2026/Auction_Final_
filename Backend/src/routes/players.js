@@ -108,6 +108,10 @@ router.post(
       return res.status(403).json({ error: "You don't have permission to modify this auction" });
     }
 
+    if (rest.sportFields && typeof rest.sportFields === "object") {
+      delete rest.sportFields.originalPhoto;
+    }
+
     const uploadedPhoto = await uploadBase64Image(rest.photo);
     const uploadedPayment = await uploadBase64Image(rest.paymentImage);
 
@@ -140,6 +144,10 @@ router.post(
 
     const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    if (rest.sportFields && typeof rest.sportFields === "object") {
+      delete rest.sportFields.originalPhoto;
+    }
 
     const uploadedPhoto = await uploadBase64Image(rest.photo);
     const uploadedPayment = await uploadBase64Image(rest.paymentImage);
@@ -179,9 +187,9 @@ router.patch(
     const auction = await Auction.findById(player.auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    const isCreator = auction.createdBy.toString() === req.userId || req.isAdmin;
-    if (!isCreator) {
-      const requestedUpdates = Object.keys(req.body).filter(key => req.body[key] !== undefined);
+    const isOwn = req.userId && auction.createdBy.toString() === req.userId;
+    if (!isOwn && !req.isAdmin) {
+      const requestedUpdates = Object.keys(req.body);
       const isOnlyCategory = requestedUpdates.every(key => key === "category");
       if (!isOnlyCategory) {
         return res.status(403).json({ error: "You don't have permission to modify these details" });
@@ -203,6 +211,10 @@ router.patch(
             deleteImage(player[field]).catch(console.error);
           }
           player[field] = newUrl;
+        } else if (field === "sportFields") {
+          const sf = typeof req.body[field] === "object" && req.body[field] ? { ...req.body[field] } : {};
+          delete sf.originalPhoto;
+          player[field] = sf;
         } else {
           player[field] = req.body[field];
         }

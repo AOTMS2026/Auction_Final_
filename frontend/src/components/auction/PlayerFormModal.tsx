@@ -37,11 +37,23 @@ type PlayerFormModalProps = {
   onOpenChange?: ((open: boolean) => void) | undefined;
 };
 
+const normalizeHand = (h?: string | null) => {
+  if (!h) return "";
+  const upper = h.toUpperCase().trim();
+  if (upper.includes("RIGHT")) return "Right Hand";
+  if (upper.includes("LEFT")) return "Left Hand";
+  if (upper.includes("BOTH")) return "Both Hands";
+  return h;
+};
+
 export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: PlayerFormModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = setControlledOpen || setInternalOpen;
   const isBni = auctionId === "6a8edaddd7ed74151dbafab3";
+  const isHunterzVolleyball = auctionId === "6a8a705aef1f9e0978b3031c";
+  const hidePayment = isBni || isHunterzVolleyball;
+  const hideManualTeam = isHunterzVolleyball || isBni;
 
   
   // Base fields
@@ -69,8 +81,10 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   // Custom Data / Membership / Dominant Hand
   const [customData, setCustomData] = useState(player?.customData || "");
   const [dominatedHand, setDominatedHand] = useState(
-    player?.sportFields?.["Dominated Hand"] ||
-    (player?.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player?.customData || ""))
+    normalizeHand(
+      player?.sportFields?.["Dominated Hand"] ||
+      (player?.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player?.customData || ""))
+    )
   );
   const [position, setPosition] = useState(player?.sportFields?.["role"] || "");
   const initialIsBni = player?.customData?.startsWith("BNI Member");
@@ -100,6 +114,25 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   }
 
   const config = SPORT_CONFIGS[sportType] || SPORT_CONFIGS["cricket"];
+
+  const availableRoles = Array.from(
+    new Set([
+      ...config.roles,
+      "ALL ROUNDER",
+      "COUNTER",
+      "MIDDLE BLOCKER",
+      "LIBERO",
+      "SETTER",
+      "ATTACKER",
+      "UNIVERSAL",
+      "BLOCKER",
+      "PASSER",
+      "OUTSIDE HITTER",
+      "RIGHT SIDE HITTER",
+      "BOOSTER",
+      ...(position ? [position] : []),
+    ])
+  );
 
   const specPlaceholders: Record<string, string> = {
     "Preferred Foot": "e.g. Right",
@@ -169,7 +202,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setCustomData(player.customData);
       const rawHand = player.sportFields?.["Dominated Hand"] ||
         (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData || ""));
-      setDominatedHand(rawHand);
+      setDominatedHand(normalizeHand(rawHand));
       setPosition(player.sportFields?.["role"] || "");
       setPhoto(player.photo || null);
       setTeamId(player.teamId || "none");
@@ -477,37 +510,41 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 />
               </div>
 
-              {/* Playing Position / Role */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Playing Position / Role</Label>
-                <Select value={position} onValueChange={setPosition}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select Position / Role" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    {config.roles.map((r) => (
-                      <SelectItem key={r} value={r} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
-                        {r}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isBni && (
+                <>
+                  {/* Playing Position / Role */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Playing Position / Role</Label>
+                    <Select value={position} onValueChange={setPosition}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Position / Role" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        {availableRoles.map((r) => (
+                          <SelectItem key={r} value={r} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
+                            {r}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Dominated Hand */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Dominated Hand</Label>
-                <Select value={dominatedHand} onValueChange={setDominatedHand}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select Dominated Hand" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    <SelectItem value="Right Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Right Hand</SelectItem>
-                    <SelectItem value="Left Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Left Hand</SelectItem>
-                    <SelectItem value="Both Hands" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Both Hands</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Dominated Hand */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Dominated Hand</Label>
+                    <Select value={dominatedHand} onValueChange={setDominatedHand}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Dominated Hand" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="Right Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Right Hand</SelectItem>
+                        <SelectItem value="Left Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Left Hand</SelectItem>
+                        <SelectItem value="Both Hands" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Both Hands</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Age</Label>
@@ -537,43 +574,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Gender</Label>
-                <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    <SelectItem value="Male" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Male</SelectItem>
-                    <SelectItem value="Female" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">City</Label>
-                <Input
-                  id="city"
-                  placeholder="e.g. Mumbai"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  disabled={isSubmitting}
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Player Level</Label>
-                <Select value={playerLevel} onValueChange={setPlayerLevel}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select Level" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    <SelectItem value="Beginner" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Beginner</SelectItem>
-                    <SelectItem value="Intermediate" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Intermediate</SelectItem>
-                    <SelectItem value="Advanced" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Advanced</SelectItem>
-                    <SelectItem value="Professional" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Professional</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="baseValue" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Base Value (Points)</Label>
                 <Input
                   id="baseValue"
@@ -585,39 +585,81 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Size</Label>
-                <Input
-                  id="jerseySize"
-                  placeholder="e.g. M, L, XL"
-                  value={jerseySize}
-                  onChange={(e) => setJerseySize(e.target.value)}
-                  disabled={isSubmitting}
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Name</Label>
-                <Input
-                  id="jerseyName"
-                  placeholder="e.g. DHONI"
-                  value={jerseyName}
-                  onChange={(e) => setJerseyName(e.target.value)}
-                  disabled={isSubmitting}
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Number / Trouser</Label>
-                <Input
-                  id="trouserSize"
-                  placeholder="e.g. 7"
-                  value={trouserSize}
-                  onChange={(e) => setTrouserSize(e.target.value)}
-                  disabled={isSubmitting}
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                />
-              </div>
+
+              {!isHunterzVolleyball && !isBni && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Gender</Label>
+                    <Select value={gender} onValueChange={setGender}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="Male" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Male</SelectItem>
+                        <SelectItem value="Female" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">City</Label>
+                    <Input
+                      id="city"
+                      placeholder="e.g. Mumbai"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      disabled={isSubmitting}
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Player Level</Label>
+                    <Select value={playerLevel} onValueChange={setPlayerLevel}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Level" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="Beginner" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Beginner</SelectItem>
+                        <SelectItem value="Intermediate" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Intermediate</SelectItem>
+                        <SelectItem value="Advanced" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Advanced</SelectItem>
+                        <SelectItem value="Professional" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Professional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Size</Label>
+                    <Input
+                      id="jerseySize"
+                      placeholder="e.g. M, L, XL"
+                      value={jerseySize}
+                      onChange={(e) => setJerseySize(e.target.value)}
+                      disabled={isSubmitting}
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Name</Label>
+                    <Input
+                      id="jerseyName"
+                      placeholder="e.g. DHONI"
+                      value={jerseyName}
+                      onChange={(e) => setJerseyName(e.target.value)}
+                      disabled={isSubmitting}
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Number / Trouser</Label>
+                    <Input
+                      id="trouserSize"
+                      placeholder="e.g. 7"
+                      value={trouserSize}
+                      onChange={(e) => setTrouserSize(e.target.value)}
+                      disabled={isSubmitting}
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                </>
+              )}
               {isBni && (
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Number of seasons played <span className="text-red-400 font-bold ml-0.5">*</span></Label>
@@ -725,7 +767,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             </div>
           )}
 
-          {auctionId !== "6a8edaddd7ed74151dbafab3" && (
+          {!hidePayment && (
             <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-base text-[#fffcf7]">Payment Details</h3>
@@ -893,7 +935,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           </div>
         )}
 
-          {player && (
+          {player && !hideManualTeam && (
             <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
               <h3 className="font-bold text-base text-[#fffcf7]">Manual Team & Price Assignment</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

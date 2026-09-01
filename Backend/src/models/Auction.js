@@ -74,6 +74,8 @@ const auctionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+auctionSchema.index({ createdBy: 1, startsAt: -1 });
+auctionSchema.index({ visibility: 1, startsAt: 1 });
 auctionSchema.index({ startsAt: 1 });
 
 module.exports = mongoose.model("Auction", auctionSchema);
