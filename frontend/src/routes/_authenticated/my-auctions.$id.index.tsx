@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 
 import stadiumImg from "@/assets/stadium-band.jpg";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -75,6 +76,7 @@ function ManageAuctionPage() {
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const formatNum = formatPoints;
 
   // Teams logic
   const { teams, isPending: teamsPending, isError: teamsError, deleteTeam } = useTeams(auction.id);
@@ -134,6 +136,186 @@ function ManageAuctionPage() {
   function handleExportPDF() {
     exportAuctionPDF(auction, players || [], teams || []);
     toast.success("Auction PDF Report downloaded!");
+  }
+
+  function handleDownloadTeamsExcel() {
+    if (!teams || teams.length === 0) {
+      toast.error("No teams found to export.");
+      return;
+    }
+
+    // 1. Teams Summary Sheet
+    const teamsSummaryRows = teams.map((t, index) => {
+      const { usedPoints, totalPoints, totalPlayers, reservedPlayers, maxBidPoints } = computeTeamStats(
+        t,
+        players || [],
+        auction,
+      );
+      const teamBought = (players || []).filter((p) => p.teamId === t.id);
+
+      return {
+        "S.No": index + 1,
+        "Team Name": t.name,
+        "Team Code": t.shortName,
+        "Owner Name": t.ownerName || "",
+        "Owner Phone": t.ownerPhone || "",
+        "Total Budget (Points)": totalPoints,
+        "Used Points": usedPoints,
+        "Remaining Points": totalPoints - usedPoints,
+        "Max Next Bid (Points)": maxBidPoints > 0 ? maxBidPoints : 0,
+        "Players Bought": teamBought.length,
+        "Target Roster Size": auction.playersPerTeam,
+        "Reserved Spots": reservedPlayers,
+      };
+    });
+
+    const teamsSheet = XLSX.utils.json_to_sheet(teamsSummaryRows);
+    const colWidths = Object.keys(teamsSummaryRows[0] || {}).map((key) => {
+      let maxLen = key.length;
+      teamsSummaryRows.forEach((row) => {
+        const val = (row as any)[key];
+        if (val !== undefined && val !== null) {
+          const len = String(val).length;
+          if (len > maxLen) maxLen = len;
+        }
+      });
+      return { wch: Math.min(Math.max(maxLen + 3, 10), 35) };
+    });
+    teamsSheet["!cols"] = colWidths;
+
+    // 2. Team-wise Bought Players Roster Sheet
+    const rosterRows: any[] = [];
+    teams.forEach((t) => {
+      const teamBought = (players || []).filter((p) => p.teamId === t.id);
+      if (teamBought.length === 0) {
+        rosterRows.push({
+          "Team Name": t.name,
+          "Team Code": t.shortName,
+          "Player S.No": "-",
+          "Player Name": "No players bought yet",
+          "Phone Number": "-",
+          "Role": "-",
+          "Grade": "-",
+          "Dominated Hand": "-",
+          "Sold Price (Points)": "-",
+        });
+      } else {
+        teamBought.forEach((p, pIdx) => {
+          rosterRows.push({
+            "Team Name": t.name,
+            "Team Code": t.shortName,
+            "Player S.No": pIdx + 1,
+            "Player Name": p.name,
+            "Phone Number": p.phone || "",
+            "Role": p.sportFields?.["role"] || "-",
+            "Grade": p.category || "-",
+            "Dominated Hand": p.sportFields?.["Dominated Hand"] || (p.customData?.startsWith("Dominated Hand: ") ? p.customData.replace("Dominated Hand: ", "") : "-"),
+            "Sold Price (Points)": p.soldPrice ?? p.baseValue ?? 0,
+          });
+        });
+      }
+    });
+
+    const rosterSheet = XLSX.utils.json_to_sheet(rosterRows);
+    const rosterWidths = Object.keys(rosterRows[0] || {}).map((key) => {
+      let maxLen = key.length;
+      rosterRows.forEach((row) => {
+        const val = (row as any)[key];
+        if (val !== undefined && val !== null) {
+          const len = String(val).length;
+          if (len > maxLen) maxLen = len;
+        }
+      });
+      return { wch: Math.min(Math.max(maxLen + 3, 10), 35) };
+    });
+    rosterSheet["!cols"] = rosterWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams Summary");
+    XLSX.utils.book_append_sheet(workbook, rosterSheet, "Teams Rosters");
+
+    const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
+    XLSX.writeFile(workbook, `${cleanTitle}_Teams_Report.xlsx`);
+    toast.success("Teams Excel sheet downloaded successfully!");
+  }
+
+  function handleDownloadPlayersExcel() {
+    if (!players || players.length === 0) {
+      toast.error("No registered players found to export.");
+      return;
+    }
+
+    const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
+
+    const excelRows = players.map((p, index) => {
+      const role = p.sportFields?.["role"] || "-";
+      const dominatedHand =
+        p.sportFields?.["Dominated Hand"] ||
+        (p.customData?.startsWith("Dominated Hand: ")
+          ? p.customData.replace("Dominated Hand: ", "")
+          : (p.customData?.includes("BNI") || p.customData?.includes("Family") ? "-" : (p.customData || "-")));
+
+      const soldTeamName = p.teamId ? (teamMap.get(p.teamId) || "Sold") : "Unsold";
+
+      const row: Record<string, any> = {
+        "S.No": index + 1,
+        "Player Name": p.name || "",
+        "Phone Number": p.phone || "",
+        "Age": p.age ?? "",
+        "Gender": p.gender || "",
+        "City": p.city || "",
+        "Player Level": p.playerLevel || "",
+        "Grade / Category": p.category || "",
+        "Playing Position / Role": role,
+        "Dominated Hand": dominatedHand,
+        "Jersey Size": p.jerseySize || "",
+        "Jersey Name": p.jerseyName || "",
+        "Jersey Number / Trouser": p.trouserSize || "",
+        "Base Value (Points)": p.baseValue ?? 0,
+        "Auction Status": p.teamId ? "Sold" : "Unsold",
+        "Sold To Team": soldTeamName,
+        "Sold Price (Points)": p.soldPrice ?? (p.teamId ? p.baseValue : 0),
+        "Payment Mode": p.paymentMode || "",
+        "UTR / Ref Number": p.utrNumber || "",
+        "Membership / Extra Details": p.customData || "",
+        "Registration Date": p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-IN") : "",
+      };
+
+      if (p.sportFields) {
+        Object.entries(p.sportFields).forEach(([k, v]) => {
+          if (k !== "role" && k !== "Dominated Hand" && k !== "originalPhoto" && v != null && v !== "") {
+            row[k] = v;
+          }
+        });
+      }
+
+      return row;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(excelRows);
+
+    const keys = Object.keys(excelRows[0] || {});
+    const colWidths = keys.map((key) => {
+      let maxLen = key.length;
+      excelRows.forEach((row) => {
+        const val = row[key];
+        if (val !== undefined && val !== null) {
+          const len = String(val).length;
+          if (len > maxLen) maxLen = len;
+        }
+      });
+      return { wch: Math.min(Math.max(maxLen + 3, 10), 40) };
+    });
+    worksheet["!cols"] = colWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registered Players");
+
+    const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const filename = `${cleanTitle}_Registered_Players.xlsx`;
+
+    XLSX.writeFile(workbook, filename);
+    toast.success("Registered players exported to Excel successfully!");
   }
 
   return (
@@ -207,10 +389,10 @@ function ManageAuctionPage() {
                 onClick={handleExportPDF}
                 variant="outline"
                 className="rounded-full border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] font-bold text-xs gap-1.5 transition-all shadow-sm"
-                title="Download Auction Summary PDF"
+                title="Download Teams & Purchased Players PDF Report"
               >
                 <FileText className="size-4" />
-                Export PDF
+                Auction Results PDF
               </Button>
               <Button
                 onClick={handleStartAuction}
@@ -224,7 +406,7 @@ function ManageAuctionPage() {
         </div>
       </section>
 
-      {/* Tabs Bar with Slate Grey & Powder Blue Accents */}
+      {/* Tabs Bar */}
       <div className="bg-[#171a1d] text-[#fffcf7] border-b border-[#5c6875]/30 sticky top-[57px] z-30 backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl overflow-x-auto px-4 hide-scrollbar">
           {TABS.map((tab) => (
@@ -244,7 +426,14 @@ function ManageAuctionPage() {
 
         {activeTab === "TEAMS" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-end">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                onClick={handleDownloadTeamsExcel}
+                variant="outline"
+                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+              >
+                <FileSpreadsheet className="size-4 text-emerald-400" /> Export teams Excel
+              </Button>
               <Button
                 onClick={handleShareTeamForm}
                 variant="outline"
@@ -341,6 +530,42 @@ function ManageAuctionPage() {
                             <div className="font-extrabold text-sm sm:text-base text-[#e4f0d0]">{formatNum(maxBidPoints > 0 ? maxBidPoints : 0)}</div>
                           </div>
                         </div>
+
+                        {/* Bought Players Roster for this Team */}
+                        {(() => {
+                          const teamBoughtPlayers = (players || []).filter((p) => p.teamId === team.id);
+                          if (teamBoughtPlayers.length === 0) return null;
+                          return (
+                            <div className="mt-3.5 pt-3 border-t border-[#5c6875]/30">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#abb4bd] flex items-center gap-1.5">
+                                  <span className="size-2 rounded-full bg-emerald-400" />
+                                  Bought Players ({teamBoughtPlayers.length})
+                                </span>
+                                <Link
+                                  to="/my-auctions/$id/teams/$teamId"
+                                  params={{ id: auction.id, teamId: team.id }}
+                                  className="text-[11px] font-bold text-[#a1b5d8] hover:text-[#fffcf7] hover:underline transition-colors"
+                                >
+                                  View Full Roster →
+                                </Link>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {teamBoughtPlayers.map((p) => (
+                                  <span
+                                    key={p.id}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#162235]/90 border border-[#a1b5d8]/30 text-xs font-semibold text-[#fffcf7]"
+                                  >
+                                    <span>{p.name}</span>
+                                    <span className="text-[10px] font-extrabold text-[#c2d8b9]">
+                                      ({p.soldPrice ? formatNum(p.soldPrice) : "Base"} pts)
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 
@@ -381,6 +606,13 @@ function ManageAuctionPage() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
+                onClick={handleDownloadPlayersExcel}
+                variant="outline"
+                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+              >
+                <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
+              </Button>
+              <Button
                 onClick={handleSharePlayerForm}
                 variant="outline"
                 className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
@@ -398,47 +630,70 @@ function ManageAuctionPage() {
                 <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
               </div>
             ) : (
-              players.map((player) => (
-                <div
-                  key={player.id}
-                  className="relative flex items-center gap-4 rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-md p-4 sm:p-5 shadow-[0_8px_30px_rgba(23,26,29,0.7)] hover:border-[#a1b5d8]/60 hover:shadow-[0_12px_35px_rgba(161,181,216,0.2)] transition-all duration-300 group"
-                >
-                  <PlayerPreviewCard
-                    player={player}
-                    open={previewPlayerId === player.id}
-                    onOpenChange={(open) => !open && setPreviewPlayerId(null)}
-                    trigger={
-                      <button
-                        className="flex flex-1 items-center gap-4 sm:gap-5 text-left hover:opacity-90 transition-opacity min-w-0 pr-8"
-                        onClick={() => setPreviewPlayerId(player.id)}
-                      >
-                        <FallbackImage
-                          src={player.photo || ""}
-                          alt={player.name}
-                          className="size-14 sm:size-16 rounded-2xl border-2 border-[#a1b5d8]/40 shrink-0 object-cover object-top shadow-md group-hover:border-[#a1b5d8]/70 transition-colors"
-                          fallback={
-                            <span className="display grid size-full place-items-center rounded-2xl bg-gradient-to-br from-[#4365a0] to-[#6a9b57] text-2xl font-bold text-[#fffcf7]">
-                              {player.name.slice(0, 2).toUpperCase()}
-                            </span>
-                          }
-                        />
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-extrabold text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
-                            {player.name}
-                          </h3>
-                          <p className="text-xs sm:text-sm font-semibold text-[#a1b5d8] mt-1 leading-snug flex items-center gap-2 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-full bg-[#162235] border border-[#a1b5d8]/30 text-[#e4f0d0] text-xs font-bold uppercase">
-                              {player.sportFields?.["role"] || "-"}
-                            </span>
-                            <span className="text-[#abb4bd]">·</span>
-                            <span className="text-[#e3e6e9]">Grade {player.category || "-"}</span>
-                            <span className="text-[#abb4bd]">·</span>
-                            <span className="text-[#c2d8b9]">{player.customData ? player.customData.replace("Dominated Hand: ", "") : "-"}</span>
-                          </p>
-                        </div>
-                      </button>
-                    }
-                  />
+              players.map((player) => {
+                const soldTeam = teams?.find((t) => t.id === player.teamId);
+                return (
+                  <div
+                    key={player.id}
+                    className="relative flex items-center gap-4 rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-md p-4 sm:p-5 shadow-[0_8px_30px_rgba(23,26,29,0.7)] hover:border-[#a1b5d8]/60 hover:shadow-[0_12px_35px_rgba(161,181,216,0.2)] transition-all duration-300 group"
+                  >
+                    <PlayerPreviewCard
+                      player={player}
+                      open={previewPlayerId === player.id}
+                      onOpenChange={(open) => !open && setPreviewPlayerId(null)}
+                      trigger={
+                        <button
+                          className="flex flex-1 items-center gap-4 sm:gap-5 text-left hover:opacity-90 transition-opacity min-w-0 pr-8"
+                          onClick={() => setPreviewPlayerId(player.id)}
+                        >
+                          <FallbackImage
+                            src={player.photo || ""}
+                            alt={player.name}
+                            className="size-14 sm:size-16 rounded-2xl border-2 border-[#a1b5d8]/40 shrink-0 object-cover object-top shadow-md group-hover:border-[#a1b5d8]/70 transition-colors"
+                            fallback={
+                              <span className="display grid size-full place-items-center rounded-2xl bg-gradient-to-br from-[#4365a0] to-[#6a9b57] text-2xl font-bold text-[#fffcf7]">
+                                {player.name.slice(0, 2).toUpperCase()}
+                              </span>
+                            }
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <h3 className="font-extrabold text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
+                                {player.name}
+                              </h3>
+                              {soldTeam ? (
+                                <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
+                                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span>SOLD: {soldTeam.name}</span>
+                                  <span className="text-emerald-200">({player.soldPrice ? formatNum(player.soldPrice) : formatNum(player.baseValue)} pts)</span>
+                                </span>
+                              ) : player.teamId ? (
+                                <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold">
+                                  SOLD ({player.soldPrice ? formatNum(player.soldPrice) : ""} pts)
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className="text-xs sm:text-sm font-semibold text-[#a1b5d8] mt-1 leading-snug flex items-center gap-2 flex-wrap">
+                              <span className="px-2.5 py-0.5 rounded-full bg-[#162235] border border-[#a1b5d8]/30 text-[#e4f0d0] text-xs font-bold uppercase">
+                                {player.sportFields?.["role"] || "-"}
+                              </span>
+                              <span className="text-[#abb4bd]">·</span>
+                              <span className="text-[#e3e6e9]">Grade {player.category || "-"}</span>
+                              {(() => {
+                                const dh = player.sportFields?.["Dominated Hand"] || (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData?.includes("BNI") || player.customData?.includes("Family") ? null : player.customData));
+                                if (!dh || dh === "-") return null;
+                                return (
+                                  <>
+                                    <span className="text-[#abb4bd]">·</span>
+                                    <span className="text-[#c2d8b9]">{dh}</span>
+                                  </>
+                                );
+                              })()}
+                            </p>
+                          </div>
+                        </button>
+                      }
+                    />
                   <div className="shrink-0 mr-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -457,8 +712,9 @@ function ManageAuctionPage() {
                     </DropdownMenu>
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })
+          )}
             {/* Only trigger player modal & API image fetch when editing a specific player */}
             {editPlayerId && (
               <PlayerFormModal

@@ -1,8 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 import stadiumImg from "@/assets/stadium-band.jpg";
 import { Countdown } from "@/components/auction/Countdown";
@@ -159,6 +160,7 @@ function AuctionDetailPage() {
   useRealtimeUpdates(auction?.id);
   const { players, isPending: playersPending, updatePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
   const { teams, isPending: teamsPending } = useTeams(auction.id);
+  const formatNum = formatPoints;
 
   const [activeTab, setActiveTab] = useState<"TEAMS" | "PLAYERS" | "MVP" | "SPONSORS" | "LINK" | "ABOUT">("TEAMS");
   const [previewPlayerId, setPreviewPlayerId] = useState<string | null>(null);
@@ -256,18 +258,20 @@ function AuctionDetailPage() {
                 ✨ Free Access
               </span>
             </div>
-            <Button
-              onClick={() => {
-                exportAuctionPDF(auction, players || [], teams || []);
-                toast.success("Auction PDF Report downloaded!");
-              }}
-              variant="outline"
-              className="rounded-full border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] font-bold text-xs gap-1.5 transition-all shadow-sm cursor-pointer"
-              title="Download Auction Summary PDF"
-            >
-              <FileText className="size-4" />
-              Download PDF Report
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={() => {
+                  exportAuctionPDF(auction, players || [], teams || []);
+                  toast.success("Auction Results PDF Report downloaded!");
+                }}
+                variant="outline"
+                className="rounded-full border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] font-bold text-xs gap-1.5 transition-all shadow-sm cursor-pointer"
+                title="Download Teams & Purchased Players PDF Report"
+              >
+                <FileText className="size-4" />
+                Auction Results PDF
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -294,6 +298,92 @@ function AuctionDetailPage() {
       <main className="mx-auto max-w-4xl px-4 py-10 pb-32 flex-1 w-full">
         {activeTab === "TEAMS" && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                onClick={() => {
+                  if (!teams || teams.length === 0) {
+                    toast.error("No teams found to export.");
+                    return;
+                  }
+                  const teamsSummaryRows = teams.map((t, index) => {
+                    const { usedPoints, totalPoints, totalPlayers, reservedPlayers, maxBidPoints } = computeTeamStats(
+                      t,
+                      players || [],
+                      auction,
+                    );
+                    const teamBought = (players || []).filter((p) => p.teamId === t.id);
+                    return {
+                      "S.No": index + 1,
+                      "Team Name": t.name,
+                      "Team Code": t.shortName,
+                      "Owner Name": t.ownerName || "",
+                      "Owner Phone": t.ownerPhone || "",
+                      "Total Budget (Points)": totalPoints,
+                      "Used Points": usedPoints,
+                      "Remaining Points": totalPoints - usedPoints,
+                      "Max Next Bid (Points)": maxBidPoints > 0 ? maxBidPoints : 0,
+                      "Players Bought": teamBought.length,
+                      "Target Roster Size": auction.playersPerTeam,
+                      "Reserved Spots": reservedPlayers,
+                    };
+                  });
+                  const teamsSheet = XLSX.utils.json_to_sheet(teamsSummaryRows);
+                  const rosterRows: any[] = [];
+                  teams.forEach((t) => {
+                    const teamBought = (players || []).filter((p) => p.teamId === t.id);
+                    if (teamBought.length === 0) {
+                      rosterRows.push({
+                        "Team Name": t.name,
+                        "Team Code": t.shortName,
+                        "Player S.No": "-",
+                        "Player Name": "No players bought yet",
+                        "Phone Number": "-",
+                        "Role": "-",
+                        "Grade": "-",
+                        "Dominated Hand": "-",
+                        "Sold Price (Points)": "-",
+                      });
+                    } else {
+                      teamBought.forEach((p, pIdx) => {
+                        rosterRows.push({
+                          "Team Name": t.name,
+                          "Team Code": t.shortName,
+                          "Player S.No": pIdx + 1,
+                          "Player Name": p.name,
+                          "Phone Number": p.phone || "",
+                          "Role": p.sportFields?.["role"] || "-",
+                          "Grade": p.category || "-",
+                          "Dominated Hand": p.sportFields?.["Dominated Hand"] || (p.customData?.startsWith("Dominated Hand: ") ? p.customData.replace("Dominated Hand: ", "") : "-"),
+                          "Sold Price (Points)": p.soldPrice ?? p.baseValue ?? 0,
+                        });
+                      });
+                    }
+                  });
+                  const rosterSheet = XLSX.utils.json_to_sheet(rosterRows);
+                  const workbook = XLSX.utils.book_new();
+                  XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams Summary");
+                  XLSX.utils.book_append_sheet(workbook, rosterSheet, "Teams Rosters");
+                  const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
+                  XLSX.writeFile(workbook, `${cleanTitle}_Teams_Report.xlsx`);
+                  toast.success("Teams Excel sheet downloaded successfully!");
+                }}
+                variant="outline"
+                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+              >
+                <FileSpreadsheet className="size-4 text-emerald-400" /> Export teams Excel
+              </Button>
+              <Button
+                onClick={() => {
+                  const url = `${window.location.origin}/register-team/${auction.id}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success("Team registration link copied to clipboard!");
+                }}
+                variant="outline"
+                className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
+              >
+                <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
+              </Button>
+            </div>
             {teamsPending ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Skeleton key={i} className="h-28 w-full rounded-3xl bg-[#2e343a]/60" />
@@ -346,7 +436,7 @@ function AuctionDetailPage() {
                         </div>
                         
                         {/* Stats Row */}
-                        <div className="flex items-center gap-4 sm:gap-6 mt-4 overflow-x-auto hide-scrollbar pt-2 border-t border-[#5c6875]/25">
+                        <div className="flex items-center gap-3 sm:gap-4 mt-3 overflow-x-auto hide-scrollbar">
                           <div>
                             <div className="text-[10px] font-bold text-[#abb4bd] uppercase tracking-wider mb-0.5 whitespace-nowrap">Total Pl</div>
                             <div className="font-black text-sm sm:text-base text-[#fffcf7]">
@@ -364,6 +454,35 @@ function AuctionDetailPage() {
                             <div className="font-black text-sm sm:text-base text-[#ffd791]">{formatNum(usedPoints)}</div>
                           </div>
                         </div>
+
+                        {/* Bought Players Roster for this Team */}
+                        {(() => {
+                          const teamBoughtPlayers = (players || []).filter((p) => p.teamId === team.id);
+                          if (teamBoughtPlayers.length === 0) return null;
+                          return (
+                            <div className="mt-4 pt-3.5 border-t border-[#5c6875]/30">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#abb4bd] flex items-center gap-1.5">
+                                  <span className="size-2 rounded-full bg-emerald-400" />
+                                  Bought Players ({teamBoughtPlayers.length})
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {teamBoughtPlayers.map((p) => (
+                                  <span
+                                    key={p.id}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#162235]/90 border border-[#a1b5d8]/30 text-xs font-semibold text-[#fffcf7]"
+                                  >
+                                    <span>{p.name}</span>
+                                    <span className="text-[10px] font-extrabold text-[#c2d8b9]">
+                                      ({p.soldPrice ? formatNum(p.soldPrice) : "Base"} pts)
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -375,6 +494,70 @@ function AuctionDetailPage() {
 
         {activeTab === "PLAYERS" && (
           <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                onClick={() => {
+                  if (!players || players.length === 0) {
+                    toast.error("No registered players found to export.");
+                    return;
+                  }
+                  const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
+                  const excelRows = players.map((p, index) => {
+                    const role = p.sportFields?.["role"] || "-";
+                    const dominatedHand =
+                      p.sportFields?.["Dominated Hand"] ||
+                      (p.customData?.startsWith("Dominated Hand: ")
+                        ? p.customData.replace("Dominated Hand: ", "")
+                        : (p.customData?.includes("BNI") || p.customData?.includes("Family") ? "-" : (p.customData || "-")));
+                    const soldTeamName = p.teamId ? (teamMap.get(p.teamId) || "Sold") : "Unsold";
+                    return {
+                      "S.No": index + 1,
+                      "Player Name": p.name || "",
+                      "Phone Number": p.phone || "",
+                      "Age": p.age ?? "",
+                      "Gender": p.gender || "",
+                      "City": p.city || "",
+                      "Player Level": p.playerLevel || "",
+                      "Grade / Category": p.category || "",
+                      "Playing Position / Role": role,
+                      "Dominated Hand": dominatedHand,
+                      "Jersey Size": p.jerseySize || "",
+                      "Jersey Name": p.jerseyName || "",
+                      "Jersey Number / Trouser": p.trouserSize || "",
+                      "Base Value (Points)": p.baseValue ?? 0,
+                      "Auction Status": p.teamId ? "Sold" : "Unsold",
+                      "Sold To Team": soldTeamName,
+                      "Sold Price (Points)": p.soldPrice ?? (p.teamId ? p.baseValue : 0),
+                      "Payment Mode": p.paymentMode || "",
+                      "UTR / Ref Number": p.utrNumber || "",
+                      "Membership / Extra Details": p.customData || "",
+                      "Registration Date": p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-IN") : "",
+                    };
+                  });
+                  const worksheet = XLSX.utils.json_to_sheet(excelRows);
+                  const workbook = XLSX.utils.book_new();
+                  XLSX.utils.book_append_sheet(workbook, worksheet, "Registered Players");
+                  const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
+                  XLSX.writeFile(workbook, `${cleanTitle}_Registered_Players.xlsx`);
+                  toast.success("Players Excel sheet downloaded successfully!");
+                }}
+                variant="outline"
+                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+              >
+                <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
+              </Button>
+              <Button
+                onClick={() => {
+                  const url = `${window.location.origin}/register-player/${auction.id}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success("Player registration link copied to clipboard!");
+                }}
+                variant="outline"
+                className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
+              >
+                <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
+              </Button>
+            </div>
             {playersPending ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Skeleton key={i} className="h-24 w-full rounded-3xl bg-[#2e343a]/60" />
@@ -384,47 +567,70 @@ function AuctionDetailPage() {
                 <p className="text-[#abb4bd] font-medium">No players registered yet.</p>
               </div>
             ) : (
-              players.map((player) => (
-                <div
-                  key={player.id}
-                  className="relative flex items-center gap-4 sm:gap-5 rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-xl p-4 sm:p-5 shadow-[0_15px_45px_rgba(23,26,29,0.8)] hover:border-[#a1b5d8]/50 hover:bg-[#2e343a]/90 transition-all group text-[#fffcf7]"
-                >
-                  <PlayerPreviewCard
-                    player={player}
-                    open={previewPlayerId === player.id}
-                    onOpenChange={(open) => !open && setPreviewPlayerId(null)}
-                    trigger={
-                      <button 
-                        className="flex flex-1 items-center gap-4 sm:gap-5 text-left hover:opacity-90 transition-opacity min-w-0 pr-4 cursor-pointer"
-                        onClick={() => setPreviewPlayerId(player.id)}
-                      >
-                        <FallbackImage
-                          src={player.photo || ""}
-                          alt={player.name}
-                          className="size-14 sm:size-16 rounded-2xl border-2 border-[#a1b5d8]/40 shrink-0 object-cover object-top shadow-md group-hover:border-[#a1b5d8]/70 transition-colors"
-                          fallback={
-                            <span className="display grid size-full place-items-center rounded-2xl bg-[#162235] text-xl font-black text-[#a1b5d8]">
-                              {player.name.slice(0, 2).toUpperCase()}
-                            </span>
-                          }
-                        />
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-black text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
-                            {player.name}
-                          </h3>
-                          <p className="text-xs sm:text-sm font-semibold text-[#abb4bd] mt-1 leading-snug flex items-center gap-2 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-full bg-[#162235] border border-[#a1b5d8]/30 text-[#e4f0d0] text-xs font-bold uppercase">
-                              {player.sportFields?.["role"] || "-"}
-                            </span>
-                            <span className="text-[#5c6875]">·</span>
-                            <span className="text-[#e3e6e9] font-bold">Grade {player.category || "-"}</span>
-                            <span className="text-[#5c6875]">·</span>
-                            <span className="text-[#c2d8b9] font-bold">{player.customData ? player.customData.replace("Dominated Hand: ", "") : "-"}</span>
-                          </p>
-                        </div>
-                      </button>
-                    }
-                  />
+              players.map((player) => {
+                const soldTeam = teams?.find((t) => t.id === player.teamId);
+                return (
+                  <div
+                    key={player.id}
+                    className="relative flex items-center gap-4 sm:gap-5 rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-xl p-4 sm:p-5 shadow-[0_15px_45px_rgba(23,26,29,0.8)] hover:border-[#a1b5d8]/50 hover:bg-[#2e343a]/90 transition-all group text-[#fffcf7]"
+                  >
+                    <PlayerPreviewCard
+                      player={player}
+                      open={previewPlayerId === player.id}
+                      onOpenChange={(open) => !open && setPreviewPlayerId(null)}
+                      trigger={
+                        <button 
+                          className="flex flex-1 items-center gap-4 sm:gap-5 text-left hover:opacity-90 transition-opacity min-w-0 pr-4 cursor-pointer"
+                          onClick={() => setPreviewPlayerId(player.id)}
+                        >
+                          <FallbackImage
+                            src={player.photo || ""}
+                            alt={player.name}
+                            className="size-14 sm:size-16 rounded-2xl border-2 border-[#a1b5d8]/40 shrink-0 object-cover object-top shadow-md group-hover:border-[#a1b5d8]/70 transition-colors"
+                            fallback={
+                              <span className="display grid size-full place-items-center rounded-2xl bg-[#162235] text-xl font-black text-[#a1b5d8]">
+                                {player.name.slice(0, 2).toUpperCase()}
+                              </span>
+                            }
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <h3 className="font-black text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
+                                {player.name}
+                              </h3>
+                              {soldTeam ? (
+                                <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
+                                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span>SOLD: {soldTeam.name}</span>
+                                  <span className="text-emerald-200">({player.soldPrice ? formatPoints(player.soldPrice) : formatPoints(player.baseValue)} pts)</span>
+                                </span>
+                              ) : player.teamId ? (
+                                <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold">
+                                  SOLD ({player.soldPrice ? formatPoints(player.soldPrice) : ""} pts)
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className="text-xs sm:text-sm font-semibold text-[#abb4bd] mt-1 leading-snug flex items-center gap-2 flex-wrap">
+                              <span className="px-2.5 py-0.5 rounded-full bg-[#162235] border border-[#a1b5d8]/30 text-[#e4f0d0] text-xs font-bold uppercase">
+                                {player.sportFields?.["role"] || "-"}
+                              </span>
+                              <span className="text-[#5c6875]">·</span>
+                              <span className="text-[#e3e6e9] font-bold">Grade {player.category || "-"}</span>
+                              {(() => {
+                                const dh = player.sportFields?.["Dominated Hand"] || (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData?.includes("BNI") || player.customData?.includes("Family") ? null : player.customData));
+                                if (!dh || dh === "-") return null;
+                                return (
+                                  <>
+                                    <span className="text-[#5c6875]">·</span>
+                                    <span className="text-[#c2d8b9] font-bold">{dh}</span>
+                                  </>
+                                );
+                              })()}
+                            </p>
+                          </div>
+                        </button>
+                      }
+                    />
                   <div className="shrink-0 mr-1">
                     <Button
                       variant="outline"
@@ -436,8 +642,9 @@ function AuctionDetailPage() {
                     </Button>
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })
+          )}
           </div>
         )}
 
