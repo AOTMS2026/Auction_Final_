@@ -112,13 +112,25 @@ router.post(
       delete rest.sportFields.originalPhoto;
     }
 
+    const trimmedPhone = phone.trim();
+    const existingPlayer = await Player.findOne({
+      auctionId: new mongoose.Types.ObjectId(auctionId),
+      phone: trimmedPhone,
+    }).lean();
+
+    if (existingPlayer) {
+      return res.status(400).json({
+        error: "Duplicate phone number not allowed! This phone number is already registered for this auction.",
+      });
+    }
+
     const uploadedPhoto = await uploadBase64Image(rest.photo);
     const uploadedPayment = await uploadBase64Image(rest.paymentImage);
 
     const player = await Player.create({
       auctionId,
       name: name.trim(),
-      phone: phone.trim(),
+      phone: trimmedPhone,
       ...rest,
       photo: uploadedPhoto,
       paymentImage: uploadedPayment,
@@ -149,13 +161,25 @@ router.post(
       delete rest.sportFields.originalPhoto;
     }
 
+    const trimmedPhone = phone.trim();
+    const existingPlayer = await Player.findOne({
+      auctionId: new mongoose.Types.ObjectId(auctionId),
+      phone: trimmedPhone,
+    }).lean();
+
+    if (existingPlayer) {
+      return res.status(400).json({
+        error: "Duplicate phone number not allowed! This phone number is already registered for this auction.",
+      });
+    }
+
     const uploadedPhoto = await uploadBase64Image(rest.photo);
     const uploadedPayment = await uploadBase64Image(rest.paymentImage);
 
     const player = await Player.create({
       auctionId,
       name: name.trim(),
-      phone: phone.trim(),
+      phone: trimmedPhone,
       ...rest,
       photo: uploadedPhoto,
       paymentImage: uploadedPayment,
@@ -193,6 +217,21 @@ router.patch(
       const isOnlyCategory = requestedUpdates.every(key => key === "category");
       if (!isOnlyCategory) {
         return res.status(403).json({ error: "You don't have permission to modify these details" });
+      }
+    }
+
+    if (req.body.phone !== undefined && req.body.phone.trim() !== player.phone) {
+      const trimmedPhone = req.body.phone.trim();
+      const existingPlayer = await Player.findOne({
+        _id: { $ne: player._id },
+        auctionId: player.auctionId,
+        phone: trimmedPhone,
+      }).lean();
+
+      if (existingPlayer) {
+        return res.status(400).json({
+          error: "Duplicate phone number not allowed! This phone number is already registered for this auction.",
+        });
       }
     }
 

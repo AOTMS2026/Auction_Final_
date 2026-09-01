@@ -143,6 +143,12 @@ function PlayerRegistrationPage() {
 
   const config = SPORT_CONFIGS[auction.sportType] || SPORT_CONFIGS["cricket"];
 
+  const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.name?.toLowerCase().includes("bni") || auction.name?.toLowerCase().includes("bbl");
+  const isHunterzVolleyball = auction.id === "6a8a705aef1f9e0978b3031c" || auction.name?.toLowerCase().includes("hunterz");
+  const isJsc = auction.id === "6a8ed4afb1d04e719c5866a6";
+
+  const [phoneError, setPhoneError] = useState("");
+
   const registerMutation = useMutation({
     mutationFn: (input: PlayerInput) => auctionClient.registerPlayer(input),
     onSuccess: () => {
@@ -150,7 +156,11 @@ function PlayerRegistrationPage() {
       toast.success("Successfully registered for the auction!");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to register. Please try again.");
+      const msg = error instanceof Error ? error.message : "Failed to register. Please try again.";
+      if (msg.toLowerCase().includes("duplicate phone") || msg.toLowerCase().includes("already registered")) {
+        setPhoneError("Duplicate phone number not allowed! This phone number is already registered.");
+      }
+      toast.error(msg);
     },
   });
 
@@ -258,42 +268,48 @@ function PlayerRegistrationPage() {
       toast.error("Please provide a valid name and exactly 10-digit phone number");
       return;
     }
-    if (!age || !gender || !city || !playerLevel) {
-      toast.error("Please fill in all personal details");
+    if (!age) {
+      toast.error("Please provide your age");
       return;
     }
-    /*
-    if (!sportFields["role"]) {
-      toast.error("Please select a role/skill");
-      return;
-    }
-    for (const stat of config.stats) {
-      if (!sportFields[stat]) {
-        toast.error(`Please provide ${stat}`);
-        return;
-      }
-    }
-    for (const spec of config.specs) {
-      if (!sportFields[spec]) {
-        toast.error(`Please provide ${spec}`);
-        return;
-      }
-    }
-    */
     if (!photo) {
       toast.error("Please upload player photo");
       return;
     }
-    if (auction.id !== "6a8edaddd7ed74151dbafab3" && !paymentImage) {
+
+    if (isHunterzVolleyball) {
+      if (!position) {
+        toast.error("Please select Playing Position / Role");
+        return;
+      }
+      if (!dominatedHand) {
+        toast.error("Please select Dominated Hand");
+        return;
+      }
+    } else {
+      if (!gender || !city || !playerLevel) {
+        toast.error("Please fill in all personal details");
+        return;
+      }
+      if (!jerseySize) {
+        toast.error("Please fill in Jersey Size");
+        return;
+      }
+    }
+
+    if (!isBniAuction && !isHunterzVolleyball && !paymentImage) {
       toast.error("Please upload the payment screenshot");
       return;
     }
-    if (!jerseySize) {
-      toast.error("Please fill in Jersey Size");
-      return;
-    }
-    const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.name?.toLowerCase().includes("bni") || auction.name?.toLowerCase().includes("bbl");
-    if (isBniAuction) {
+
+    let customDataStr = "";
+    const updatedSportFields = { ...sportFields };
+
+    if (isHunterzVolleyball) {
+      customDataStr = `Dominated Hand: ${dominatedHand}`;
+      updatedSportFields["role"] = position;
+      updatedSportFields["Dominated Hand"] = dominatedHand;
+    } else if (isBniAuction) {
       if (!jerseyName.trim()) {
         toast.error("Please fill in Jersey Name");
         return;
@@ -306,11 +322,6 @@ function PlayerRegistrationPage() {
         toast.error("Please select Number of seasons played");
         return;
       }
-    }
-
-    let customDataStr = "";
-
-    if (isBniAuction) {
       if (!memberType) {
         toast.error("Please select a membership type");
         return;
@@ -332,22 +343,22 @@ function PlayerRegistrationPage() {
 
     const input: PlayerInput = {
       auctionId: auction.id,
-      name,
-      phone,
+      name: name.trim(),
+      phone: phone.trim(),
       age: age ? parseInt(age) : null,
-      gender,
-      city,
-      playerLevel,
-      paymentMode,
-      utrNumber,
-      paymentImage,
-      baseValue: parseFloat(baseValue) || 0,
-      jerseySize,
-      jerseyName,
-      trouserSize,
+      gender: isHunterzVolleyball ? "" : gender,
+      city: isHunterzVolleyball ? "" : city,
+      playerLevel: isHunterzVolleyball ? "" : playerLevel,
+      paymentMode: isHunterzVolleyball || isBniAuction ? "" : paymentMode,
+      utrNumber: isHunterzVolleyball || isBniAuction ? "" : utrNumber,
+      paymentImage: isHunterzVolleyball || isBniAuction ? null : paymentImage,
+      baseValue: isHunterzVolleyball ? 5000 : (parseFloat(baseValue) || 0),
+      jerseySize: isHunterzVolleyball ? "" : jerseySize,
+      jerseyName: isHunterzVolleyball || !isBniAuction ? "" : jerseyName,
+      trouserSize: isHunterzVolleyball || !isBniAuction ? "" : trouserSize,
       customData: customDataStr,
       photo,
-      sportFields,
+      sportFields: updatedSportFields,
     };
 
     registerMutation.mutate(input);
@@ -374,8 +385,6 @@ function PlayerRegistrationPage() {
       </div>
     );
   }
-
-  const isBniAuction = auction.id === "6a8edaddd7ed74151dbafab3" || auction.name?.toLowerCase().includes("bni") || auction.name?.toLowerCase().includes("bbl");
 
   return (
     <div
@@ -492,17 +501,27 @@ function PlayerRegistrationPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PHONE (10 DIGITS) <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                  PHONE (10 DIGITS) <span className="text-red-400 font-bold ml-0.5">*</span>
+                </Label>
                 <Input
                   id="phone"
                   placeholder="e.g. 9876543210"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (phoneError) setPhoneError("");
+                  }}
                   disabled={registerMutation.isPending}
                   maxLength={10}
                   required
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                  className={`rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8] ${phoneError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 />
+                {phoneError && (
+                  <p className="text-xs font-semibold text-red-400 mt-1 flex items-center gap-1">
+                    <span>⚠️</span> {phoneError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">AGE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
@@ -517,49 +536,147 @@ function PlayerRegistrationPage() {
                   className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">GENDER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    <SelectItem value="Male" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Male</SelectItem>
-                    <SelectItem value="Female" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">CITY <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                <Select value={city} onValueChange={setCity}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select City" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    <SelectItem value="vijayawada" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Vijayawada</SelectItem>
-                    <SelectItem value="tenali" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Tenali</SelectItem>
-                    <SelectItem value="guntur" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Guntur</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PLAYER LEVEL <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                <Select value={playerLevel} onValueChange={setPlayerLevel}>
-                  <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                    <SelectValue placeholder="Select Level" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                    <SelectItem value="Beginner" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Beginner</SelectItem>
-                    <SelectItem value="Intermediate" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Intermediate</SelectItem>
-                    <SelectItem value="Advanced" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Advanced</SelectItem>
-                    <SelectItem value="Professional" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Professional</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Hunterz Volleyball Fields: Role & Dominated Hand */}
+              {isHunterzVolleyball && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                      PLAYING POSITION / ROLE <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Select value={position} onValueChange={setPosition}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Position / Role" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        {["Attacker", "Setter", "Blocker", "Universal", "Libero", "Spiker"].map((r) => (
+                          <SelectItem key={r} value={r} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
+                            {r}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                      DOMINATED HAND <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Select value={dominatedHand} onValueChange={setDominatedHand}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Dominated Hand" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="Right Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Right Hand</SelectItem>
+                        <SelectItem value="Left Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Left Hand</SelectItem>
+                        <SelectItem value="Both Hands" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Both Hands</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {/* Non-Hunterz: Gender, City, Player Level */}
+              {!isHunterzVolleyball && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">GENDER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Select value={gender} onValueChange={setGender}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="Male" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Male</SelectItem>
+                        <SelectItem value="Female" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">CITY <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Select value={city} onValueChange={setCity}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select City" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="vijayawada" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Vijayawada</SelectItem>
+                        <SelectItem value="tenali" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Tenali</SelectItem>
+                        <SelectItem value="guntur" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Guntur</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PLAYER LEVEL <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Select value={playerLevel} onValueChange={setPlayerLevel}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select Level" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectItem value="Beginner" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Beginner</SelectItem>
+                        <SelectItem value="Intermediate" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Intermediate</SelectItem>
+                        <SelectItem value="Advanced" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Advanced</SelectItem>
+                        <SelectItem value="Professional" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Professional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
             </div>
 
-            {isBniAuction ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {!isHunterzVolleyball && (
+              isBniAuction ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Input
+                      id="jerseySize"
+                      placeholder="e.g. M, L, XL"
+                      value={jerseySize}
+                      onChange={(e) => setJerseySize(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Input
+                      id="jerseyName"
+                      placeholder="e.g. Dhoni"
+                      value={jerseyName}
+                      onChange={(e) => setJerseyName(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NUMBER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Input
+                      id="trouserSize"
+                      placeholder="e.g. 7"
+                      value={trouserSize}
+                      onChange={(e) => setTrouserSize(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">NUMBER OF SEASONS PLAYED <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Select value={bblSeasons} onValueChange={setBblSeasons}>
+                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectValue placeholder="Select seasons" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        {Array.from({ length: 9 }).map((_, i) => (
+                          <SelectItem key={i} value={String(i)} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
+                            {i}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-2">
                   <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Input
@@ -572,59 +689,7 @@ function PlayerRegistrationPage() {
                     className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                  <Input
-                    id="jerseyName"
-                    placeholder="e.g. Dhoni"
-                    value={jerseyName}
-                    onChange={(e) => setJerseyName(e.target.value)}
-                    disabled={registerMutation.isPending}
-                    required
-                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NUMBER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                  <Input
-                    id="trouserSize"
-                    placeholder="e.g. 7"
-                    value={trouserSize}
-                    onChange={(e) => setTrouserSize(e.target.value)}
-                    disabled={registerMutation.isPending}
-                    required
-                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">NUMBER OF SEASONS PLAYED <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                  <Select value={bblSeasons} onValueChange={setBblSeasons}>
-                    <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
-                      <SelectValue placeholder="Select seasons" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                      {Array.from({ length: 9 }).map((_, i) => (
-                        <SelectItem key={i} value={String(i)} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
-                          {i}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
-                <Input
-                  id="jerseySize"
-                  placeholder="e.g. M, L, XL"
-                  value={jerseySize}
-                  onChange={(e) => setJerseySize(e.target.value)}
-                  disabled={registerMutation.isPending}
-                  required
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
-                />
-              </div>
+              )
             )}
 
             {isBniAuction && (
@@ -715,8 +780,8 @@ function PlayerRegistrationPage() {
               </div>
             )}
 
-            {/* Payment Details - Only for JSE / other auctions, NOT for BNI */}
-            {auction.id !== "6a8edaddd7ed74151dbafab3" && (
+            {/* Payment Details - Only for JSC / other auctions, NOT for BNI and NOT for Hunterz Volleyball */}
+            {!isBniAuction && !isHunterzVolleyball && (
               <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
                 <h3 className="font-bold text-base text-[#fffcf7]">Payment Details</h3>
 

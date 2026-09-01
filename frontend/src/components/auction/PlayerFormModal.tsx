@@ -80,6 +80,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   // Base fields
   const [name, setName] = useState(player?.name || "");
   const [phone, setPhone] = useState(player?.phone || "");
+  const [phoneError, setPhoneError] = useState("");
   const [age, setAge] = useState(player?.age?.toString() || "");
   const [category, setCategory] = useState(player?.category || "");
   const [gender, setGender] = useState(player?.gender || "");
@@ -433,7 +434,11 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       }
       setOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save player");
+      const msg = error instanceof Error ? error.message : "Failed to save player";
+      if (msg.toLowerCase().includes("duplicate phone") || msg.toLowerCase().includes("already registered")) {
+        setPhoneError("Duplicate phone number not allowed! This number is already registered.");
+      }
+      toast.error(msg);
     }
   }
 
@@ -519,17 +524,27 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PHONE (10 DIGITS) <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                    PHONE (10 DIGITS) <span className="text-red-400 font-bold ml-0.5">*</span>
+                  </Label>
                   <Input
                     id="phone"
                     placeholder="e.g. 9876543210"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (phoneError) setPhoneError("");
+                    }}
                     disabled={isSubmitting}
                     maxLength={10}
                     required
-                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    className={`rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8] ${phoneError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                   />
+                  {phoneError && (
+                    <p className="text-xs font-semibold text-red-400 mt-1 flex items-center gap-1">
+                      <span>⚠️</span> {phoneError}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">AGE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
@@ -665,17 +680,27 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Phone (10 digits) <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                    Phone (10 digits) <span className="text-red-400 font-bold ml-0.5">*</span>
+                  </Label>
                   <Input
                     id="phone"
                     placeholder="e.g. 9876543210"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (phoneError) setPhoneError("");
+                    }}
                     disabled={isSubmitting}
                     maxLength={10}
                     required
-                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    className={`rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8] ${phoneError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                   />
+                  {phoneError && (
+                    <p className="text-xs font-semibold text-red-400 mt-1 flex items-center gap-1">
+                      <span>⚠️</span> {phoneError}
+                    </p>
+                  )}
                 </div>
 
               {/* Playing Position / Role & Dominated Hand (Hidden for JSC Badminton) */}
