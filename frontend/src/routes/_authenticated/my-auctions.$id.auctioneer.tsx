@@ -15,7 +15,7 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { auctionDetailQueryOptions } from "@/lib/queries/auctions";
 import { authClient } from "@/lib/auth-client";
 import { computeTeamStats } from "@/lib/team-stats";
-import type { Player } from "@/lib/auction-client";
+import type { Player, Team } from "@/lib/auction-client";
 import { cn } from "@/lib/utils";
 
 type AuctionRoundStatus = "pending" | "sold" | "unsold";
@@ -64,6 +64,58 @@ function AuctioneerConsole() {
   const [lastSoldTeamId, setLastSoldTeamId] = useState<string | null>(null);
   const [viewingStatusList, setViewingStatusList] = useState<AuctionRoundStatus | null>(null);
   const [actionHistory, setActionHistory] = useState<string[]>([]);
+  const [orderedTeams, setOrderedTeams] = useState<Team[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Sync ordered teams when teams load or change
+  useEffect(() => {
+    if (teams && teams.length > 0) {
+      const storedOrder = localStorage.getItem(`auctioneer-teams-order-${auction.id}`);
+      if (storedOrder) {
+        try {
+          const orderedIds = JSON.parse(storedOrder) as string[];
+          const existingTeamsMap = new Map(teams.map((t) => [t.id, t]));
+          const reordered: Team[] = [];
+
+          orderedIds.forEach((id) => {
+            const team = existingTeamsMap.get(id);
+            if (team) {
+              reordered.push(team);
+              existingTeamsMap.delete(id);
+            }
+          });
+          // Append any remaining teams
+          existingTeamsMap.forEach((team) => {
+            reordered.push(team);
+          });
+          setOrderedTeams(reordered);
+          return;
+        } catch (e) {
+          console.error("Error parsing stored teams order", e);
+        }
+      }
+      setOrderedTeams(teams);
+    } else {
+      setOrderedTeams([]);
+    }
+  }, [teams, auction.id]);
+
+  const handleReorder = (fromIndex: number, toIndex: number) => {
+    const fromTeam = orderedTeams[fromIndex];
+    const toTeam = orderedTeams[toIndex];
+    if (!fromTeam || !toTeam || fromIndex === toIndex) {
+      return;
+    }
+    const newOrder = [...orderedTeams];
+    newOrder[fromIndex] = toTeam;
+    newOrder[toIndex] = fromTeam;
+    setOrderedTeams(newOrder);
+    localStorage.setItem(
+      `auctioneer-teams-order-${auction.id}`,
+      JSON.stringify(newOrder.map((t) => t.id))
+    );
+  };
 
   async function handleUndoLatestStep() {
     let targetPlayerId: string | null = null;
@@ -180,13 +232,13 @@ function AuctioneerConsole() {
   }, [players, playersPending, hasPromptedReset, mode]);
 
   function getNextAvailableTeamId(fromTeamId: string): string | null {
-    if (teams.length === 0) return null;
-    const startIndex = teams.findIndex((t) => t.id === fromTeamId);
+    if (orderedTeams.length === 0) return null;
+    const startIndex = orderedTeams.findIndex((t) => t.id === fromTeamId);
     if (startIndex === -1) return null;
 
-    for (let i = 1; i <= teams.length; i++) {
-      const nextIndex = (startIndex + i) % teams.length;
-      const candidateTeam = teams[nextIndex];
+    for (let i = 1; i <= orderedTeams.length; i++) {
+      const nextIndex = (startIndex + i) % orderedTeams.length;
+      const candidateTeam = orderedTeams[nextIndex];
       if (!candidateTeam) continue;
       const stats = computeTeamStats(candidateTeam, effectivePlayers, auction);
       if (stats.reservedPlayers > 0) {
@@ -430,14 +482,14 @@ function AuctioneerConsole() {
         <FallbackImage
           src={auction.coverImage || ""}
           alt=""
-          className="size-10 shrink-0 rounded-md"
+          className="size-12 shrink-0 rounded-md object-contain"
           fallback={
             <span className="display grid size-full place-items-center rounded-md bg-brand text-sm font-bold text-brand-foreground shadow-sm">
               {auction.name.slice(0, 2).toUpperCase()}
             </span>
           }
         />
-        <h1 className="flex-1 truncate text-xl font-extrabold tracking-tight text-foreground">{auction.name}</h1>
+        <h1 className="flex-1 truncate text-xl font-extrabold tracking-wide text-foreground">{auction.name}</h1>
         <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
@@ -482,7 +534,8 @@ function AuctioneerConsole() {
               lotNumber={soldCount + unsoldCount + 1}
               sportType={auction.sportType}
               currentBid={currentBid}
-              onBidChange={setCurrentBid}
+              minBid={auction.minimumBid}
+              onBidChange={(value) => setCurrentBid(Math.max(auction.minimumBid, value))}
               onClear={() => {
                 setCurrentBid(auction.minimumBid);
                 setSelectedTeamId(null);
@@ -497,14 +550,14 @@ function AuctioneerConsole() {
         </div>
 
         {/* Right Column: Teams List (Vertical Grid) */}
-        <div className="w-[360px] shrink-0 flex flex-col h-full bg-card border border-border rounded-2xl p-3 shadow-sm select-none overflow-hidden">
+        <div className="w-[480px] shrink-0 flex flex-col h-full bg-card border border-border rounded-2xl p-3 shadow-sm select-none overflow-hidden">
           <div className="shrink-0 border-b border-border pb-1.5 mb-2 flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
             <span className="text-[10px] text-muted-foreground font-medium">Bidding Team Selection</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-2">
-              {teams.map((team) => (
+              {orderedTeams.map((team, index) => (
                 <TeamBidCard
                   key={team.id}
                   team={team}
@@ -512,6 +565,47 @@ function AuctioneerConsole() {
                   selected={selectedTeamId === team.id}
                   onSelect={() => handleTeamSelect(team.id)}
                   onViewPlayers={() => setViewingTeamId(team.id)}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedIndex(index);
+                    e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", `${index}`);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverIndex !== index) {
+                      setDragOverIndex(index);
+                    }
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    if (dragOverIndex !== index) {
+                      setDragOverIndex(index);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      if (dragOverIndex === index) {
+                        setDragOverIndex(null);
+                      }
+                    }
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIndex(null);
+                    setDragOverIndex(null);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const rawFrom = draggedIndex !== null ? draggedIndex : parseInt(e.dataTransfer.getData("text/plain"), 10);
+                    if (!isNaN(rawFrom) && rawFrom !== index) {
+                      handleReorder(rawFrom, index);
+                    }
+                    setDraggedIndex(null);
+                    setDragOverIndex(null);
+                  }}
+                  isDragging={draggedIndex === index}
+                  isDragOver={dragOverIndex === index}
                 />
               ))}
             </div>
@@ -524,106 +618,106 @@ function AuctioneerConsole() {
         <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between gap-4">
           
           {/* New Player Mode & Button */}
-          <div className="flex items-center gap-3 bg-muted/10 border border-border p-2 rounded-xl shrink-0">
+          <div className="flex items-center gap-3 bg-muted/10 border border-border p-2 sm:p-2.5 rounded-xl shrink-0">
             <div className="flex flex-col items-center gap-1.5 border-r border-border pr-3">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none">New Player Mode</span>
-              <div className="flex gap-1 w-36">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground leading-none">New Player Mode</span>
+              <div className="flex gap-1.5 w-44 sm:w-48">
                 <button
                   type="button"
                   onClick={() => setSelectionMode("random")}
                   className={cn(
-                    "rounded-lg p-1 transition-colors border flex-1 flex items-center justify-center gap-0.5 text-[10px] font-bold",
+                    "rounded-lg py-1.5 px-2 transition-all border flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold active:scale-95 cursor-pointer",
                     selectionMode === "random" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
                   )}
                   title="Random Selection"
                 >
-                  <Shuffle className="size-3" />
+                  <Shuffle className="size-3.5 sm:size-4" />
                   Random
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectionMode("manual")}
                   className={cn(
-                    "rounded-lg p-1 transition-colors border flex-1 flex items-center justify-center gap-0.5 text-[10px] font-bold",
+                    "rounded-lg py-1.5 px-2 transition-all border flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold active:scale-95 cursor-pointer",
                     selectionMode === "manual" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
                   )}
                   title="Manual Selection"
                 >
-                  <SquareMousePointer className="size-3" />
+                  <SquareMousePointer className="size-3.5 sm:size-4" />
                   Manual
                 </button>
               </div>
             </div>
-            <Button className="text-xs font-extrabold h-9 px-4 shrink-0" onClick={handleNewPlayer}>
+            <Button className="text-sm sm:text-base font-extrabold h-11 px-5 shrink-0 shadow-sm" onClick={handleNewPlayer}>
               New Player
             </Button>
           </div>
 
           {/* Bid Controls (Horizontal Flex) */}
-          <div className="flex-1 flex items-center gap-3 justify-center">
+          <div className="flex-1 flex items-center gap-2.5 justify-center max-w-[680px]">
             <Button 
               variant="outline" 
-              className="h-11 flex-1 max-w-[240px] text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-9.5 sm:h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(1)}
             >
-              <Plus className="size-4" /> Bid Up
+              <Plus className="size-3.5 sm:size-4" /> Bid Up
             </Button>
             <Button 
               variant="outline" 
-              className="h-11 flex-1 max-w-[240px] text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-9.5 sm:h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(-1)}
             >
-              <Minus className="size-4" /> Bid Down
+              <Minus className="size-3.5 sm:size-4" /> Bid Down
             </Button>
             
-            <div className="h-6 w-px bg-border mx-1" />
+            <div className="h-6 w-px bg-border mx-0.5" />
 
             <Button
-              className="h-11 flex-1 max-w-[280px] text-base font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              className="h-9.5 sm:h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               disabled={!currentPlayer}
               onClick={handleSold}
             >
-              <Gavel className="size-4" /> Sold
+              <Gavel className="size-3.5 sm:size-4" /> Sold
             </Button>
             <Button 
               variant="destructive" 
-              className="h-11 flex-1 max-w-[280px] text-base font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-9.5 sm:h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={handleUnsold}
             >
-              <X className="size-4" /> Unsold
+              <X className="size-3.5 sm:size-4" /> Unsold
             </Button>
           </div>
 
           {/* Statistics (Horizontal Row) */}
           <div className="flex items-center gap-2 border-l border-border pl-4 shrink-0">
-            <div className="flex flex-col gap-1 w-36">
+            <div className="flex flex-col gap-1.5 w-40 sm:w-44">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("sold")}
-                className="rounded-lg bg-green-600/10 py-1 text-green-600 border border-green-600/5 hover:bg-green-600/20 active:scale-95 transition-all text-[11px] font-bold cursor-pointer text-center"
+                className="rounded-lg bg-green-600/10 py-1.5 text-green-600 border border-green-600/15 hover:bg-green-600/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
               >
                 Sold {soldCount}
               </button>
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("unsold")}
-                className="rounded-lg bg-destructive/10 py-1 text-destructive border border-destructive/5 hover:bg-destructive/20 active:scale-95 transition-all text-[11px] font-bold cursor-pointer text-center"
+                className="rounded-lg bg-destructive/10 py-1.5 text-destructive border border-destructive/15 hover:bg-destructive/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
               >
                 Unsold {unsoldCount}
               </button>
             </div>
-            <div className="flex flex-col gap-1 w-36">
+            <div className="flex flex-col gap-1.5 w-40 sm:w-44">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("pending")}
-                className="rounded-lg bg-brand/10 py-1 text-brand border border-brand/5 hover:bg-brand/20 active:scale-95 transition-all text-[11px] font-bold cursor-pointer text-center"
+                className="rounded-lg bg-brand/10 py-1.5 text-brand border border-brand/15 hover:bg-brand/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
               >
                 Available {pendingPlayers.length}
               </button>
-              <span className="rounded-lg bg-blue-600/10 py-1 text-blue-600 border border-blue-600/5 select-none text-[11px] font-bold text-center flex items-center justify-center h-[26px]">
+              <span className="rounded-lg bg-blue-600/10 py-1.5 text-blue-600 border border-blue-600/15 select-none text-xs sm:text-sm font-bold text-center flex items-center justify-center">
                 Team {teams.length}
               </span>
             </div>
