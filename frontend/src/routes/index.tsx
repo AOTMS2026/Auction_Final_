@@ -164,11 +164,16 @@ function Index() {
   const upcoming = (auctions ?? []).filter((a) => isFuture(new Date(a.startsAt)) && !isToday(new Date(a.startsAt)));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen text-[#fffcf7]"
+      style={{
+        background: "radial-gradient(ellipse at 50% 10%, #2e343a 0%, #171a1d 38%, #111417 75%, #0d0f11 100%)",
+      }}
+    >
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative isolate overflow-hidden border-b border-[#31572c]/30">
+      <section className="relative isolate overflow-hidden border-b border-[#5c6875]/30">
         <Demo />
       </section>
 
@@ -182,8 +187,8 @@ function Index() {
         className="mx-auto max-w-7xl px-4 py-20"
       >
         <div className="flex flex-col items-center justify-center text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#31572c]/10 border border-[#4f772d]/30 text-[#31572c] dark:text-[#90a955] text-xs font-bold uppercase tracking-wider mb-3">
-            <span className="w-2 h-2 rounded-full bg-[#4f772d] animate-ping" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#162235]/85 border border-[#a1b5d8]/40 text-[#a1b5d8] text-xs font-extrabold uppercase tracking-wider mb-3 shadow-[0_0_20px_rgba(161,181,216,0.25)]">
+            <span className="w-2 h-2 rounded-full bg-[#a1b5d8] animate-ping" />
             Live Bidding Arena
           </div>
           <SectionHeading lead="Today's" highlight="Auctions" subtitle="Auctions going live on the platform right now." />
@@ -193,19 +198,24 @@ function Index() {
           {isPending ? (
             Array.from({ length: 3 }).map((_, i) => <AuctionCardSkeleton key={i} />)
           ) : isError ? (
-            <div className="col-span-full rounded-2xl border border-border bg-card p-8 text-center card-shadow">
-              <p className="text-sm text-card-foreground">Failed to load auctions.</p>
-              <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-4 border-[#4f772d] text-[#31572c]">
+            <div className="col-span-full rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-xl p-8 text-center shadow-xl">
+              <p className="text-sm text-[#ecf0f7]">Failed to load auctions.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                className="mt-4 border-[#a1b5d8]/50 bg-[#162235] text-[#fffcf7] hover:bg-[#2d436a]"
+              >
                 Try again
               </Button>
             </div>
           ) : today.length > 0 ? (
             today.map((a) => <AuctionCard key={a.id} auction={a} />)
           ) : (
-            <div className="col-span-full rounded-2xl border border-[#31572c]/20 bg-gradient-to-b from-[#31572c]/5 to-transparent p-12 text-center">
-              <Sparkles className="size-8 text-[#4f772d] mx-auto mb-3" />
-              <h4 className="text-lg font-bold text-foreground">No auctions live today</h4>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+            <div className="col-span-full rounded-3xl border border-[#5c6875]/30 bg-gradient-to-b from-[#2e343a]/50 to-[#171a1d]/80 backdrop-blur-xl p-12 text-center shadow-xl">
+              <Sparkles className="size-8 text-[#a1b5d8] mx-auto mb-3" />
+              <h4 className="text-lg font-black text-[#fffcf7]">No auctions live today</h4>
+              <p className="text-sm text-[#abb4bd] mt-1 max-w-md mx-auto">
                 Check out the upcoming tournaments below or be the first to launch today's live auction!
               </p>
             </div>
@@ -216,29 +226,29 @@ function Index() {
           <Link
             to={isAuthenticated ? "/my-auctions/new" : "/auth"}
             search={isAuthenticated ? undefined : { next: "/my-auctions/new" }}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#31572c] to-[#4f772d] hover:from-[#132a13] hover:to-[#31572c] px-8 py-3.5 text-center font-bold text-white shadow-[0_4px_20px_rgba(49,87,44,0.35)] transition-all hover:scale-105"
+            className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-8 py-3.5 text-center font-black text-sm text-[#162235] shadow-[0_4px_25px_rgba(161,181,216,0.45)] transition-all hover:scale-105"
           >
-            <PlusCircle className="size-4" />
+            <PlusCircle className="size-4.5" />
             Create Auction
           </Link>
           <Link
             to={isAuthenticated ? "/my-auctions" : "/auth"}
             search={isAuthenticated ? undefined : { next: "/my-auctions" }}
-            className="inline-flex items-center gap-2 rounded-full bg-[#132a13] hover:bg-[#31572c] px-8 py-3.5 text-center font-bold text-[#ecf39e] border border-[#90a955]/40 shadow-sm transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 rounded-full border border-[#5c6875]/50 bg-[#171a1d]/90 hover:bg-[#2e343a] px-8 py-3.5 text-center font-bold text-sm text-[#abb4bd] hover:text-[#fffcf7] hover:border-[#a1b5d8]/60 shadow-sm transition-all hover:scale-105"
           >
             View My Auctions
           </Link>
         </div>
       </motion.section>
 
-      {/* Upcoming auctions with atmospheric evergreen stadium styling */}
+      {/* Upcoming auctions with atmospheric Slate Grey & Oceanic gradient */}
       <motion.section
         id="upcoming"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative isolate overflow-hidden border-y border-[#31572c]/40"
+        className="relative isolate overflow-hidden border-y border-[#5c6875]/30"
       >
         <img
           src={stadiumImg}
@@ -249,12 +259,12 @@ function Index() {
           height={800}
           className="absolute inset-0 size-full object-cover"
         />
-        {/* Ambient Dark Evergreen Gradient Overlay */}
+        {/* Ambient Dark Slate Grey Gradient Overlay */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(19,42,19,0.92) 0%, rgba(11,25,11,0.94) 50%, rgba(4,8,4,0.97) 100%)",
+              "linear-gradient(180deg, rgba(23,26,29,0.92) 0%, rgba(22,34,53,0.94) 50%, rgba(15,18,20,0.98) 100%)",
           }}
           aria-hidden="true"
         />
@@ -269,13 +279,13 @@ function Index() {
             {isPending ? (
               Array.from({ length: 2 }).map((_, i) => <AuctionCardSkeleton key={i} />)
             ) : isError ? (
-              <div className="col-span-full rounded-2xl border border-[#4f772d]/40 bg-[#081108]/60 p-8 text-center card-shadow backdrop-blur-md">
-                <p className="text-sm text-[#ecf39e]">Failed to load upcoming auctions.</p>
+              <div className="col-span-full rounded-3xl border border-[#5c6875]/30 bg-[#171a1d]/85 p-8 text-center shadow-xl backdrop-blur-md">
+                <p className="text-sm text-[#ecf0f7]">Failed to load upcoming auctions.</p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => refetch()}
-                  className="mt-4 bg-transparent text-[#ecf39e] hover:bg-[#31572c]/30 hover:text-white border-[#90a955]/40"
+                  className="mt-4 border-[#a1b5d8]/50 bg-[#162235] text-[#fffcf7] hover:bg-[#2d436a]"
                 >
                   Try again
                 </Button>
@@ -283,8 +293,8 @@ function Index() {
             ) : upcoming.length > 0 ? (
               upcoming.map((a) => <AuctionCard key={a.id} auction={a} tone="dark" />)
             ) : (
-              <div className="col-span-full rounded-2xl border border-[#90a955]/25 bg-[#081108]/50 p-10 text-center backdrop-blur-md">
-                <p className="text-sm text-[#d0e6cd]/80">No upcoming auctions scheduled yet — plan yours today!</p>
+              <div className="col-span-full rounded-3xl border border-[#5c6875]/30 bg-[#171a1d]/75 p-10 text-center backdrop-blur-md shadow-xl">
+                <p className="text-sm text-[#abb4bd]">No upcoming auctions scheduled yet — plan yours today!</p>
               </div>
             )}
           </div>
@@ -309,15 +319,15 @@ function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
               transition={{ duration: 0.4, delay: idx * 0.04, ease: "easeOut" }}
-              className="group relative rounded-2xl border border-[#31572c]/20 bg-card p-6 shadow-sm hover:border-[#4f772d] hover:shadow-[0_10px_35px_rgba(79,119,45,0.15)] transition-all duration-300 border-l-4 border-l-[#4f772d]"
+              className="group relative rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/70 backdrop-blur-xl p-6 shadow-xl hover:border-[#a1b5d8] hover:shadow-[0_15px_40px_rgba(161,181,216,0.2)] transition-all duration-300"
             >
-              <div className="flex items-center gap-3.5 mb-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#31572c]/15 to-[#4f772d]/10 text-[#31572c] dark:text-[#90a955] group-hover:scale-110 group-hover:bg-[#4f772d] group-hover:text-white transition-all duration-300">
+              <div className="flex items-center gap-4 mb-3.5">
+                <div className="p-3 rounded-2xl bg-gradient-to-br from-[#162235] to-[#2d436a] text-[#a1b5d8] border border-[#a1b5d8]/30 group-hover:scale-110 group-hover:bg-[#4365a0] group-hover:text-[#fffcf7] transition-all duration-300 shadow-md">
                   <Icon className="size-5" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground">{title}</h3>
+                <h3 className="text-lg font-black text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors">{title}</h3>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+              <p className="text-sm text-[#abb4bd] leading-relaxed">{body}</p>
             </motion.article>
           ))}
         </div>
@@ -329,32 +339,32 @@ function Index() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="bg-gradient-to-b from-[#ecf39e]/10 to-transparent dark:from-[#132a13]/25 dark:to-transparent py-20 border-y border-[#31572c]/20"
+        className="bg-gradient-to-b from-[#162235]/40 via-[#171a1d]/60 to-transparent py-20 border-y border-[#5c6875]/25"
       >
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 md:grid-cols-2">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#4f772d]/15 border border-[#4f772d]/30 text-[#31572c] dark:text-[#90a955] text-xs font-bold uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#162235]/85 border border-[#a1b5d8]/40 text-[#a1b5d8] text-xs font-extrabold uppercase tracking-wider mb-4 shadow-[0_0_20px_rgba(161,181,216,0.2)]">
               Proven Track Record
             </div>
-            <h2 className="text-3xl md:text-5xl font-black text-foreground tracking-tight leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black text-[#fffcf7] tracking-tight leading-tight">
               Four years of trusted auction technology
             </h2>
-            <p className="mt-5 text-muted-foreground text-base leading-relaxed">
+            <p className="mt-5 text-[#abb4bd] text-base leading-relaxed">
               PitchBid was engineered specifically for cricket organizers who need auction night to run effortlessly,
               transparently, and with televised-style grandeur. From community gully matches to statewide premier leagues,
               every bid is captured with microsecond precision.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-8">
               <div className="flex items-center gap-2.5">
-                <div className="flex text-[#4f772d] dark:text-[#90a955]">
+                <div className="flex text-[#ffd791]">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="size-5 fill-current" aria-hidden="true" />
                   ))}
                 </div>
-                <p className="text-base font-bold text-foreground">4.9 / 5 Rating</p>
+                <p className="text-base font-black text-[#fffcf7]">4.9 / 5 Rating</p>
               </div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Trusted by <span className="font-bold text-foreground">138,500+</span> organizers worldwide
+              <p className="text-sm font-medium text-[#abb4bd]">
+                Trusted by <span className="font-bold text-[#fffcf7]">138,500+</span> organizers worldwide
               </p>
             </div>
           </div>
@@ -363,11 +373,11 @@ function Index() {
             {testimonials.map((t) => (
               <figure
                 key={t.name}
-                className="rounded-2xl border border-[#90a955]/30 bg-card/90 p-5 shadow-sm hover:border-[#4f772d] transition-all"
+                className="rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/70 backdrop-blur-xl p-6 shadow-xl hover:border-[#a1b5d8]/60 transition-all duration-300"
               >
-                <blockquote className="text-sm text-card-foreground italic">"{t.quote}"</blockquote>
-                <figcaption className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">
-                  <span className="font-bold text-foreground block text-sm not-italic">{t.name}</span>
+                <blockquote className="text-sm text-[#fffcf7] italic leading-relaxed">"{t.quote}"</blockquote>
+                <figcaption className="mt-4 pt-3 border-t border-[#5c6875]/30 text-xs text-[#abb4bd]">
+                  <span className="font-black text-[#a1b5d8] block text-sm not-italic">{t.name}</span>
                   {t.role}
                 </figcaption>
               </figure>
@@ -376,28 +386,28 @@ function Index() {
         </div>
       </motion.section>
 
-      {/* PitchBid in Numbers - Hero Section Color Palette & Ambient Arena */}
+      {/* PitchBid in Numbers - Slate Grey & Powder Blue Arena */}
       <motion.section
         id="numbers"
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative py-24 border-y border-[#dda15e]/25 text-[#fefae0] overflow-hidden"
+        className="relative py-24 border-y border-[#5c6875]/30 text-[#fffcf7] overflow-hidden"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 25%, #1f2a13 0%, #18200e 38%, #101509 70%, #080b05 100%)",
+            "radial-gradient(ellipse at 50% 25%, #2e343a 0%, #1c2227 45%, #171a1d 75%, #0f1214 100%)",
         }}
       >
-        {/* Sunlit Clay & Cornsilk Ambient Sky Aura */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(221,161,94,0.18)_0%,rgba(254,250,224,0.08)_35%,transparent_70%)] pointer-events-none" />
-        {/* Olive Leaf Depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_65%,rgba(96,108,56,0.18)_0%,transparent_65%)] pointer-events-none" />
+        {/* Powder Blue Ambient Sky Aura */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(161,181,216,0.22)_0%,rgba(228,240,208,0.08)_35%,transparent_70%)] pointer-events-none" />
+        {/* Ocean Depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_65%,rgba(67,101,160,0.20)_0%,transparent_65%)] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-4">
           <div className="flex flex-col items-center justify-center text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#141f1a]/85 border border-[#dda15e]/40 text-[#fefae0] text-xs font-bold uppercase tracking-wider mb-3 shadow-[0_0_20px_rgba(221,161,94,0.2)]">
-              <span className="size-2 rounded-full bg-[#dda15e] animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#162235]/85 border border-[#a1b5d8]/40 text-[#a1b5d8] text-xs font-extrabold uppercase tracking-wider mb-3 shadow-[0_0_20px_rgba(161,181,216,0.25)]">
+              <span className="size-2 rounded-full bg-[#a1b5d8] animate-pulse" />
               Scale &amp; Reliability
             </div>
             <SectionHeading
@@ -416,44 +426,44 @@ function Index() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.4, delay: idx * 0.07, ease: "easeOut" }}
-                className="rounded-3xl border border-[#dda15e]/25 bg-[#141f1a]/85 backdrop-blur-xl p-8 text-center shadow-[0_12px_35px_rgba(8,11,5,0.7)] hover:border-[#dda15e] hover:shadow-[0_15px_45px_rgba(221,161,94,0.25)] transition-all duration-300 group"
+                className="rounded-3xl border border-[#5c6875]/30 bg-[#171a1d]/85 backdrop-blur-xl p-8 text-center shadow-[0_12px_35px_rgba(15,18,20,0.8)] hover:border-[#a1b5d8] hover:shadow-[0_15px_45px_rgba(161,181,216,0.25)] transition-all duration-300 group"
               >
-                <p className="display text-4xl sm:text-5xl font-black text-[#fefae0] drop-shadow-[0_0_25px_rgba(221,161,94,0.4)] group-hover:scale-105 transition-transform">
+                <p className="display text-4xl sm:text-5xl font-black bg-gradient-to-r from-[#fffcf7] via-[#ecf0f7] to-[#a1b5d8] bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(161,181,216,0.4)] group-hover:scale-105 transition-transform">
                   {s.value}
                 </p>
-                <p className="mt-2.5 text-xs font-bold tracking-widest text-[#dda15e] uppercase">{s.label}</p>
+                <p className="mt-2.5 text-xs font-black tracking-widest text-[#a1b5d8] uppercase">{s.label}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </motion.section>
 
-      {/* How it Works - Hero Section Color Palette & Ambiance */}
+      {/* How it Works - Slate Grey & Powder Blue Blueprint */}
       <motion.section
         id="steps"
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative overflow-hidden py-24 border-y border-[#dda15e]/25 text-[#fefae0]"
+        className="relative overflow-hidden py-24 border-y border-[#5c6875]/30 text-[#fffcf7]"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 28%, #1f2a13 0%, #18200e 42%, #101509 75%, #080b05 100%)",
+            "radial-gradient(ellipse at 50% 28%, #2e343a 0%, #1c2227 42%, #171a1d 75%, #0f1214 100%)",
         }}
       >
-        {/* Sunlit Clay & Cornsilk Ambient Sky Halo */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(221,161,94,0.20)_0%,rgba(254,250,224,0.08)_30%,transparent_68%)] pointer-events-none" />
+        {/* Powder Blue Ambient Sky Halo */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(161,181,216,0.22)_0%,rgba(228,240,208,0.10)_30%,transparent_68%)] pointer-events-none" />
 
-        {/* Olive Leaf Depth Glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(96,108,56,0.20)_0%,rgba(40,54,24,0.22)_45%,transparent_70%)] pointer-events-none" />
+        {/* Ocean Depth Glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(67,101,160,0.20)_0%,transparent_70%)] pointer-events-none" />
 
-        {/* Copperwood Warm Earth Bounce at Floor */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(188,108,37,0.18)_0%,transparent_55%)] pointer-events-none" />
+        {/* Tea Green Bounce */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(194,216,185,0.15)_0%,transparent_55%)] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-4">
           <div className="flex flex-col items-center justify-center text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#141f1a]/85 border border-[#dda15e]/40 text-[#fefae0] text-xs font-bold uppercase tracking-wider mb-4 shadow-[0_0_20px_rgba(221,161,94,0.25)]">
-              <span className="size-2 rounded-full bg-[#dda15e] animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#162235]/85 border border-[#a1b5d8]/40 text-[#a1b5d8] text-xs font-extrabold uppercase tracking-wider mb-4 shadow-[0_0_20px_rgba(161,181,216,0.25)]">
+              <span className="size-2 rounded-full bg-[#a1b5d8] animate-pulse" />
               Tournament Blueprint
             </div>
             <SectionHeading
@@ -472,7 +482,7 @@ function Index() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
-                className="overflow-hidden rounded-3xl border border-[#dda15e]/25 bg-[#141f1a]/85 backdrop-blur-xl shadow-[0_12px_35px_rgba(8,11,5,0.75)] hover:border-[#dda15e] hover:shadow-[0_16px_45px_rgba(221,161,94,0.25)] transition-all duration-300 group"
+                className="overflow-hidden rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-xl shadow-[0_12px_35px_rgba(15,18,20,0.8)] hover:border-[#a1b5d8] hover:shadow-[0_16px_45px_rgba(161,181,216,0.25)] transition-all duration-300 group"
               >
                 <div className="relative h-48 w-full overflow-hidden">
                   <img
@@ -483,14 +493,14 @@ function Index() {
                     height={600}
                     className="size-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#141f1a] via-transparent to-black/30 pointer-events-none" />
-                  <span className="absolute top-3 left-3 size-9 grid place-items-center rounded-full bg-gradient-to-br from-[#bc6c25] via-[#dda15e] to-[#606c38] text-[#080b05] font-black text-sm shadow-[0_0_15px_rgba(221,161,94,0.55)] border border-[#fefae0]/50">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#171a1d] via-transparent to-black/30 pointer-events-none" />
+                  <span className="absolute top-3 left-3 size-9 grid place-items-center rounded-full bg-gradient-to-br from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] text-[#162235] font-black text-sm shadow-[0_0_15px_rgba(161,181,216,0.55)] border border-[#fffcf7]/50">
                     {i + 1}
                   </span>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-lg font-bold text-[#fefae0] group-hover:text-[#dda15e] transition-colors">{s.title}</h3>
-                  <p className="mt-2 text-sm text-[#fefae0]/75 leading-relaxed">{s.body}</p>
+                  <h3 className="text-lg font-black text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors">{s.title}</h3>
+                  <p className="mt-2 text-sm text-[#abb4bd] leading-relaxed">{s.body}</p>
                 </div>
               </motion.article>
             ))}
@@ -505,7 +515,7 @@ function Index() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="border-t border-[#31572c]/20 bg-gradient-to-b from-card/30 to-background"
+        className="border-t border-[#5c6875]/30 bg-gradient-to-b from-[#171a1d] via-[#111417] to-[#0d0f11]"
       >
         <Pricing
           plans={cricketPricingPlans}

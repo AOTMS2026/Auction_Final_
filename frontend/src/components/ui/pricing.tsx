@@ -55,7 +55,7 @@ export function Pricing({
           x: x / window.innerWidth,
           y: y / window.innerHeight,
         },
-        colors: ["#90a955", "#4f772d", "#31572c", "#ecf39e", "#ffd60a"],
+        colors: ["#a1b5d8", "#6c8cc2", "#e4f0d0", "#c2d8b9", "#fffcf7"],
         ticks: 200,
         gravity: 1.2,
         decay: 0.94,
@@ -68,16 +68,16 @@ export function Pricing({
   return (
     <div className="container mx-auto px-4 py-16 md:py-24">
       <div className="text-center space-y-4 mb-12">
-        <h2 className="text-4xl font-bold tracking-tight sm:text-5xl text-foreground">
+        <h2 className="text-4xl font-black tracking-tight sm:text-5xl text-[#fffcf7]">
           {title}
         </h2>
-        <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto whitespace-pre-line">
+        <p className="text-[#abb4bd] text-base md:text-lg max-w-2xl mx-auto whitespace-pre-line leading-relaxed">
           {description}
         </p>
       </div>
 
       <div className="flex items-center justify-center gap-3 mb-12">
-        <span className={cn("text-sm font-medium transition-colors", isMonthly ? "text-foreground font-semibold" : "text-muted-foreground")}>
+        <span className={cn("text-sm font-bold transition-colors", isMonthly ? "text-[#fffcf7]" : "text-[#abb4bd]")}>
           Monthly
         </span>
         <label className="relative inline-flex items-center cursor-pointer">
@@ -86,11 +86,11 @@ export function Pricing({
             ref={switchRef}
             checked={!isMonthly}
             onCheckedChange={handleToggle}
-            className="data-[state=checked]:bg-[#4f772d]"
+            className="data-[state=checked]:bg-[#6c8cc2]"
           />
         </label>
-        <span className={cn("text-sm font-medium transition-colors flex items-center gap-1.5", !isMonthly ? "text-foreground font-semibold" : "text-muted-foreground")}>
-          Annual billing <span className="text-[#4f772d] dark:text-[#90a955] font-bold bg-[#4f772d]/10 dark:bg-[#90a955]/15 px-2 py-0.5 rounded-full text-xs">Save 20%</span>
+        <span className={cn("text-sm font-bold transition-colors flex items-center gap-1.5", !isMonthly ? "text-[#fffcf7]" : "text-[#abb4bd]")}>
+          Annual billing <span className="text-[#a1b5d8] font-black bg-[#162235] border border-[#a1b5d8]/40 px-2.5 py-0.5 rounded-full text-xs">Save 20%</span>
         </span>
       </div>
 
@@ -117,28 +117,28 @@ export function Pricing({
               delay: index * 0.1,
             }}
             className={cn(
-              "rounded-2xl border p-7 text-center relative flex flex-col justify-between transition-all duration-300",
+              "rounded-3xl border p-7 text-center relative flex flex-col justify-between transition-all duration-300",
               plan.isPopular
-                ? "border-[#4f772d] shadow-[0_0_30px_rgba(79,119,45,0.25)] bg-card ring-1 ring-[#4f772d]/50 z-10"
-                : "border-border bg-card/60 backdrop-blur-sm hover:border-[#4f772d]/40 z-0",
+                ? "border-[#a1b5d8]/80 shadow-[0_0_35px_rgba(161,181,216,0.25)] bg-[#171a1d]/90 backdrop-blur-xl ring-1 ring-[#a1b5d8]/50 z-10"
+                : "border-[#5c6875]/30 bg-[#2e343a]/70 backdrop-blur-xl hover:border-[#a1b5d8]/60 z-0",
               !plan.isPopular && "md:mt-4",
             )}
           >
             {plan.isPopular && (
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#31572c] to-[#4f772d] text-white py-1 px-4 rounded-full flex items-center shadow-md text-xs font-bold tracking-wider uppercase">
-                <Star className="text-[#ecf39e] h-3.5 w-3.5 fill-current mr-1.5" />
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] text-[#162235] py-1 px-4 rounded-full flex items-center shadow-md text-xs font-black tracking-wider uppercase">
+                <Star className="text-[#162235] h-3.5 w-3.5 fill-current mr-1.5" />
                 <span>Most Popular</span>
               </div>
             )}
 
             <div className="flex-1 flex flex-col">
-              <p className="text-base font-bold tracking-wider text-muted-foreground uppercase">
+              <p className="text-base font-extrabold tracking-wider text-[#a1b5d8] uppercase">
                 {plan.name}
               </p>
 
               <div className="mt-6 flex items-center justify-center gap-x-1.5">
-                <span className="text-4xl md:text-5xl font-black tracking-tight text-foreground flex items-center">
-                  <span className="text-3xl md:text-4xl font-bold mr-1">{currencySymbol}</span>
+                <span className="text-4xl md:text-5xl font-black tracking-tight text-[#fffcf7] flex items-center">
+                  <span className="text-3xl md:text-4xl font-bold mr-1 text-[#fffcf7]">{currencySymbol}</span>
                   <NumberFlow
                     value={
                       isMonthly ? Number(plan.price) : Number(plan.yearlyPrice)
@@ -149,50 +149,50 @@ export function Pricing({
                       easing: "ease-out",
                     }}
                     willChange
-                    className="tabular-nums"
+                    className="tabular-nums bg-gradient-to-r from-[#fffcf7] via-[#ecf0f7] to-[#a1b5d8] bg-clip-text text-transparent"
                   />
                 </span>
                 {plan.period !== "Next 3 months" && (
-                  <span className="text-sm font-medium leading-6 tracking-wide text-muted-foreground">
+                  <span className="text-sm font-semibold leading-6 tracking-wide text-[#abb4bd]">
                     /{plan.period}
                   </span>
                 )}
               </div>
 
-              <p className="mt-1 text-xs text-muted-foreground font-medium">
+              <p className="mt-1 text-xs text-[#abb4bd] font-medium">
                 {isMonthly ? "billed monthly" : "billed annually"}
               </p>
 
-              <div className="my-6 border-t border-border/80" />
+              <div className="my-6 border-t border-[#5c6875]/30" />
 
               <ul className="gap-3 flex flex-col text-sm text-left">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2.5">
-                    <span className="rounded-full p-0.5 bg-[#4f772d]/15 text-[#4f772d] dark:text-[#90a955] mt-0.5 shrink-0">
+                    <span className="rounded-full p-0.5 bg-[#162235] border border-[#a1b5d8]/30 text-[#e4f0d0] mt-0.5 shrink-0">
                       <Check className="h-3.5 w-3.5 stroke-[2.5]" />
                     </span>
-                    <span className="text-foreground/90 font-medium">{feature}</span>
+                    <span className="text-[#ecf0f7] font-medium">{feature}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-border/60">
+            <div className="mt-8 pt-4 border-t border-[#5c6875]/30">
               <Link
                 to={plan.href as any}
                 className={cn(
                   buttonVariants({
                     variant: plan.isPopular ? "default" : "outline",
                   }),
-                  "w-full rounded-full py-2.5 text-sm font-bold transition-all duration-300 shadow-sm",
+                  "w-full rounded-full py-2.5 text-sm font-black transition-all duration-300 shadow-sm",
                   plan.isPopular
-                    ? "bg-gradient-to-r from-[#31572c] to-[#4f772d] hover:from-[#31572c]/90 hover:to-[#4f772d]/90 text-white shadow-[0_4px_16px_rgba(49,87,44,0.35)]"
-                    : "hover:bg-[#4f772d]/10 hover:border-[#4f772d]/50 hover:text-foreground",
+                    ? "bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] text-[#162235] shadow-[0_0_20px_rgba(161,181,216,0.4)]"
+                    : "border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60",
                 )}
               >
                 {plan.buttonText}
               </Link>
-              <p className="mt-3 text-[11px] leading-4 text-muted-foreground">
+              <p className="mt-3 text-[11px] leading-4 text-[#abb4bd]">
                 {plan.description}
               </p>
             </div>
