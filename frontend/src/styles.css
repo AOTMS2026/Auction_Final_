@@ -478,7 +478,12 @@
   }
   h1, h2, h3, .display {
     font-family: var(--font-display);
+<<<<<<< HEAD
+    letter-spacing: 0.06em;
+    word-spacing: 0.12em;
+=======
     letter-spacing: -0.022em;
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
   }
 }
 
@@ -678,3 +683,20 @@
     transform: translate(100px, 100px) rotate(112deg);
   }
 }
+
+/* Custom premium scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
+

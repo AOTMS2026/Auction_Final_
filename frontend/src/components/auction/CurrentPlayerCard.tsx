@@ -2,17 +2,16 @@ import { Pencil, Undo2 } from "lucide-react";
 import { useState } from "react";
 
 import { FallbackImage } from "@/components/ui/fallback-image";
-import { Input } from "@/components/ui/input";
 import type { Player } from "@/lib/auction-client";
 import { SPORT_CONFIGS } from "@/lib/validations/player";
 import type { SportType } from "@/lib/auction-client";
-import { cn } from "@/lib/utils";
 
 export function CurrentPlayerCard({
   player,
   lotNumber,
   sportType,
   currentBid,
+  minBid,
   onBidChange,
   onClear,
   mode,
@@ -21,6 +20,7 @@ export function CurrentPlayerCard({
   lotNumber: number;
   sportType: SportType;
   currentBid: number;
+  minBid?: number;
   onBidChange: (value: number) => void;
   onClear: () => void;
   mode: "trial" | "live";
@@ -72,6 +72,17 @@ export function CurrentPlayerCard({
       {/* Right Column: Details & Bid amount */}
       <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
         {/* Top Details */}
+<<<<<<< HEAD
+        <div className="space-y-4 md:space-y-6 flex-1 flex flex-col justify-center overflow-y-auto pr-1">
+          <div className="flex flex-col gap-1 text-center md:text-left">
+            <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-muted-foreground/80 uppercase">
+              Player {playerNumber ?? lotNumber}
+            </span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-foreground leading-tight uppercase">
+              {player.name}
+            </h2>
+          </div>
+=======
         <div className="space-y-4 md:space-y-6 flex-1 overflow-y-auto pr-1">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black flex flex-wrap items-center justify-center md:justify-start gap-2.5 leading-tight text-[#fffcf7]">
             {playerNumber ? (
@@ -87,6 +98,7 @@ export function CurrentPlayerCard({
             )}
             <span className="text-[#fffcf7]">{player.name}</span>
           </h2>
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
             {/* Skill / Role Badge */}
             <span className="rounded-xl bg-gradient-to-r from-[#6c8cc2] to-[#a1b5d8] px-6 py-3 text-center text-lg sm:text-xl font-black text-[#162235] shadow-lg animate-pulse-subtle">
@@ -124,14 +136,22 @@ export function CurrentPlayerCard({
         <div className="mt-4 flex items-center justify-center md:justify-start gap-4 border-t border-[#5c6875]/30 pt-4 shrink-0">
           <span className="text-4xl sm:text-5xl">🪙</span>
           {editingBid ? (
-            <Input
+            <input
               type="number"
+              min={minBid ?? 0}
               autoFocus
               defaultValue={currentBid}
+<<<<<<< HEAD
+              className="w-60 sm:w-72 md:w-80 lg:w-96 text-center text-5xl sm:text-6xl lg:text-7xl font-black text-orange-500 bg-background h-16 sm:h-20 border-2 border-orange-500/40 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/20 rounded-xl px-2"
+=======
               className="w-48 text-center text-3xl sm:text-4xl font-extrabold h-14 rounded-xl border-[#a1b5d8] bg-[#171a1d] text-[#fffcf7]"
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               onBlur={(e) => {
                 const value = parseFloat(e.target.value);
-                if (Number.isFinite(value)) onBidChange(value);
+                if (Number.isFinite(value)) {
+                  const validBid = minBid !== undefined ? Math.max(minBid, value) : Math.max(0, value);
+                  onBidChange(validBid);
+                }
                 setEditingBid(false);
               }}
               onKeyDown={(e) => {
