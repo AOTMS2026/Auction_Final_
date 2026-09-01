@@ -58,24 +58,34 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !shortName.trim() || !ownerName.trim() || !ownerPhone.trim() || !colorTheme.trim()) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-    if (!logo) {
-      toast.error("Please upload a team logo");
+      toast.error("Please fill in all required fields marked with an asterisk (*)");
       return;
     }
 
     try {
       if (team) {
-        await updateTeam({ 
-          id: team.id, 
-          patch: { name, shortName, logo, ownerName, ownerPhone, colorTheme } 
+        await updateTeam({
+          id: team.id,
+          patch: {
+            name,
+            shortName,
+            ownerName,
+            ownerPhone,
+            colorTheme,
+            logo,
+          },
         });
-        toast.success("Team updated successfully!");
+        toast.success("Team updated successfully");
       } else {
-        await createTeam({ auctionId, name, shortName, logo, ownerName, ownerPhone, colorTheme });
-        toast.success("Team added successfully!");
+        await createTeam({
+          name,
+          shortName,
+          ownerName,
+          ownerPhone,
+          colorTheme,
+          logo,
+        });
+        toast.success("Team created successfully");
       }
       setOpen(false);
       if (!team) {
@@ -94,28 +104,35 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button size="icon" className="fixed bottom-24 right-6 size-14 rounded-full shadow-lg sm:bottom-6 sm:right-10">
-            <Plus className="size-6" />
+        {trigger !== undefined ? (
+          trigger
+        ) : !team ? (
+          <Button
+            size="icon"
+            className="fixed bottom-24 right-6 size-14 rounded-full shadow-xl sm:bottom-8 sm:right-10 bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] text-[#162235] hover:scale-105 transition-all shadow-[0_0_20px_rgba(161,181,216,0.4)] border border-[#fffcf7]/40 z-30"
+          >
+            <Plus className="size-7 stroke-[2.5]" />
           </Button>
-        )}
+        ) : null}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6 sm:p-7">
         <DialogHeader>
-          <DialogTitle>{team ? "Edit Team" : "Add New Team"}</DialogTitle>
+          <DialogTitle className="text-2xl font-black text-[#fffcf7] tracking-tight">
+            {team ? "Edit Team Details" : "Add New Team"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 pt-4">
-          <div className="flex flex-col items-center justify-center space-y-2 pb-4">
+          <div className="flex flex-col items-center justify-center space-y-2 pb-2">
             <Label htmlFor="logo" className="cursor-pointer">
-              <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors">
+              <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235] hover:border-[#a1b5d8] transition-colors shadow-inner">
                 {logo ? (
                   <img src={logo} alt="Team logo" className="size-full object-cover" />
                 ) : (
-                  <Plus className="size-8 text-muted-foreground" />
+                  <Plus className="size-8 text-[#a1b5d8]" />
                 )}
               </div>
             </Label>
-            <span className="text-xs text-muted-foreground">Team Logo * (up to 10MB)</span>
+            <span className="text-xs text-[#abb4bd] font-medium">Team Logo * (up to 10MB)</span>
             <input
               id="logo"
               type="file"
@@ -127,63 +144,78 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team Name *</Label>
+              <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Team Name *</Label>
               <Input
                 id="name"
                 placeholder="e.g. Royal Challengers"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="shortName">Short Name *</Label>
+              <Label htmlFor="shortName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Short Name *</Label>
               <Input
                 id="shortName"
                 placeholder="e.g. RCB"
                 value={shortName}
                 onChange={(e) => setShortName(e.target.value)}
                 disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="ownerName">Owner Name *</Label>
+              <Label htmlFor="ownerName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Owner Name *</Label>
               <Input
                 id="ownerName"
                 placeholder="e.g. John Doe"
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
                 disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ownerPhone">Owner Contact *</Label>
+              <Label htmlFor="ownerPhone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Owner Contact *</Label>
               <Input
                 id="ownerPhone"
                 placeholder="e.g. 9876543210"
                 value={ownerPhone}
                 onChange={(e) => setOwnerPhone(e.target.value)}
                 disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="colorTheme">Team Color/Theme *</Label>
+            <Label htmlFor="colorTheme" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Team Color/Theme *</Label>
             <Input
               id="colorTheme"
-              placeholder="e.g. #FF0000 or Red"
+              placeholder="e.g. #3b82f6 or Blue"
               value={colorTheme}
               onChange={(e) => setColorTheme(e.target.value)}
               disabled={isSubmitting}
+              className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
             />
           </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#5c6875]/30">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isSubmitting}
+              className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-full px-6 py-2.5 h-auto font-black text-sm text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_20px_rgba(161,181,216,0.35)]"
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
@@ -199,3 +231,5 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
     </Dialog>
   );
 }
+
+export default TeamFormModal;

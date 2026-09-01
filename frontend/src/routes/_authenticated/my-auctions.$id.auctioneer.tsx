@@ -472,9 +472,15 @@ function AuctioneerConsole() {
 
   return (
     <>
-      <div className="h-screen w-screen bg-background flex flex-col overflow-hidden">
-      <header className="h-14 shrink-0 flex items-center gap-3 border-b border-border bg-card px-6">
-        <Button variant="ghost" size="icon" asChild>
+      <div
+        className="h-screen w-screen text-[#fffcf7] flex flex-col overflow-hidden selection:bg-[#a1b5d8] selection:text-[#162235]"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+        }}
+      >
+      <header className="h-14 shrink-0 flex items-center gap-3 border-b border-[#5c6875]/40 bg-[#171a1d]/90 backdrop-blur-md px-6 text-[#fffcf7]">
+        <Button variant="ghost" size="icon" asChild className="text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] rounded-xl">
           <Link to="/my-auctions/$id" params={{ id: auction.id }} aria-label="Back to dashboard">
             <ArrowLeft className="size-5" />
           </Link>
@@ -482,15 +488,24 @@ function AuctioneerConsole() {
         <FallbackImage
           src={auction.coverImage || ""}
           alt=""
+<<<<<<< HEAD
           className="size-12 shrink-0 rounded-md object-contain"
+=======
+          className="size-10 shrink-0 rounded-xl border border-[#a1b5d8]/40 object-cover"
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           fallback={
-            <span className="display grid size-full place-items-center rounded-md bg-brand text-sm font-bold text-brand-foreground shadow-sm">
+            <span className="display grid size-full place-items-center rounded-xl bg-[#162235] text-sm font-black text-[#a1b5d8] shadow-sm">
               {auction.name.slice(0, 2).toUpperCase()}
             </span>
           }
         />
+<<<<<<< HEAD
         <h1 className="flex-1 truncate text-xl font-extrabold tracking-wide text-foreground">{auction.name}</h1>
         <div className="flex items-center gap-1">
+=======
+        <h1 className="flex-1 truncate text-xl font-black tracking-tight text-[#fffcf7]">{auction.name}</h1>
+        <div className="flex items-center gap-2">
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           <Button 
             variant="ghost" 
             size="icon" 
@@ -499,7 +514,7 @@ function AuctioneerConsole() {
                 handleUndoLatestStep();
               }
             }}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="text-red-400 hover:text-red-300 hover:bg-destructive/20 rounded-xl"
             aria-label="Undo Latest Step"
             title="Undo Latest Step"
           >
@@ -513,7 +528,7 @@ function AuctioneerConsole() {
                 handleResetAllPlayers();
               }
             }}
-            className="text-foreground hover:bg-accent hover:text-accent-foreground"
+            className="text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] rounded-xl"
             aria-label="Reset Auction"
             title="Reset Auction"
           >
@@ -527,7 +542,7 @@ function AuctioneerConsole() {
         {/* Left Column: Player Display */}
         <div className="flex-1 h-full min-w-0">
           {playersPending || teamsPending ? (
-            <Skeleton className="h-full w-full rounded-2xl" />
+            <Skeleton className="h-full w-full rounded-3xl bg-[#2e343a]/60" />
           ) : currentPlayer ? (
             <CurrentPlayerCard
               player={currentPlayer}
@@ -543,17 +558,24 @@ function AuctioneerConsole() {
               mode={mode}
             />
           ) : (
-            <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground shadow-sm flex items-center justify-center h-full">
-              <p className="text-lg font-bold">Tap "New Player" at the bottom to begin.</p>
+            <div className="rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/80 backdrop-blur-xl p-12 text-center text-[#abb4bd] shadow-2xl flex items-center justify-center h-full">
+              <p className="text-lg font-bold text-[#fffcf7]">Tap "New Player" at the bottom to begin.</p>
             </div>
           )}
         </div>
 
         {/* Right Column: Teams List (Vertical Grid) */}
+<<<<<<< HEAD
         <div className="w-[480px] shrink-0 flex flex-col h-full bg-card border border-border rounded-2xl p-3 shadow-sm select-none overflow-hidden">
           <div className="shrink-0 border-b border-border pb-1.5 mb-2 flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teams</h2>
             <span className="text-[10px] text-muted-foreground font-medium">Bidding Team Selection</span>
+=======
+        <div className="w-[360px] shrink-0 flex flex-col h-full bg-[#2e343a]/75 backdrop-blur-xl border border-[#5c6875]/40 rounded-3xl p-3 shadow-[0_15px_45px_rgba(23,26,29,0.8)] select-none overflow-hidden text-[#fffcf7]">
+          <div className="shrink-0 border-b border-[#5c6875]/30 pb-2 mb-2 flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Teams</h2>
+            <span className="text-[10px] text-[#a1b5d8] font-bold">Bidding Team Selection</span>
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-2">
@@ -614,20 +636,34 @@ function AuctioneerConsole() {
       </main>
 
       {/* Bottom Controls Row */}
-      <div className="shrink-0 border-t border-border bg-card p-3 shadow-sm select-none">
+      <div className="shrink-0 border-t border-[#5c6875]/40 bg-[#171a1d]/95 backdrop-blur-xl p-3 select-none text-[#fffcf7]">
         <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between gap-4">
           
           {/* New Player Mode & Button */}
+<<<<<<< HEAD
           <div className="flex items-center gap-3 bg-muted/10 border border-border p-2 sm:p-2.5 rounded-xl shrink-0">
             <div className="flex flex-col items-center gap-1.5 border-r border-border pr-3">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground leading-none">New Player Mode</span>
               <div className="flex gap-1.5 w-44 sm:w-48">
+=======
+          <div className="flex items-center gap-3 bg-[#2e343a]/60 border border-[#5c6875]/40 p-2 rounded-2xl shrink-0">
+            <div className="flex flex-col items-center gap-1.5 border-r border-[#5c6875]/30 pr-3">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#abb4bd] leading-none">New Player Mode</span>
+              <div className="flex gap-1 w-36">
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
                 <button
                   type="button"
                   onClick={() => setSelectionMode("random")}
                   className={cn(
+<<<<<<< HEAD
                     "rounded-lg py-1.5 px-2 transition-all border flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold active:scale-95 cursor-pointer",
                     selectionMode === "random" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
+=======
+                    "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
+                    selectionMode === "random"
+                      ? "bg-[#a1b5d8] text-[#162235] border-[#a1b5d8] shadow-md"
+                      : "bg-[#171a1d]/70 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
                   )}
                   title="Random Selection"
                 >
@@ -638,8 +674,15 @@ function AuctioneerConsole() {
                   type="button"
                   onClick={() => setSelectionMode("manual")}
                   className={cn(
+<<<<<<< HEAD
                     "rounded-lg py-1.5 px-2 transition-all border flex-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold active:scale-95 cursor-pointer",
                     selectionMode === "manual" ? "bg-brand text-brand-foreground border-brand shadow-sm" : "bg-card text-muted-foreground border-border hover:bg-muted",
+=======
+                    "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
+                    selectionMode === "manual"
+                      ? "bg-[#a1b5d8] text-[#162235] border-[#a1b5d8] shadow-md"
+                      : "bg-[#171a1d]/70 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
                   )}
                   title="Manual Selection"
                 >
@@ -648,7 +691,14 @@ function AuctioneerConsole() {
                 </button>
               </div>
             </div>
+<<<<<<< HEAD
             <Button className="text-sm sm:text-base font-extrabold h-11 px-5 shrink-0 shadow-sm" onClick={handleNewPlayer}>
+=======
+            <Button
+              className="rounded-xl px-5 h-9 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_15px_rgba(161,181,216,0.35)] shrink-0"
+              onClick={handleNewPlayer}
+            >
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               New Player
             </Button>
           </div>
@@ -657,6 +707,7 @@ function AuctioneerConsole() {
           <div className="flex-1 flex items-center gap-2.5 justify-center max-w-[680px]">
             <Button 
               variant="outline" 
+<<<<<<< HEAD
               className="h-9.5 sm:h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-bold rounded-xl shadow-sm border bg-card hover:bg-accent flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(1)}
@@ -676,14 +727,39 @@ function AuctioneerConsole() {
 
             <Button
               className="h-9.5 sm:h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-extrabold bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+=======
+              className="h-11 flex-1 max-w-[240px] text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              disabled={!currentPlayer} 
+              onClick={() => handleBid(1)}
+            >
+              <Plus className="size-4 text-[#a1b5d8]" /> Bid Up
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-11 flex-1 max-w-[240px] text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              disabled={!currentPlayer} 
+              onClick={() => handleBid(-1)}
+            >
+              <Minus className="size-4 text-[#a1b5d8]" /> Bid Down
+            </Button>
+            
+            <div className="h-6 w-px bg-[#5c6875]/40 mx-1" />
+
+            <Button
+              className="h-11 flex-1 max-w-[280px] text-base font-black bg-gradient-to-r from-[#47673a] to-[#71b368] hover:from-[#31572c] hover:to-[#4e8a46] text-white rounded-xl shadow-[0_0_20px_rgba(113,179,104,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               disabled={!currentPlayer}
               onClick={handleSold}
             >
               <Gavel className="size-3.5 sm:size-4" /> Sold
             </Button>
             <Button 
+<<<<<<< HEAD
               variant="destructive" 
               className="h-9.5 sm:h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-extrabold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+=======
+              className="h-11 flex-1 max-w-[280px] text-base font-black bg-gradient-to-r from-[#8b2635] to-[#c93b51] hover:from-[#721f2c] hover:to-[#b03446] text-white rounded-xl shadow-[0_0_20px_rgba(201,59,81,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               disabled={!currentPlayer} 
               onClick={handleUnsold}
             >
@@ -692,19 +768,32 @@ function AuctioneerConsole() {
           </div>
 
           {/* Statistics (Horizontal Row) */}
+<<<<<<< HEAD
           <div className="flex items-center gap-2 border-l border-border pl-4 shrink-0">
             <div className="flex flex-col gap-1.5 w-40 sm:w-44">
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("sold")}
                 className="rounded-lg bg-green-600/10 py-1.5 text-green-600 border border-green-600/15 hover:bg-green-600/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
+=======
+          <div className="flex items-center gap-2 border-l border-[#5c6875]/40 pl-4 shrink-0">
+            <div className="flex flex-col gap-1 w-36">
+              <button 
+                type="button"
+                onClick={() => setViewingStatusList("sold")}
+                className="rounded-xl bg-[#23341d]/70 py-1.5 text-[#c2d8b9] border border-[#47673a] hover:bg-[#23341d] active:scale-95 transition-all text-[11px] font-black cursor-pointer text-center"
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               >
                 Sold {soldCount}
               </button>
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("unsold")}
+<<<<<<< HEAD
                 className="rounded-lg bg-destructive/10 py-1.5 text-destructive border border-destructive/15 hover:bg-destructive/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
+=======
+                className="rounded-xl bg-[#45191f]/70 py-1.5 text-[#fca5a5] border border-[#8b2635] hover:bg-[#45191f] active:scale-95 transition-all text-[11px] font-black cursor-pointer text-center"
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
               >
                 Unsold {unsoldCount}
               </button>
@@ -713,11 +802,19 @@ function AuctioneerConsole() {
               <button 
                 type="button"
                 onClick={() => setViewingStatusList("pending")}
+<<<<<<< HEAD
                 className="rounded-lg bg-brand/10 py-1.5 text-brand border border-brand/15 hover:bg-brand/20 active:scale-95 transition-all text-xs sm:text-sm font-bold cursor-pointer text-center"
               >
                 Available {pendingPlayers.length}
               </button>
               <span className="rounded-lg bg-blue-600/10 py-1.5 text-blue-600 border border-blue-600/15 select-none text-xs sm:text-sm font-bold text-center flex items-center justify-center">
+=======
+                className="rounded-xl bg-[#162235]/70 py-1.5 text-[#a1b5d8] border border-[#4365a0] hover:bg-[#162235] active:scale-95 transition-all text-[11px] font-black cursor-pointer text-center"
+              >
+                Available {pendingPlayers.length}
+              </button>
+              <span className="rounded-xl bg-[#2e343a]/70 py-1.5 text-[#fffcf7] border border-[#5c6875]/40 select-none text-[11px] font-black text-center flex items-center justify-center h-[28px]">
+>>>>>>> d0063b8860b2d4d303dd2cf192ec0145e30a89d2
                 Team {teams.length}
               </span>
             </div>
@@ -728,22 +825,22 @@ function AuctioneerConsole() {
     </div>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
           <DialogHeader>
-            <DialogTitle>Pick a player</DialogTitle>
+            <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Pick a player</DialogTitle>
           </DialogHeader>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative mt-2">
+            <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#abb4bd]" />
             <Input
               placeholder="Search players..."
               value={pickerQuery}
               onChange={(e) => setPickerQuery(e.target.value)}
-              className="pl-9"
+              className="pl-10 rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
             />
           </div>
-          <div className="max-h-80 space-y-2 overflow-y-auto">
+          <div className="max-h-80 space-y-2 overflow-y-auto mt-2 pr-1">
             {filteredPickerPlayers.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No pending players found.</p>
+              <p className="py-6 text-center text-sm text-[#abb4bd]">No pending players found.</p>
             ) : (
               filteredPickerPlayers.map((p) => {
                const isDummy = p.phone.startsWith("90000000");
@@ -757,27 +854,27 @@ function AuctioneerConsole() {
                      setPickerOpen(false);
                      setPickerQuery("");
                    }}
-                   className="flex w-full items-center gap-3 rounded-lg border border-border p-2.5 text-left hover:bg-muted/50"
+                   className="flex w-full items-center gap-3 rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-2.5 text-left hover:bg-[#2e343a]/80 hover:border-[#a1b5d8]/40 transition-colors text-[#fffcf7] cursor-pointer"
                  >
                    <FallbackImage
                      src={p.photo || ""}
                      alt={p.name}
-                     className="size-11 shrink-0 rounded-full object-cover object-top border border-border/40"
+                     className="size-11 shrink-0 rounded-xl object-cover object-top border border-[#a1b5d8]/30"
                      fallback={
-                       <span className="display grid size-full place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">
+                       <span className="display grid size-full place-items-center rounded-xl bg-[#162235] text-xs font-black text-[#a1b5d8]">
                          {p.name.slice(0, 2).toUpperCase()}
                        </span>
                      }
                    />
                    <div className="min-w-0 flex-1">
-                     <div className="text-sm font-bold text-foreground">{p.name}</div>
-                     <div className="text-xs text-muted-foreground font-medium mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
-                       {pNumber && <span className="font-bold text-foreground">Player {pNumber}</span>}
-                       {pNumber && <span>•</span>}
+                     <div className="text-sm font-bold text-[#fffcf7]">{p.name}</div>
+                     <div className="text-xs text-[#abb4bd] font-medium mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                       {pNumber && <span className="font-bold text-[#a1b5d8]">Player {pNumber}</span>}
+                       {pNumber && <span className="text-[#5c6875]">•</span>}
                        <span>{p.sportFields?.["role"] || "-"}</span>
-                       <span>•</span>
+                       <span className="text-[#5c6875]">•</span>
                        <span>Grade {p.category || "-"}</span>
-                       <span>•</span>
+                       <span className="text-[#5c6875]">•</span>
                        <span>{p.customData ? p.customData.replace("Dominated Hand: ", "") : "-"}</span>
                      </div>
                    </div>
@@ -790,48 +887,48 @@ function AuctioneerConsole() {
       </Dialog>
 
       <Dialog open={!!viewingTeamId} onOpenChange={(open) => { if (!open) setViewingTeamId(null); }}>
-        <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col">
+        <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
           <DialogHeader className="shrink-0">
-            <DialogTitle className="text-xl sm:text-2xl font-black border-b border-border pb-3">
+            <DialogTitle className="text-xl sm:text-2xl font-black border-b border-[#5c6875]/30 pb-3 text-[#fffcf7]">
               {teams.find(t => t.id === viewingTeamId)?.name} - Bought Players
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 space-y-2.5 overflow-y-auto pr-1">
             {effectivePlayers.filter(p => p.teamId === viewingTeamId && effectiveStatus(p) === "sold").length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[300px]">
-                <p className="text-lg text-muted-foreground font-bold">No players sold to this team yet.</p>
+                <p className="text-lg text-[#abb4bd] font-bold">No players sold to this team yet.</p>
               </div>
             ) : (
               effectivePlayers.filter(p => p.teamId === viewingTeamId && effectiveStatus(p) === "sold").map((p) => {
                 const isDummy = p.phone.startsWith("90000000");
                 const pNumber = isDummy ? parseInt(p.phone.slice(8)) : null;
                 return (
-                  <div key={p.id} className="flex items-center justify-between border-b border-border/40 py-4 hover:bg-muted/10 px-3 rounded-xl transition-colors">
+                  <div key={p.id} className="flex items-center justify-between border-b border-[#5c6875]/30 py-4 hover:bg-[#2e343a]/40 px-3 rounded-2xl transition-colors">
                     <div className="flex items-center gap-4">
                       <FallbackImage
                         src={p.photo || ""}
                         alt={p.name}
-                        className="size-14 sm:size-16 shrink-0 rounded-full object-cover object-top border-2 border-border/40 shadow-sm"
+                        className="size-14 sm:size-16 shrink-0 rounded-2xl object-cover object-top border-2 border-[#a1b5d8]/40 shadow-sm"
                         fallback={
-                          <span className="display grid size-full place-items-center rounded-full bg-brand/10 text-lg font-bold text-brand">
+                          <span className="display grid size-full place-items-center rounded-2xl bg-[#162235] text-lg font-black text-[#a1b5d8]">
                             {p.name.slice(0, 2).toUpperCase()}
                           </span>
                         }
                       />
                       <div className="min-w-0">
-                        <div className="text-base sm:text-lg font-extrabold text-foreground truncate max-w-[240px]">{p.name}</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
-                          {pNumber && <span className="font-bold text-foreground">Player {pNumber}</span>}
-                          {pNumber && <span>•</span>}
+                        <div className="text-base sm:text-lg font-black text-[#fffcf7] truncate max-w-[240px]">{p.name}</div>
+                        <div className="text-xs sm:text-sm text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                          {pNumber && <span className="font-bold text-[#a1b5d8]">Player {pNumber}</span>}
+                          {pNumber && <span className="text-[#5c6875]">•</span>}
                           <span>{p.sportFields?.["role"] || "-"}</span>
-                          <span>•</span>
+                          <span className="text-[#5c6875]">•</span>
                           <span>Grade {p.category || "-"}</span>
-                          <span>•</span>
+                          <span className="text-[#5c6875]">•</span>
                           <span>{p.customData ? p.customData.replace("Dominated Hand: ", "") : "-"}</span>
                         </div>
                       </div>
                     </div>
-                    <span className="text-base sm:text-lg font-black text-green-600 bg-green-50 dark:bg-green-950/20 px-3.5 py-1.5 rounded-lg border-2 border-green-100 dark:border-green-900/40 shadow-sm">
+                    <span className="text-base sm:text-lg font-black text-[#c2d8b9] bg-[#23341d]/70 px-3.5 py-1.5 rounded-xl border border-[#47673a] shadow-sm">
                       🪙 {p.soldPrice?.toLocaleString() ?? "0"}
                     </span>
                   </div>
@@ -843,9 +940,9 @@ function AuctioneerConsole() {
       </Dialog>
 
       <Dialog open={!!viewingStatusList} onOpenChange={(open) => { if (!open) setViewingStatusList(null); }}>
-        <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col">
+        <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
           <DialogHeader className="shrink-0">
-            <DialogTitle className="text-xl sm:text-2xl font-black border-b border-border pb-3 capitalize">
+            <DialogTitle className="text-xl sm:text-2xl font-black border-b border-[#5c6875]/30 pb-3 capitalize text-[#fffcf7]">
               {viewingStatusList === "pending" ? "Available" : viewingStatusList} Players ({
                 viewingStatusList === "pending"
                   ? pendingPlayers.length
@@ -865,7 +962,7 @@ function AuctioneerConsole() {
               if (list.length === 0) {
                 return (
                   <div className="flex flex-col items-center justify-center min-h-[300px]">
-                    <p className="text-lg text-muted-foreground font-bold">No players found in this category.</p>
+                    <p className="text-lg text-[#abb4bd] font-bold">No players found in this category.</p>
                   </div>
                 );
               }
@@ -878,28 +975,28 @@ function AuctioneerConsole() {
                 return (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-border p-3.5 bg-card hover:bg-muted/30 transition-colors shadow-sm animate-fade-in"
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-[#5c6875]/30 p-3.5 bg-[#2e343a]/40 hover:bg-[#2e343a]/75 transition-colors shadow-sm animate-fade-in text-[#fffcf7]"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <FallbackImage
                         src={p.photo || ""}
                         alt={p.name}
-                        className="size-12 sm:size-14 shrink-0 rounded-full object-cover object-top border-2 border-border/40 shadow-sm"
+                        className="size-12 sm:size-14 shrink-0 rounded-2xl object-cover object-top border-2 border-[#a1b5d8]/40 shadow-sm"
                         fallback={
-                          <span className="display grid size-full place-items-center rounded-full bg-brand/10 text-lg font-bold text-brand">
+                          <span className="display grid size-full place-items-center rounded-2xl bg-[#162235] text-lg font-black text-[#a1b5d8]">
                             {p.name.slice(0, 2).toUpperCase()}
                           </span>
                         }
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-base sm:text-lg font-extrabold text-foreground truncate max-w-[240px]">{p.name}</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
-                          {pNumber && <span className="font-bold text-foreground">Player {pNumber}</span>}
-                          {pNumber && <span>•</span>}
+                        <div className="text-base sm:text-lg font-black text-[#fffcf7] truncate max-w-[240px]">{p.name}</div>
+                        <div className="text-xs sm:text-sm text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                          {pNumber && <span className="font-bold text-[#a1b5d8]">Player {pNumber}</span>}
+                          {pNumber && <span className="text-[#5c6875]">•</span>}
                           <span>{p.sportFields?.["role"] || "-"}</span>
-                          <span>•</span>
+                          <span className="text-[#5c6875]">•</span>
                           <span>Grade {p.category || "-"}</span>
-                          <span>•</span>
+                          <span className="text-[#5c6875]">•</span>
                           <span>{p.customData ? p.customData.replace("Dominated Hand: ", "") : "-"}</span>
                         </div>
                       </div>
@@ -907,17 +1004,17 @@ function AuctioneerConsole() {
                     
                     {viewingStatusList === "sold" ? (
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-wider">{buyerTeam?.name || "Sold"}</span>
-                        <span className="text-base sm:text-lg font-black text-green-600 bg-green-50 dark:bg-green-950/20 px-3.5 py-1.5 rounded-lg border-2 border-green-100 dark:border-green-900/40 shadow-sm">
+                        <span className="text-xs font-black text-[#a1b5d8] uppercase tracking-wider">{buyerTeam?.name || "Sold"}</span>
+                        <span className="text-base sm:text-lg font-black text-[#c2d8b9] bg-[#23341d]/70 px-3.5 py-1.5 rounded-xl border border-[#47673a] shadow-sm">
                           🪙 {p.soldPrice?.toLocaleString() ?? "0"}
                         </span>
                       </div>
                     ) : viewingStatusList === "pending" ? (
-                      <span className="text-sm font-bold text-brand bg-brand/5 px-3 py-1 rounded-full border border-brand/10 shrink-0">
+                      <span className="text-sm font-bold text-[#a1b5d8] bg-[#162235]/70 px-3.5 py-1 rounded-full border border-[#4365a0] shrink-0">
                         Available
                       </span>
                     ) : (
-                      <span className="text-sm font-bold text-destructive bg-destructive/5 px-3 py-1 rounded-full border border-destructive/10 shrink-0">
+                      <span className="text-sm font-bold text-red-400 bg-[#45191f]/70 px-3.5 py-1 rounded-full border border-[#8b2635] shrink-0">
                         Unsold
                       </span>
                     )}

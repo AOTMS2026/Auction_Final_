@@ -1,7 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronLeft, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -26,10 +25,10 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/teams/$tea
 
 function StatCard({ title, value, subtext }: { title: string; value: number; subtext?: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4 card-shadow">
-      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
-      {subtext && <p className="mt-1 text-xs text-muted-foreground">{subtext}</p>}
+    <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-md p-4 shadow-[0_8px_30px_rgba(23,26,29,0.5)]">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">{title}</h3>
+      <p className="mt-1.5 text-2xl font-black text-[#fffcf7]">{value.toLocaleString("en-IN")}</p>
+      {subtext && <p className="mt-1 text-[11px] text-[#a1b5d8] font-medium">{subtext}</p>}
     </div>
   );
 }
@@ -66,11 +65,17 @@ function TeamDetailsPage() {
   history.sort((a, b) => b.date.getTime() - a.date.getTime());
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div
+      className="min-h-screen text-[#fffcf7] pb-24 selection:bg-[#a1b5d8] selection:text-[#162235]"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+      }}
+    >
       <SiteHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-8">
-        <Button variant="ghost" className="mb-6 -ml-4 text-muted-foreground" asChild>
+        <Button variant="ghost" className="mb-6 -ml-4 text-[#a1b5d8] hover:text-[#fffcf7] hover:bg-[#2e343a]/50" asChild>
           <Link to="/my-auctions/$id" params={{ id: team.auctionId }}>
             <ChevronLeft className="mr-2 size-4" /> Back to Dashboard
           </Link>
@@ -78,38 +83,36 @@ function TeamDetailsPage() {
 
         {/* Team Banner */}
         <div 
-          className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6 rounded-xl p-6 card-shadow border border-border overflow-hidden"
+          className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6 rounded-3xl p-6 sm:p-8 border border-[#5c6875]/40 overflow-hidden shadow-[0_15px_45px_rgba(23,26,29,0.8)]"
           style={{ 
-            backgroundColor: team.colorTheme ? team.colorTheme : 'var(--card)',
-            color: team.colorTheme ? '#fff' : 'inherit'
+            backgroundColor: team.colorTheme ? team.colorTheme : '#2e343a',
+            color: '#fffcf7'
           }}
         >
           {/* Subtle overlay for contrast if color theme is used */}
-          {team.colorTheme && (
-            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-          )}
+          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/70 via-black/40 to-black/20 pointer-events-none" />
           
-          <div className="relative shrink-0 flex items-center justify-center size-24 rounded-full border-4 border-background overflow-hidden bg-muted shadow-md">
+          <div className="relative shrink-0 flex items-center justify-center size-24 rounded-2xl border-2 border-[#a1b5d8]/40 overflow-hidden bg-[#162235] shadow-xl">
             {team.logo ? (
               <img src={team.logo} alt={team.name} className="size-full object-cover" />
             ) : (
-              <span className="text-3xl font-bold text-muted-foreground">{team.shortName.slice(0, 3)}</span>
+              <span className="text-3xl font-black text-[#a1b5d8]">{team.shortName.slice(0, 3)}</span>
             )}
           </div>
           <div className="relative z-10 text-center sm:text-left">
-            <h1 className="text-3xl font-bold drop-shadow-sm">{team.name}</h1>
-            <p className="opacity-90 font-medium">Team Code: {team.shortName}</p>
+            <h1 className="text-3xl sm:text-4xl font-black text-[#fffcf7] tracking-tight drop-shadow-md">{team.name}</h1>
+            <p className="text-[#a1b5d8] font-bold mt-1 tracking-wider uppercase text-sm">Team Code: {team.shortName}</p>
             {(team.ownerName || team.ownerPhone) && (
-              <div className="mt-3 text-sm opacity-80 bg-black/20 inline-block px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                {team.ownerName && <span className="font-semibold">{team.ownerName}</span>}
-                {team.ownerName && team.ownerPhone && <span className="mx-2">•</span>}
-                {team.ownerPhone && <span>{team.ownerPhone}</span>}
+              <div className="mt-3.5 text-xs text-[#e3e6e9] bg-black/40 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+                {team.ownerName && <span className="font-bold text-[#fffcf7]">{team.ownerName}</span>}
+                {team.ownerName && team.ownerPhone && <span className="text-[#abb4bd]">•</span>}
+                {team.ownerPhone && <span className="text-[#a1b5d8]">{team.ownerPhone}</span>}
               </div>
             )}
           </div>
         </div>
 
-        <h2 className="mt-12 text-xl font-semibold mb-4">Budget & Roster</h2>
+        <h2 className="mt-10 text-xl font-black text-[#fffcf7] tracking-tight mb-4">Budget & Roster</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard title="Total Points" value={stats.totalPoints} />
           <StatCard title="Used Points" value={stats.usedPoints} />
@@ -119,36 +122,36 @@ function TeamDetailsPage() {
           <StatCard title="Reserved Spots" value={stats.reservedPlayers} />
         </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2">
           {/* Sold Players */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">Sold Players</h2>
+            <h2 className="text-xl font-black text-[#fffcf7] tracking-tight mb-4">Sold Players</h2>
             {players.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
-                No players sold yet.
+              <div className="rounded-2xl border border-dashed border-[#5c6875]/40 bg-[#2e343a]/30 p-8 text-center text-[#abb4bd] font-medium">
+                No players sold to this team yet.
               </div>
             ) : (
               <div className="space-y-3">
                 {players.map((p: Player) => (
-                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4 card-shadow">
-                    <div className="flex items-center gap-4">
+                  <div key={p.id} className="flex items-center justify-between rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-md p-4 shadow-sm hover:border-[#a1b5d8]/40 transition-colors">
+                    <div className="flex items-center gap-3.5">
                       <FallbackImage
                         src={p.photo || ""}
                         alt={p.name}
-                        className="size-10 rounded-full border border-border shrink-0"
+                        className="size-11 rounded-full border border-[#a1b5d8]/30 shrink-0 object-cover"
                         fallback={
-                          <span className="display grid size-full place-items-center rounded-full bg-brand/10 text-sm font-bold text-brand">
+                          <span className="display grid size-full place-items-center rounded-full bg-[#162235] text-xs font-bold text-[#a1b5d8]">
                             {p.name.slice(0, 2).toUpperCase()}
                           </span>
                         }
                       />
                       <div>
-                        <p className="font-semibold">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{p.sportFields?.["role"] || p.category || "Player"}</p>
+                        <p className="font-bold text-sm text-[#fffcf7]">{p.name}</p>
+                        <p className="text-xs text-[#abb4bd]">{p.sportFields?.["role"] || p.category || "Player"}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-brand">{p.soldPrice} pts</p>
+                      <p className="font-black text-sm text-[#c2d8b9]">{p.soldPrice ? p.soldPrice.toLocaleString("en-IN") : 0} pts</p>
                     </div>
                   </div>
                 ))}
@@ -158,23 +161,23 @@ function TeamDetailsPage() {
 
           {/* Balance History */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">Balance History</h2>
+            <h2 className="text-xl font-black text-[#fffcf7] tracking-tight mb-4">Balance History</h2>
             <div className="space-y-3">
               {history.map((h) => (
-                <div key={h.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4 card-shadow">
+                <div key={h.id} className="flex items-center justify-between rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-md p-4 shadow-sm">
                   <div className="flex items-center gap-3">
                     {h.type === "inflow" ? (
-                      <ArrowUpCircle className="size-5 text-green-500" />
+                      <ArrowUpCircle className="size-5 text-[#c2d8b9]" />
                     ) : (
-                      <ArrowDownCircle className="size-5 text-red-500" />
+                      <ArrowDownCircle className="size-5 text-red-400" />
                     )}
                     <div>
-                      <p className="font-semibold">{h.desc}</p>
-                      <p className="text-xs text-muted-foreground">{format(h.date, "MMM d, yyyy h:mm a")}</p>
+                      <p className="font-bold text-sm text-[#fffcf7]">{h.desc}</p>
+                      <p className="text-xs text-[#abb4bd]">{format(h.date, "MMM d, yyyy h:mm a")}</p>
                     </div>
                   </div>
-                  <div className={`font-bold ${h.type === "inflow" ? "text-green-500" : "text-red-500"}`}>
-                    {h.type === "inflow" ? "+" : "-"}{h.amount}
+                  <div className={`font-black text-sm ${h.type === "inflow" ? "text-[#c2d8b9]" : "text-red-400"}`}>
+                    {h.type === "inflow" ? "" : "-"}{h.amount.toLocaleString("en-IN")}
                   </div>
                 </div>
               ))}
@@ -185,3 +188,5 @@ function TeamDetailsPage() {
     </div>
   );
 }
+
+export default TeamDetailsPage;

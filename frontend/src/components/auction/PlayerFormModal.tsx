@@ -361,15 +361,22 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          {trigger || (
-            <Button size="icon" className="fixed bottom-24 right-6 size-14 rounded-full shadow-lg sm:bottom-6 sm:right-10">
-              <Plus className="size-6" />
+          {trigger !== undefined ? (
+            trigger
+          ) : !player ? (
+            <Button
+              size="icon"
+              className="fixed bottom-24 right-6 size-14 rounded-full shadow-xl sm:bottom-8 sm:right-10 bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] text-[#162235] hover:scale-105 transition-all shadow-[0_0_20px_rgba(161,181,216,0.4)] border border-[#fffcf7]/40 z-30"
+            >
+              <Plus className="size-7 stroke-[2.5]" />
             </Button>
-          )}
+          ) : null}
         </DialogTrigger>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle>{player ? "Edit Player" : "Add New Player"}</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-[#fffcf7] tracking-tight">
+              {player ? "Edit Player Details" : "Add New Player"}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-6 pt-4">
             <div className="flex flex-col items-center justify-center space-y-2 pb-2">
@@ -383,31 +390,31 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                       setZoom(1);
                       setDragOffset({ x: 0, y: 0 });
                     }}
-                    className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-border/80 bg-muted hover:border-brand/40 transition-all group cursor-pointer shadow-sm"
+                    className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#a1b5d8]/40 bg-[#162235] hover:border-[#a1b5d8] transition-all group cursor-pointer shadow-md"
                     title="Crop / Zoom existing picture"
                   >
                     <img src={photo} alt="Player photo" className="size-full object-cover object-top" />
-                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Pencil className="size-5 text-white mb-0.5" />
-                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Crop/Zoom</span>
+                    <div className="absolute inset-0 bg-[#171a1d]/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Pencil className="size-5 text-[#a1b5d8] mb-0.5" />
+                      <span className="text-[10px] font-black text-[#fffcf7] uppercase tracking-wider">Crop/Zoom</span>
                     </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => document.getElementById("player-photo")?.click()}
-                    className="text-xs text-brand hover:text-brand/80 font-bold hover:underline transition-colors mt-0.5"
+                    className="text-xs text-[#a1b5d8] hover:text-[#fffcf7] font-bold hover:underline transition-colors mt-0.5"
                   >
                     Upload New
                   </button>
                 </div>
               ) : (
                 <Label htmlFor="player-photo" className="cursor-pointer">
-                  <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors shadow-sm">
-                    <Plus className="size-8 text-muted-foreground" />
+                  <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235] hover:border-[#a1b5d8] transition-colors shadow-inner">
+                    <Plus className="size-8 text-[#a1b5d8]" />
                   </div>
                 </Label>
               )}
-              <span className="text-xs text-muted-foreground font-semibold">Player Photo (up to 10MB)</span>
+              <span className="text-xs text-[#abb4bd] font-medium">Player Photo (up to 10MB)</span>
               <input
                 id="player-photo"
                 type="file"
@@ -419,78 +426,139 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-              <Input id="name" placeholder="e.g. Virat Kohli" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} required />
+              <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+              <Input
+                id="name"
+                placeholder="e.g. Virat Kohli"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isSubmitting}
+                required
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone (10 digits) <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-              <Input id="phone" placeholder="e.g. 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isSubmitting} maxLength={10} required />
+              <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Phone (10 digits) <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+              <Input
+                id="phone"
+                placeholder="e.g. 9876543210"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                disabled={isSubmitting}
+                maxLength={10}
+                required
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
-              <Input id="age" type="number" placeholder="e.g. 27" value={age} onChange={(e) => setAge(e.target.value)} disabled={isSubmitting} />
+              <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Age</Label>
+              <Input
+                id="age"
+                type="number"
+                placeholder="e.g. 27"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              />
             </div>
             <div className="space-y-2">
-              <Label>Grade</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Grade</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
                   <SelectValue placeholder="Select Grade" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="A+">A+</SelectItem>
-                  <SelectItem value="A">A</SelectItem>
-                  <SelectItem value="B+">B+</SelectItem>
-                  <SelectItem value="B">B</SelectItem>
+                <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                  <SelectItem value="A+" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">A+</SelectItem>
+                  <SelectItem value="A" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">A</SelectItem>
+                  <SelectItem value="B+" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">B+</SelectItem>
+                  <SelectItem value="B" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">B</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Gender</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Gender</Label>
               <Select value={gender} onValueChange={setGender}>
-                <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
+                <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                  <SelectValue placeholder="Select Gender" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                  <SelectItem value="Male" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Male</SelectItem>
+                  <SelectItem value="Female" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Female</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="e.g. Mumbai" value={city} onChange={(e) => setCity(e.target.value)} disabled={isSubmitting} />
+              <Label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">City</Label>
+              <Input
+                id="city"
+                placeholder="e.g. Mumbai"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              />
             </div>
             <div className="space-y-2">
-              <Label>Player Level</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Player Level</Label>
               <Select value={playerLevel} onValueChange={setPlayerLevel}>
-                <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                  <SelectItem value="Professional">Professional</SelectItem>
+                <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                  <SelectValue placeholder="Select Level" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                  <SelectItem value="Beginner" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Beginner</SelectItem>
+                  <SelectItem value="Intermediate" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Intermediate</SelectItem>
+                  <SelectItem value="Advanced" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Advanced</SelectItem>
+                  <SelectItem value="Professional" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Professional</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="jerseySize">Jersey Size</Label>
-              <Input id="jerseySize" placeholder="e.g. M, L, XL" value={jerseySize} onChange={(e) => setJerseySize(e.target.value)} disabled={isSubmitting} />
+              <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Size</Label>
+              <Input
+                id="jerseySize"
+                placeholder="e.g. M, L, XL"
+                value={jerseySize}
+                onChange={(e) => setJerseySize(e.target.value)}
+                disabled={isSubmitting}
+                className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              />
             </div>
             {isBni && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="jerseyName">Jersey Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-                  <Input id="jerseyName" placeholder="e.g. Dhoni" value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} disabled={isSubmitting} required />
+                  <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Input
+                    id="jerseyName"
+                    placeholder="e.g. Dhoni"
+                    value={jerseyName}
+                    onChange={(e) => setJerseyName(e.target.value)}
+                    disabled={isSubmitting}
+                    required
+                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trouserSize">Jersey Number <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-                  <Input id="trouserSize" placeholder="e.g. 7" value={trouserSize} onChange={(e) => setTrouserSize(e.target.value)} disabled={isSubmitting} required />
+                  <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Number <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Input
+                    id="trouserSize"
+                    placeholder="e.g. 7"
+                    value={trouserSize}
+                    onChange={(e) => setTrouserSize(e.target.value)}
+                    disabled={isSubmitting}
+                    required
+                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Number of seasons played <span className="text-red-500 font-bold ml-0.5">*</span></Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Number of seasons played <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Select value={bblSeasons} onValueChange={setBblSeasons}>
-                    <SelectTrigger><SelectValue placeholder="Select seasons" /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectValue placeholder="Select seasons" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
                       {Array.from({ length: 9 }).map((_, i) => (
-                        <SelectItem key={i} value={String(i)}>
+                        <SelectItem key={i} value={String(i)} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
                           {i}
                         </SelectItem>
                       ))}
@@ -502,8 +570,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           </div>
 
           {isBni && (
-            <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
-              <h3 className="font-semibold text-lg">Membership Details</h3>
+            <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
+              <h3 className="font-bold text-base text-[#fffcf7]">Membership Details</h3>
               <div className="space-y-4">
                 <RadioGroup 
                   value={memberType} 
@@ -519,41 +587,67 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   disabled={isSubmitting}
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="bni" id="modal-r-bni" />
-                    <Label htmlFor="modal-r-bni" className="cursor-pointer">BNI Member</Label>
+                    <RadioGroupItem value="bni" id="modal-r-bni" className="border-[#5c6875] text-[#a1b5d8] focus:ring-[#a1b5d8]" />
+                    <Label htmlFor="modal-r-bni" className="cursor-pointer text-sm font-semibold text-[#fffcf7]">BNI Member</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="family" id="modal-r-family" />
-                    <Label htmlFor="modal-r-family" className="cursor-pointer">Family Member</Label>
+                    <RadioGroupItem value="family" id="modal-r-family" className="border-[#5c6875] text-[#a1b5d8] focus:ring-[#a1b5d8]" />
+                    <Label htmlFor="modal-r-family" className="cursor-pointer text-sm font-semibold text-[#fffcf7]">Family Member</Label>
                   </div>
                 </RadioGroup>
 
                 {memberType === "bni" && (
                   <div className="space-y-2 pt-2 animate-in fade-in">
-                    <Label htmlFor="chapterName">Chapter Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-                    <Input id="chapterName" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
+                    <Label htmlFor="chapterName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Chapter Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Input
+                      id="chapterName"
+                      placeholder="e.g. Alpha"
+                      value={chapterName}
+                      onChange={(e) => setChapterName(e.target.value)}
+                      disabled={isSubmitting}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
                   </div>
                 )}
 
                 {memberType === "family" && (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
                     <div className="space-y-2">
-                      <Label htmlFor="bniName">Member Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-                      <Input id="bniName" placeholder="e.g. John Doe" value={bniName} onChange={(e) => setBniName(e.target.value)} disabled={isSubmitting} required />
+                      <Label htmlFor="bniName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Member Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                      <Input
+                        id="bniName"
+                        placeholder="e.g. John Doe"
+                        value={bniName}
+                        onChange={(e) => setBniName(e.target.value)}
+                        disabled={isSubmitting}
+                        required
+                        className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="chapterNameFam">Chapter Name <span className="text-red-500 font-bold ml-0.5">*</span></Label>
-                      <Input id="chapterNameFam" placeholder="e.g. Alpha" value={chapterName} onChange={(e) => setChapterName(e.target.value)} disabled={isSubmitting} required />
+                      <Label htmlFor="chapterNameFam" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Chapter Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                      <Input
+                        id="chapterNameFam"
+                        placeholder="e.g. Alpha"
+                        value={chapterName}
+                        onChange={(e) => setChapterName(e.target.value)}
+                        disabled={isSubmitting}
+                        required
+                        className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label>Relationship <span className="text-red-500 font-bold ml-0.5">*</span></Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Relationship <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                       <Select value={relationship} onValueChange={setRelationship}>
-                        <SelectTrigger><SelectValue placeholder="Select Relationship" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Child">Child</SelectItem>
-                          <SelectItem value="Spouse">Spouse</SelectItem>
-                          <SelectItem value="Parents">Parents</SelectItem>
-                          <SelectItem value="Siblings">Siblings</SelectItem>
+                        <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                          <SelectValue placeholder="Select Relationship" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                          <SelectItem value="Child" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Child</SelectItem>
+                          <SelectItem value="Spouse" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Spouse</SelectItem>
+                          <SelectItem value="Parents" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Parents</SelectItem>
+                          <SelectItem value="Siblings" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Siblings</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -564,56 +658,56 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           )}
 
           {auctionId !== "6a8edaddd7ed74151dbafab3" && (
-            <div className="rounded-lg border p-4 bg-muted/10 space-y-4">
+            <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
               <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-lg">Payment Details</h3>
-              {paymentImage && (
-                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  Screenshot Uploaded
-                </span>
-              )}
-            </div>
+                <h3 className="font-bold text-base text-[#fffcf7]">Payment Details</h3>
+                {paymentImage && (
+                  <span className="text-xs font-semibold text-[#c2d8b9] bg-[#23341d]/70 border border-[#47673a] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    Screenshot Uploaded
+                  </span>
+                )}
+              </div>
 
             {loadingFullDetails ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-                <Loader2 className="size-4 animate-spin text-brand" />
+              <div className="flex items-center gap-2 text-sm text-[#abb4bd] pt-2">
+                <Loader2 className="size-4 animate-spin text-[#a1b5d8]" />
                 Loading payment details...
               </div>
             ) : paymentImage ? (
               <div className="space-y-3 pt-1">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Payment Screenshot</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Payment Screenshot</Label>
                   {paymentImage.startsWith("http") && (
                     <a 
                       href={paymentImage} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-xs text-brand hover:underline flex items-center gap-1 font-medium"
+                      className="text-xs text-[#a1b5d8] hover:underline flex items-center gap-1 font-medium"
                     >
                       <ExternalLink className="size-3" /> Open in New Tab
                     </a>
                   )}
                 </div>
 
-                <div className="relative w-full max-w-sm rounded-xl border border-border bg-card p-3 shadow-sm space-y-2.5">
+                <div className="relative w-full max-w-sm rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] p-3 shadow-md space-y-2.5">
                   {/* Image Preview Container with Loading & Error Handlers */}
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden bg-[#162235] flex items-center justify-center border border-[#5c6875]/30">
                     {imgLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/80 backdrop-blur-xs z-10">
-                        <Loader2 className="size-6 animate-spin text-brand mb-1" />
-                        <span className="text-xs text-muted-foreground">Loading image...</span>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#162235]/80 backdrop-blur-xs z-10">
+                        <Loader2 className="size-6 animate-spin text-[#a1b5d8] mb-1" />
+                        <span className="text-xs text-[#abb4bd]">Loading image...</span>
                       </div>
                     )}
                     {imgError ? (
                       <div className="flex flex-col items-center justify-center p-4 text-center">
-                        <AlertCircle className="size-7 text-amber-500 mb-1" />
-                        <span className="text-xs font-medium text-foreground">Preview unavailable</span>
-                        <span className="text-[11px] text-muted-foreground mt-0.5">Image URL is valid but preview failed to render in browser</span>
+                        <AlertCircle className="size-7 text-amber-400 mb-1" />
+                        <span className="text-xs font-bold text-[#fffcf7]">Preview unavailable</span>
+                        <span className="text-[11px] text-[#abb4bd] mt-0.5">Image URL is valid but preview failed to render in browser</span>
                         <a 
                           href={paymentImage} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-xs text-brand hover:underline mt-2 font-medium flex items-center gap-1"
+                          className="text-xs text-[#a1b5d8] hover:underline mt-2 font-medium flex items-center gap-1"
                         >
                           <ExternalLink className="size-3" /> View Image URL directly
                         </a>
@@ -634,13 +728,13 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   {/* Display Image URL with Copy and Open Buttons */}
                   {paymentImage.startsWith("http") && (
                     <div className="space-y-1">
-                      <Label className="text-[11px] text-muted-foreground">Image URL</Label>
-                      <div className="rounded-lg bg-muted/70 px-2.5 py-1.5 flex items-center justify-between gap-2 border text-[11px]">
+                      <Label className="text-[11px] text-[#abb4bd]">Image URL</Label>
+                      <div className="rounded-xl bg-[#2e343a]/70 px-2.5 py-1.5 flex items-center justify-between gap-2 border border-[#5c6875]/40 text-[11px]">
                         <a
                           href={paymentImage}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-brand hover:underline truncate font-mono select-all cursor-pointer font-medium"
+                          className="text-[#a1b5d8] hover:underline truncate font-mono select-all cursor-pointer font-medium"
                           title="Click to redirect to image URL"
                         >
                           {paymentImage}
@@ -650,7 +744,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                             type="button" 
                             variant="ghost" 
                             size="sm" 
-                            className="h-6 px-1.5 text-[11px]" 
+                            className="h-6 px-1.5 text-[11px] text-[#abb4bd] hover:text-[#fffcf7]" 
                             onClick={() => {
                               navigator.clipboard.writeText(paymentImage);
                               toast.success("Image URL copied to clipboard");
@@ -663,7 +757,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                             type="button" 
                             variant="ghost" 
                             size="sm" 
-                            className="h-6 px-1.5 text-[11px]" 
+                            className="h-6 px-1.5 text-[11px] text-[#abb4bd] hover:text-[#fffcf7]" 
                             onClick={() => window.open(paymentImage, "_blank")}
                             title="Open URL in new tab"
                           >
@@ -674,10 +768,10 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-1.5 border-t text-xs">
+                  <div className="flex items-center justify-between pt-1.5 border-t border-[#5c6875]/30 text-xs">
                     <Label 
                       htmlFor="modalPaymentImageChangeInput" 
-                      className="cursor-pointer font-medium text-brand hover:underline flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-brand/10 transition-colors"
+                      className="cursor-pointer font-bold text-[#a1b5d8] hover:underline flex items-center gap-1.5 py-1 px-2 rounded-md hover:bg-[#a1b5d8]/10 transition-colors"
                     >
                       <Pencil className="size-3" /> Change Screenshot
                     </Label>
@@ -685,7 +779,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                       type="button" 
                       variant="ghost" 
                       size="sm" 
-                      className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-destructive/10"
                       onClick={() => {
                         setPaymentImage(null);
                         setImgLoading(false);
@@ -707,15 +801,15 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               </div>
             ) : (
               <div className="space-y-2 pt-1">
-                <p className="text-xs text-muted-foreground">No payment screenshot uploaded.</p>
+                <p className="text-xs text-[#abb4bd]">No payment screenshot uploaded.</p>
                 <div>
                   <Label 
                     htmlFor="modalPaymentImageUpload" 
-                    className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+                    className="flex flex-col items-center justify-center w-full h-32 rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235]/60 hover:bg-[#162235] hover:border-[#a1b5d8] transition-colors cursor-pointer"
                   >
-                    <UploadCloud className="size-8 text-primary/60 mb-1.5" />
-                    <span className="text-sm font-semibold text-foreground">Upload Screenshot / Update Here</span>
-                    <span className="text-xs text-muted-foreground mt-0.5">Click to browse image (JPEG, PNG up to 10MB)</span>
+                    <UploadCloud className="size-8 text-[#a1b5d8] mb-1.5" />
+                    <span className="text-sm font-bold text-[#fffcf7]">Upload Screenshot / Update Here</span>
+                    <span className="text-xs text-[#abb4bd] mt-0.5">Click to browse image (JPEG, PNG up to 10MB)</span>
                   </Label>
                   <input 
                     id="modalPaymentImageUpload" 
@@ -733,11 +827,21 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
 
 
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#5c6875]/30">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-full px-6 py-2.5 h-auto font-black text-sm text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_20px_rgba(161,181,216,0.35)]"
+            >
               {isSubmitting ? (
                 <><Loader2 className="mr-2 size-4 animate-spin" />Saving...</>
               ) : (
@@ -750,14 +854,14 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       </Dialog>
 
       <Dialog open={!!cropImageSrc} onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}>
-        <DialogContent className="sm:max-w-md flex flex-col items-center">
+        <DialogContent className="sm:max-w-md flex flex-col items-center rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6">
           <DialogHeader>
-            <DialogTitle>Crop Profile Photo</DialogTitle>
+            <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Crop Profile Photo</DialogTitle>
           </DialogHeader>
           
-          <div className="relative mt-4 flex items-center justify-center bg-black/5 dark:bg-black/40 p-6 rounded-2xl w-full">
+          <div className="relative mt-4 flex items-center justify-center bg-[#2e343a]/40 p-6 rounded-2xl w-full border border-[#5c6875]/30">
             <div 
-              className="relative size-72 rounded-full overflow-hidden border-4 border-white bg-black select-none cursor-move shadow-md"
+              className="relative size-72 rounded-full overflow-hidden border-4 border-[#a1b5d8] bg-black select-none cursor-move shadow-xl"
               onPointerDown={(e) => {
                 setIsDragging(true);
                 setDragStart({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
@@ -795,7 +899,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           
           <div className="w-full space-y-4 px-4 mt-4">
             <div className="flex items-center gap-4">
-              <span className="text-sm font-bold text-muted-foreground">Zoom</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Zoom</span>
               <input
                 type="range"
                 min="1"
@@ -803,15 +907,24 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 step="0.05"
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="w-full accent-brand h-1.5 bg-muted rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#a1b5d8] h-1.5 bg-[#2e343a] rounded-lg appearance-none cursor-pointer"
               />
             </div>
             
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setCropImageSrc(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCropImageSrc(null)}
+                className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-5 py-2 shadow-sm"
+              >
                 Cancel
               </Button>
-              <Button type="button" onClick={handleCropSave} className="bg-brand text-brand-foreground hover:bg-brand-dark">
+              <Button
+                type="button"
+                onClick={handleCropSave}
+                className="rounded-full px-5 py-2 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-md"
+              >
                 Save Photo
               </Button>
             </div>

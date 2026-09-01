@@ -1,10 +1,40 @@
 const { Router } = require("express");
+const mongoose = require("mongoose");
 const Team = require("../models/Team");
 const Auction = require("../models/Auction");
+const Player = require("../models/Player");
 const { requireAuth, optionalAuth } = require("../middleware/requireAuth");
 const { uploadBase64Image, deleteImage } = require("../lib/cloudinary");
 
 const router = Router();
+
+// In-memory cache for ultra-fast team list retrieval (<1ms)
+const teamsCache = new Map();
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds
+
+function getCachedTeams(auctionId) {
+  const entry = teamsCache.get(auctionId);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    teamsCache.delete(auctionId);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedTeams(auctionId, data) {
+  if (teamsCache.size > 200) {
+    const oldestKey = teamsCache.keys().next().value;
+    teamsCache.delete(oldestKey);
+  }
+  teamsCache.set(auctionId, { data, timestamp: Date.now() });
+}
+
+function invalidateTeamsCache(auctionId) {
+  if (auctionId) {
+    teamsCache.delete(auctionId.toString());
+  }
+}
 
 function asyncHandler(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
@@ -12,35 +42,67 @@ function asyncHandler(fn) {
 
 function toPublicTeam(doc) {
   return {
-    id: doc._id.toString(),
+    id: (doc._id || doc.id).toString(),
     auctionId: doc.auctionId.toString(),
     name: doc.name,
     shortName: doc.shortName,
     logo: doc.logo,
-    ownerName: doc.ownerName,
-    ownerPhone: doc.ownerPhone,
-    colorTheme: doc.colorTheme,
+    ownerName: doc.ownerName || "",
+    ownerPhone: doc.ownerPhone || "",
+    colorTheme: doc.colorTheme || "",
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
 }
 
-// Get all teams for a specific auction
+// Get all teams for a specific auction (Optimized with parallel query, projection, lean, & in-memory caching)
 router.get(
   "/auctions/:id/teams",
   optionalAuth,
   asyncHandler(async (req, res) => {
-    const auction = await Auction.findById(req.params.id).catch(() => null);
+    const startReqTime = performance.now();
+    const auctionId = req.params.id;
+
+    if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+      return res.status(400).json({ error: "Invalid auction ID" });
+    }
+
+    // 1. Check in-memory cache for sub-millisecond response
+    const cachedTeams = getCachedTeams(auctionId);
+    if (cachedTeams) {
+      res.set("X-Cache", "HIT");
+      res.set("Cache-Control", "public, max-age=15, stale-while-revalidate=60");
+      return res.json({ teams: cachedTeams });
+    }
+
+    // 2. Fetch Auction visibility check and Teams list concurrently via Promise.all
+    const [auction, teams] = await Promise.all([
+      Auction.findById(auctionId).select("visibility createdBy").lean().catch(() => null),
+      Team.find({ auctionId: new mongoose.Types.ObjectId(auctionId) })
+        .sort({ createdAt: 1 })
+        .lean()
+        .catch(() => []),
+    ]);
+
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
     // Check visibility
-    const isOwn = req.userId && auction.createdBy.toString() === req.userId;
+    const isOwn = req.userId && auction.createdBy && auction.createdBy.toString() === req.userId;
     if (auction.visibility === "private" && !isOwn) {
       return res.status(404).json({ error: "Auction not found" });
     }
 
-    const teams = await Team.find({ auctionId: req.params.id }).sort({ createdAt: 1 });
-    res.json({ teams: teams.map(toPublicTeam) });
+    const publicTeams = teams.map(toPublicTeam);
+
+    // Save to cache
+    setCachedTeams(auctionId, publicTeams);
+
+    const elapsed = performance.now() - startReqTime;
+    console.log(`[teams-api] GET /auctions/${auctionId}/teams | Total: ${elapsed.toFixed(2)}ms | Count: ${publicTeams.length}`);
+
+    res.set("X-Cache", "MISS");
+    res.set("Cache-Control", "public, max-age=15, stale-while-revalidate=60");
+    res.json({ teams: publicTeams });
   })
 );
 
@@ -55,7 +117,7 @@ router.post(
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const auction = await Auction.findById(auctionId).catch(() => null);
+    const auction = await Auction.findById(auctionId).select("createdBy").lean().catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
     if (auction.createdBy.toString() !== req.userId && !req.isAdmin) {
@@ -73,6 +135,8 @@ router.post(
       ownerPhone: ownerPhone ? ownerPhone.trim() : "",
       colorTheme: colorTheme ? colorTheme.trim() : "",
     });
+
+    invalidateTeamsCache(auctionId);
 
     const publicTeam = toPublicTeam(team);
     const io = req.app.get("io");
@@ -92,7 +156,7 @@ router.post(
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const auction = await Auction.findById(auctionId).catch(() => null);
+    const auction = await Auction.findById(auctionId).select("_id").lean().catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
     let uploadedLogo = null;
@@ -110,6 +174,8 @@ router.post(
       colorTheme: rest.colorTheme ? rest.colorTheme.trim() : "",
     });
 
+    invalidateTeamsCache(auctionId);
+
     const publicTeam = toPublicTeam(team);
     const io = req.app.get("io");
     if (io) io.to(`auction:${auctionId}`).emit("teamUpdated", publicTeam);
@@ -123,33 +189,50 @@ router.get(
   "/teams/:id",
   optionalAuth,
   asyncHandler(async (req, res) => {
-    const team = await Team.findById(req.params.id).catch(() => null);
+    const teamId = req.params.id;
+    if (!teamId || !mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({ error: "Invalid team ID" });
+    }
+
+    const team = await Team.findById(teamId).lean().catch(() => null);
     if (!team) return res.status(404).json({ error: "Team not found" });
 
-    const auction = await Auction.findById(team.auctionId).catch(() => null);
+    const [auction, players] = await Promise.all([
+      Auction.findById(team.auctionId)
+        .select("visibility createdBy pointsPerTeam playersPerTeam maxBid minimumBid")
+        .lean()
+        .catch(() => null),
+      Player.find({ teamId: team._id, auctionId: team.auctionId })
+        .select("soldPrice")
+        .sort({ updatedAt: -1 })
+        .lean()
+        .catch(() => []),
+    ]);
+
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    const isOwn = req.userId && auction.createdBy.toString() === req.userId;
+    const isOwn = req.userId && auction.createdBy && auction.createdBy.toString() === req.userId;
     if (auction.visibility === "private" && !isOwn) {
       return res.status(404).json({ error: "Team not found" });
     }
 
-    const Player = require("../models/Player");
-    const players = await Player.find({ teamId: team._id, auctionId: auction._id }).select("soldPrice").sort({ updatedAt: -1 });
-    
     // Compute stats
     let usedPoints = 0;
     for (const p of players) {
       if (p.soldPrice) usedPoints += p.soldPrice;
     }
-    
+
     const totalPoints = auction.pointsPerTeam;
     const availablePoints = totalPoints - usedPoints;
     const totalPlayers = players.length;
     const reservedPlayers = auction.playersPerTeam - totalPlayers;
-    const maxBidPoints = reservedPlayers > 0 
-      ? Math.max(0, Math.min(auction.maxBid ?? 30000, availablePoints - ((reservedPlayers - 1) * auction.minimumBid)))
-      : 0;
+    const maxBidPoints =
+      reservedPlayers > 0
+        ? Math.max(
+            0,
+            Math.min(auction.maxBid ?? 30000, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
+          )
+        : 0;
 
     res.json({
       team: toPublicTeam(team),
@@ -160,7 +243,7 @@ router.get(
         maxBidPoints,
         totalPlayers,
         reservedPlayers: reservedPlayers > 0 ? reservedPlayers : 0,
-      }
+      },
     });
   })
 );
@@ -170,10 +253,15 @@ router.patch(
   "/teams/:id",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const team = await Team.findById(req.params.id).catch(() => null);
+    const teamId = req.params.id;
+    if (!teamId || !mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({ error: "Invalid team ID" });
+    }
+
+    const team = await Team.findById(teamId).catch(() => null);
     if (!team) return res.status(404).json({ error: "Team not found" });
 
-    const auction = await Auction.findById(team.auctionId).catch(() => null);
+    const auction = await Auction.findById(team.auctionId).select("createdBy").lean().catch(() => null);
     if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
       return res.status(403).json({ error: "You don't have permission to modify this team" });
     }
@@ -193,6 +281,8 @@ router.patch(
 
     await team.save();
 
+    invalidateTeamsCache(team.auctionId);
+
     const publicTeam = toPublicTeam(team);
     const io = req.app.get("io");
     if (io) io.to(`auction:${team.auctionId}`).emit("teamUpdated", publicTeam);
@@ -206,26 +296,33 @@ router.delete(
   "/teams/:id",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const team = await Team.findById(req.params.id).catch(() => null);
+    const teamId = req.params.id;
+    if (!teamId || !mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({ error: "Invalid team ID" });
+    }
+
+    const team = await Team.findById(teamId).catch(() => null);
     if (!team) return res.status(404).json({ error: "Team not found" });
 
-    const auction = await Auction.findById(team.auctionId).catch(() => null);
+    const auction = await Auction.findById(team.auctionId).select("createdBy").lean().catch(() => null);
     if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
       return res.status(403).json({ error: "You don't have permission to delete this team" });
     }
 
+    const auctionId = team.auctionId;
     const logoToDelete = team.logo;
     await team.deleteOne();
     if (logoToDelete) deleteImage(logoToDelete).catch(console.error);
 
+    invalidateTeamsCache(auctionId);
+
     // Revert players assigned to this team
-    const Player = require("../models/Player");
     await Player.updateMany({ teamId: team._id }, { $set: { teamId: null, soldPrice: null } });
 
     const io = req.app.get("io");
     if (io) {
-      io.to(`auction:${team.auctionId}`).emit("teamUpdated", { id: team._id });
-      io.to(`auction:${team.auctionId}`).emit("playerUpdated", { bulk: true });
+      io.to(`auction:${auctionId}`).emit("teamUpdated", { id: team._id });
+      io.to(`auction:${auctionId}`).emit("playerUpdated", { bulk: true });
     }
 
     res.status(204).end();

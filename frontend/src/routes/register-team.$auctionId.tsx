@@ -5,7 +5,6 @@ import { Loader2, Plus, Pencil, CheckCircle2, Copy, UploadCloud } from "lucide-r
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -195,38 +194,39 @@ function PublicRegisterTeamPage() {
             </div>
           </div>
         </main>
-        <SiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div
+      className="min-h-screen text-[#fffcf7] flex flex-col selection:bg-[#a1b5d8] selection:text-[#162235]"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+      }}
+    >
       <SiteHeader />
 
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden">
-        {isPending ? (
-          <div className="absolute inset-0 bg-slate-900" />
-        ) : (
-          <img
-            src={auction?.coverImage || stadiumImg}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-60"
-          />
-        )}
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-white flex flex-col items-center">
+        <img
+          src={auction?.coverImage || stadiumImg}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#171a1d]/80 via-[#171a1d]/90 to-[#171a1d]" />
+        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#fffcf7] flex flex-col items-center">
           {isPending ? (
             <div className="flex flex-col items-center gap-4">
-              <Skeleton className="size-24 sm:size-28 rounded-full bg-white/20" />
+              <Skeleton className="size-24 sm:size-28 rounded-2xl bg-white/20" />
               <Skeleton className="h-10 w-64 bg-white/20" />
               <Skeleton className="h-6 w-48 bg-white/20" />
             </div>
           ) : isError || !auction ? (
             <div className="flex flex-col items-center gap-4">
-              <div className="size-24 sm:size-28 rounded-full border-4 border-white/20 bg-destructive/20 flex items-center justify-center text-destructive font-bold text-3xl">?</div>
+              <div className="size-24 sm:size-28 rounded-2xl border-4 border-white/20 bg-destructive/20 flex items-center justify-center text-destructive font-bold text-3xl">?</div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Auction Not Found</h1>
             </div>
           ) : (
@@ -236,55 +236,55 @@ function PublicRegisterTeamPage() {
                   <img 
                     src={bniLogoImg} 
                     alt="BNI Logo" 
-                    className="h-24 sm:h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-black p-2"
+                    className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-black p-2"
                   />
                 )}
                 {auction.coverImage ? (
                   <img 
                     src={auction.coverImage} 
                     alt={auction.name} 
-                    className="size-24 sm:size-28 rounded-full border-4 border-white/20 shadow-xl object-cover bg-muted shrink-0"
+                    className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl object-cover bg-muted shrink-0"
                   />
                 ) : (
-                  <div className="size-24 sm:size-28 rounded-full border-4 border-white/20 shadow-xl bg-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-2xl sm:text-3xl font-bold text-white">{auction.name.substring(0, 2).toUpperCase()}</span>
+                  <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl bg-[#162235] flex items-center justify-center shrink-0">
+                    <span className="text-2xl sm:text-3xl font-black text-[#a1b5d8]">{auction.name.substring(0, 2).toUpperCase()}</span>
                   </div>
                 )}
                 {auction.id === "6a8edaddd7ed74151dbafab3" && (
                   <img 
                     src={anotherImg} 
                     alt="Another Logo" 
-                    className="h-24 sm:h-28 w-auto rounded-xl border-4 border-white/20 shadow-xl object-contain bg-white p-2"
+                    className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-white p-2"
                   />
                 )}
               </div>
-              <h1 className="text-3xl font-black sm:text-5xl mb-4 tracking-tight drop-shadow-md uppercase">TEAM REGISTRATION</h1>
-              <p className="text-lg text-white/80 font-medium tracking-wide">Register your team for <span className="text-white font-bold">{auction.name}</span></p>
+              <h1 className="text-3xl font-black sm:text-5xl mb-3 tracking-tight drop-shadow-md uppercase text-[#fffcf7]">TEAM REGISTRATION</h1>
+              <p className="text-base sm:text-lg text-[#abb4bd] font-medium tracking-wide">Register your team for <span className="text-[#fffcf7] font-bold">{auction.name}</span></p>
             </>
           )}
         </div>
       </section>
 
-      <main className="flex-1 mx-auto max-w-3xl w-full px-4 py-8 sm:py-12 -mt-4 relative z-10">
+      <main className="flex-1 mx-auto max-w-3xl w-full px-4 py-8 sm:py-10 -mt-6 relative z-10">
         {isPending ? (
-          <div className="space-y-6 bg-card p-6 sm:p-8 rounded-2xl border card-shadow">
+          <div className="space-y-6 bg-[#2e343a]/80 p-6 sm:p-8 rounded-3xl border border-[#5c6875]/30 card-shadow">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
         ) : isError || !auction ? (
-          <div className="bg-card p-8 rounded-2xl border border-destructive/20 text-center card-shadow">
+          <div className="bg-[#2e343a]/80 p-8 rounded-3xl border border-destructive/20 text-center card-shadow">
             <p className="text-destructive font-medium">Please check the link and try again.</p>
           </div>
         ) : (
-          <div className="bg-card rounded-2xl border border-border card-shadow overflow-hidden">
-            <div className="bg-muted/30 border-b border-border p-4 sm:p-6 text-center">
-              <p className="text-muted-foreground text-sm">
-                Register your team to participate in <strong className="text-foreground">{auction.name}</strong>
+          <div className="bg-[#2e343a]/80 backdrop-blur-xl rounded-3xl border border-[#5c6875]/30 shadow-[0_15px_45px_rgba(23,26,29,0.8)] overflow-hidden text-[#fffcf7]">
+            <div className="bg-[#171a1d]/60 border-b border-[#5c6875]/30 p-4 sm:p-6 text-center">
+              <p className="text-[#abb4bd] text-sm">
+                Register your team to participate in <strong className="text-[#fffcf7]">{auction.name}</strong>
               </p>
             </div>
 
-            <form onSubmit={onSubmit} className="p-4 sm:p-8 space-y-8">
+            <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-8">
               
               <div className="space-y-6">
                 <div className="flex items-center justify-center">
@@ -300,23 +300,23 @@ function PublicRegisterTeamPage() {
                               setDragOffset({ x: 0, y: 0 });
                             }
                           }}
-                          className="relative flex size-32 items-center justify-center overflow-hidden rounded-full border-2 border-border/80 bg-muted hover:border-brand/40 transition-all group cursor-pointer shadow-sm"
+                          className="relative flex size-32 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#a1b5d8]/40 bg-[#162235] hover:border-[#a1b5d8] transition-all group cursor-pointer shadow-md"
                           title="Crop / Zoom existing picture"
                         >
                           <img src={logo} alt="Team Logo" className="size-full object-cover" />
-                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Pencil className="size-6 text-white mb-0.5" />
-                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Crop/Zoom</span>
+                          <div className="absolute inset-0 bg-[#171a1d]/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Pencil className="size-6 text-[#a1b5d8] mb-0.5" />
+                            <span className="text-[10px] font-black text-[#fffcf7] uppercase tracking-wider">Crop/Zoom</span>
                           </div>
                         </button>
                       ) : (
                         <Label
                           htmlFor="team-logo"
-                          className="relative flex size-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary/60 transition-colors"
+                          className="relative flex size-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235]/60 hover:bg-[#162235] hover:border-[#a1b5d8] transition-colors"
                         >
                           <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
-                            <UploadCloud className="size-8 text-primary/60" />
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Upload Logo * (up to 10MB)</span>
+                            <UploadCloud className="size-8 text-[#a1b5d8]" />
+                            <span className="text-[10px] text-[#abb4bd] uppercase tracking-wider font-bold">Upload Logo * (up to 10MB)</span>
                           </div>
                         </Label>
                       )}
@@ -334,7 +334,7 @@ function PublicRegisterTeamPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-xs text-brand hover:text-brand/80 font-bold hover:underline transition-colors mt-1"
+                        className="text-xs text-[#a1b5d8] hover:text-[#fffcf7] font-bold hover:underline transition-colors mt-1"
                       >
                         Upload New
                       </button>
@@ -344,30 +344,75 @@ function PublicRegisterTeamPage() {
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Team Name *</Label>
-                    <Input id="name" placeholder="e.g. Chennai Super Kings" value={name} onChange={(e) => setName(e.target.value)} disabled={registerMutation.isPending} required />
+                    <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Team Name *</Label>
+                    <Input
+                      id="name"
+                      placeholder="e.g. Chennai Super Kings"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="shortName">Short Name (Code) *</Label>
-                    <Input id="shortName" placeholder="e.g. CSK" value={shortName} onChange={(e) => setShortName(e.target.value)} disabled={registerMutation.isPending} required maxLength={5} />
+                    <Label htmlFor="shortName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Short Name (Code) *</Label>
+                    <Input
+                      id="shortName"
+                      placeholder="e.g. CSK"
+                      value={shortName}
+                      onChange={(e) => setShortName(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      maxLength={5}
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ownerName">Owner/Franchisee Name *</Label>
-                    <Input id="ownerName" placeholder="e.g. N. Srinivasan" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} disabled={registerMutation.isPending} required />
+                    <Label htmlFor="ownerName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Owner/Franchisee Name *</Label>
+                    <Input
+                      id="ownerName"
+                      placeholder="e.g. N. Srinivasan"
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ownerPhone">Contact Number *</Label>
-                    <Input id="ownerPhone" placeholder="e.g. 9876543210" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} disabled={registerMutation.isPending} required />
+                    <Label htmlFor="ownerPhone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Contact Number *</Label>
+                    <Input
+                      id="ownerPhone"
+                      placeholder="e.g. 9876543210"
+                      value={ownerPhone}
+                      onChange={(e) => setOwnerPhone(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="colorTheme">Team Color/Theme *</Label>
-                    <Input id="colorTheme" placeholder="e.g. Yellow & Blue" value={colorTheme} onChange={(e) => setColorTheme(e.target.value)} disabled={registerMutation.isPending} required />
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="colorTheme" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Team Color/Theme *</Label>
+                    <Input
+                      id="colorTheme"
+                      placeholder="e.g. Yellow & Blue"
+                      value={colorTheme}
+                      onChange={(e) => setColorTheme(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6">
-                <Button type="submit" className="w-full text-lg h-12" disabled={registerMutation.isPending}>
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  className="w-full rounded-full py-4 h-auto font-black text-base text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_25px_rgba(161,181,216,0.4)] transition-all"
+                  disabled={registerMutation.isPending}
+                >
                   {registerMutation.isPending ? (
                     <><Loader2 className="mr-2 size-5 animate-spin" /> Submitting...</>
                   ) : (
@@ -379,17 +424,16 @@ function PublicRegisterTeamPage() {
           </div>
         )}
       </main>
-      
-      <SiteFooter />
+
 
       {/* Crop Dialog */}
       <Dialog open={!!cropImageSrc} onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}>
-        <DialogContent className="sm:max-w-md flex flex-col items-center">
+        <DialogContent className="sm:max-w-md flex flex-col items-center rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6">
           <DialogHeader>
-            <DialogTitle>Crop Team Logo</DialogTitle>
+            <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Crop Team Logo</DialogTitle>
           </DialogHeader>
           
-          <div className="mt-4 w-72 h-72 bg-black relative overflow-hidden rounded-full border-2 border-border cursor-move touch-none"
+          <div className="mt-4 w-72 h-72 bg-black relative overflow-hidden rounded-2xl border-2 border-[#a1b5d8] cursor-move touch-none shadow-xl"
                onPointerDown={handlePointerDown}
                onPointerMove={handlePointerMove}
                onPointerUp={handlePointerUp}
@@ -408,7 +452,7 @@ function PublicRegisterTeamPage() {
               />
             )}
             
-            <div className="absolute inset-0 pointer-events-none border-[4px] border-white/20 rounded-full box-border" />
+            <div className="absolute inset-0 pointer-events-none border-[4px] border-white/20 rounded-2xl box-border" />
           </div>
           
           <div className="w-full max-w-[288px] mt-6 flex items-center gap-4">
