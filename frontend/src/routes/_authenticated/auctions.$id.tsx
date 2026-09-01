@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -16,19 +16,24 @@ import { Input } from "@/components/ui/input";
 import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { AboutTab } from "@/components/auction/AboutTab";
 
-import { usePlayers } from "@/hooks/usePlayers";
 import { useTeams } from "@/hooks/useTeams";
+import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { computeTeamStats, formatPoints } from "@/lib/team-stats";
+import { exportAuctionPDF } from "@/lib/pdf-export";
 import type { Player } from "@/lib/auction-client";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { auctionDetailQueryOptions } from "@/lib/queries/auctions";
+import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
 import { sportTypeLabels, visibilityLabels } from "@/lib/validations/auction";
 
 export const Route = createFileRoute("/_authenticated/auctions/$id")({
   loader: async ({ params, context }) => {
     try {
       const auction = await context.queryClient.ensureQueryData(auctionDetailQueryOptions(params.id));
+      void Promise.all([
+        context.queryClient.prefetchQuery(teamsQueryOptions(params.id)),
+        context.queryClient.prefetchQuery(playersQueryOptions(params.id)),
+      ]);
       return { auction };
     } catch {
       throw notFound();
@@ -245,12 +250,24 @@ function AuctionDetailPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between pb-4">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pb-4">
             <div className="flex items-center gap-2 font-black">
               <span className="text-xs px-3.5 py-1.5 rounded-xl border border-[#47673a] bg-[#23341d]/70 text-[#e4f0d0] shadow-sm">
                 ✨ Free Access
               </span>
             </div>
+            <Button
+              onClick={() => {
+                exportAuctionPDF(auction, players || [], teams || []);
+                toast.success("Auction PDF Report downloaded!");
+              }}
+              variant="outline"
+              className="rounded-full border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] font-bold text-xs gap-1.5 transition-all shadow-sm cursor-pointer"
+              title="Download Auction Summary PDF"
+            >
+              <FileText className="size-4" />
+              Download PDF Report
+            </Button>
           </div>
         </div>
       </section>

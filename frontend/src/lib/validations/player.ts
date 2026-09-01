@@ -33,27 +33,27 @@ export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
   cricket: {
     roles: ["Batsman", "Bowler", "Wicket-Keeper", "All-Rounder"],
     stats: ["Matches", "Runs", "Wickets"],
-    specs: ["Specification"],
+    specs: ["Batting Style", "Bowling Style"],
   },
   football: {
     roles: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
     stats: ["Matches", "Goals", "Assists"],
-    specs: ["Specification"],
+    specs: ["Preferred Foot"],
   },
   volleyball: {
-    roles: ["Setter", "Libero", "Spiker", "Blocker"],
+    roles: ["Universal", "Attacker", "Setter", "Libero", "Spiker", "Blocker", "Passer", "Opposite Hitter", "Middle Blocker"],
     stats: ["Matches", "Points", "Blocks"],
-    specs: ["Specification"],
+    specs: ["Dominated Hand", "Spike Height", "Block Height"],
   },
   kabaddi: {
     roles: ["Raider", "Defender (Left)", "Defender (Right)", "All-Rounder"],
     stats: ["Matches", "Raid Points", "Tackle Points"],
-    specs: ["Specification"],
+    specs: ["Specialization"],
   },
   badminton: {
     roles: ["Singles Player", "Doubles Player", "Mixed Doubles"],
     stats: ["Matches", "Wins", "Win Percentage"],
-    specs: ["Specification"],
+    specs: ["Dominated Hand"],
   },
 };
 

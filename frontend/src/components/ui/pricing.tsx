@@ -153,7 +153,7 @@ export function Pricing({
                       value={
                         isMonthly ? Number(plan.price) : Number(plan.yearlyPrice)
                       }
-                      formatter={(value) => value.toLocaleString("en-IN")}
+                      locales="en-IN"
                       transformTiming={{
                         duration: 400,
                         easing: "ease-out",

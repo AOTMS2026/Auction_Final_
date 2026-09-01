@@ -223,21 +223,41 @@ function Index() {
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            to={isAuthenticated ? "/my-auctions/new" : "/auth"}
-            search={isAuthenticated ? undefined : { next: "/my-auctions/new" }}
-            className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-8 py-3.5 text-center font-black text-sm text-[#162235] shadow-[0_4px_25px_rgba(161,181,216,0.45)] transition-all hover:scale-105"
-          >
-            <PlusCircle className="size-4.5" />
-            Create Auction
-          </Link>
-          <Link
-            to={isAuthenticated ? "/my-auctions" : "/auth"}
-            search={isAuthenticated ? undefined : { next: "/my-auctions" }}
-            className="inline-flex items-center gap-2 rounded-full border border-[#5c6875]/50 bg-[#171a1d]/90 hover:bg-[#2e343a] px-8 py-3.5 text-center font-bold text-sm text-[#abb4bd] hover:text-[#fffcf7] hover:border-[#a1b5d8]/60 shadow-sm transition-all hover:scale-105"
-          >
-            View My Auctions
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/my-auctions/new"
+                className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-8 py-3.5 text-center font-black text-sm text-[#162235] shadow-[0_4px_25px_rgba(161,181,216,0.45)] transition-all hover:scale-105"
+              >
+                <PlusCircle className="size-4.5" />
+                Create Auction
+              </Link>
+              <Link
+                to="/my-auctions"
+                className="inline-flex items-center gap-2 rounded-full border border-[#5c6875]/50 bg-[#171a1d]/90 hover:bg-[#2e343a] px-8 py-3.5 text-center font-bold text-sm text-[#abb4bd] hover:text-[#fffcf7] hover:border-[#a1b5d8]/60 shadow-sm transition-all hover:scale-105"
+              >
+                View My Auctions
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/auth"
+                search={{ next: "/my-auctions/new" }}
+                className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-8 py-3.5 text-center font-black text-sm text-[#162235] shadow-[0_4px_25px_rgba(161,181,216,0.45)] transition-all hover:scale-105"
+              >
+                <PlusCircle className="size-4.5" />
+                Create Auction
+              </Link>
+              <Link
+                to="/auth"
+                search={{ next: "/my-auctions" }}
+                className="inline-flex items-center gap-2 rounded-full border border-[#5c6875]/50 bg-[#171a1d]/90 hover:bg-[#2e343a] px-8 py-3.5 text-center font-bold text-sm text-[#abb4bd] hover:text-[#fffcf7] hover:border-[#a1b5d8]/60 shadow-sm transition-all hover:scale-105"
+              >
+                View My Auctions
+              </Link>
+            </>
+          )}
         </div>
       </motion.section>
 

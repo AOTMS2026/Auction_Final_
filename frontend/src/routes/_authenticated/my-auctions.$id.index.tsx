@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, FileSpreadsheet, MoreVertical, Pencil, Trash, Share2, UserCheck } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -27,18 +27,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { auctionClient } from "@/lib/auction-client";
-import { auctionDetailQueryOptions, auctionKeys } from "@/lib/queries/auctions";
+import { auctionDetailQueryOptions, auctionKeys, teamsQueryOptions } from "@/lib/queries/auctions";
 import { computeTeamStats, formatPoints } from "@/lib/team-stats";
 import { authClient } from "@/lib/auth-client";
 import { useTeams } from "@/hooks/useTeams";
-import { usePlayers } from "@/hooks/usePlayers";
+import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { TeamFormModal } from "@/components/auction/TeamFormModal";
 import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
 import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeDialog";
 import { Countdown } from "@/components/auction/Countdown";
 import { AboutTab } from "@/components/auction/AboutTab";
-import { exportPlayersAndTeams } from "@/lib/export";
+import { exportAuctionPDF } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/_authenticated/my-auctions/$id/")({
   loader: async ({ params, context }) => {
@@ -55,6 +55,11 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/")({
       throw redirect({ to: "/my-auctions" });
     }
 
+    void Promise.all([
+      context.queryClient.prefetchQuery(teamsQueryOptions(params.id)),
+      context.queryClient.prefetchQuery(playersQueryOptions(params.id)),
+    ]);
+
     return { auction };
   },
   component: ManageAuctionPage,
@@ -70,7 +75,7 @@ function ManageAuctionPage() {
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  
+
   // Teams logic
   const { teams, isPending: teamsPending, isError: teamsError, deleteTeam } = useTeams(auction.id);
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
@@ -126,9 +131,9 @@ function ManageAuctionPage() {
     }
   }
 
-  function handleExport() {
-    exportPlayersAndTeams(players, teams, auction.name);
-    toast.success("Export downloaded!");
+  function handleExportPDF() {
+    exportAuctionPDF(auction, players || [], teams || []);
+    toast.success("Auction PDF Report downloaded!");
   }
 
   return (
@@ -150,7 +155,7 @@ function ManageAuctionPage() {
           className="absolute inset-0 size-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#171a1d] via-[#171a1d]/85 to-[#162235]/50" />
-        
+
         <div className="relative mx-auto max-w-4xl px-4 pt-8">
           <div className="flex items-start gap-4 sm:gap-6">
             <FallbackImage
@@ -168,7 +173,7 @@ function ManageAuctionPage() {
                 Live Tournament
               </div>
               <h1 className="text-2xl font-black sm:text-4xl tracking-tight">{auction.name}</h1>
-              
+
               <div className="mt-2 space-y-1.5 text-sm sm:text-base text-[#abb4bd]">
                 <p className="flex items-center gap-2">
                   Auction Code: <span className="font-mono text-[#a1b5d8] font-bold bg-[#162235]/60 px-2 py-0.5 rounded-md border border-[#a1b5d8]/30">{auction.id.slice(-6)}</span>
@@ -193,32 +198,26 @@ function ManageAuctionPage() {
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between pb-4">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 pb-4">
             <div className="flex items-center gap-2 font-bold text-[#e4f0d0]">
               <span className="text-lg px-3 py-1 rounded-full bg-[#162235]/80 border border-[#e4f0d0]/30 shadow-sm">✨ Free Tier</span>
             </div>
-            <div className="flex gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                onClick={() => setPaymentModalOpen(true)}
-                className="rounded-full px-5 py-2 font-bold text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_15px_rgba(161,181,216,0.3)]"
+                onClick={handleExportPDF}
+                variant="outline"
+                className="rounded-full border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] font-bold text-xs gap-1.5 transition-all shadow-sm"
+                title="Download Auction Summary PDF"
               >
-                Upgrade Plan
+                <FileText className="size-4" />
+                Export PDF
               </Button>
               <Button
                 onClick={handleStartAuction}
                 variant="outline"
-                className="rounded-full border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 font-semibold"
+                className="rounded-full border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 font-semibold text-xs"
               >
                 Start Auction
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="rounded-full border-[#5c6875]/50 bg-[#171a1d]/60 text-[#fffcf7] hover:bg-[#2e343a]"
-              >
-                <Link to="/auctions/$id" params={{ id: auction.id }}>
-                  View Auction
-                </Link>
               </Button>
             </div>
           </div>
@@ -232,9 +231,8 @@ function ManageAuctionPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap px-4 py-4 text-xs font-bold tracking-wider uppercase transition-colors ${
-                activeTab === tab ? "border-b-2 border-[#a1b5d8] text-[#a1b5d8]" : "text-[#abb4bd] hover:text-[#fffcf7]"
-              }`}
+              className={`whitespace-nowrap px-4 py-4 text-xs font-bold tracking-wider uppercase transition-colors ${activeTab === tab ? "border-b-2 border-[#a1b5d8] text-[#a1b5d8]" : "text-[#abb4bd] hover:text-[#fffcf7]"
+                }`}
             >
               {tab === "TEAMS" && teams ? `TEAMS (${teams.length})` : tab === "PLAYERS" && players ? `PLAYERS (${players.length})` : tab}
             </button>
@@ -295,7 +293,7 @@ function ManageAuctionPage() {
                           <span className="text-2xl sm:text-3xl font-black text-[#a1b5d8]">{team.shortName.slice(0, 3)}</span>
                         )}
                       </Link>
-                      
+
                       {/* Info */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                         <div className="flex justify-between items-start">
@@ -311,14 +309,14 @@ function ManageAuctionPage() {
                             </Link>
                             <p className="text-xs text-[#a1b5d8] mt-0.5 font-bold uppercase tracking-wider">{team.shortName}</p>
                           </div>
-                          
+
                           {/* Right side Total Points */}
                           <div className="text-right pl-2 shrink-0">
                             <div className="text-xl font-black text-[#a1b5d8] leading-none mb-1">{formatNum(totalPoints)}</div>
                             <div className="text-[10px] text-[#abb4bd] uppercase tracking-wider font-bold whitespace-nowrap">Total Points</div>
                           </div>
                         </div>
-                        
+
                         {/* Stats Row */}
                         <div className="flex items-center gap-3 sm:gap-4 mt-3 overflow-x-auto hide-scrollbar">
                           <div>
@@ -368,9 +366,9 @@ function ManageAuctionPage() {
               })
             )}
             {editTeamId && (
-              <TeamFormModal 
-                auctionId={auction.id} 
-                team={teams.find((t) => t.id === editTeamId)} 
+              <TeamFormModal
+                auctionId={auction.id}
+                team={teams.find((t) => t.id === editTeamId)}
                 open={!!editTeamId}
                 onOpenChange={(open) => !open && setEditTeamId(null)}
               />
@@ -381,7 +379,7 @@ function ManageAuctionPage() {
 
         {activeTab === "PLAYERS" && (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-end">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
                 onClick={handleSharePlayerForm}
                 variant="outline"
@@ -410,7 +408,7 @@ function ManageAuctionPage() {
                     open={previewPlayerId === player.id}
                     onOpenChange={(open) => !open && setPreviewPlayerId(null)}
                     trigger={
-                      <button 
+                      <button
                         className="flex flex-1 items-center gap-4 sm:gap-5 text-left hover:opacity-90 transition-opacity min-w-0 pr-8"
                         onClick={() => setPreviewPlayerId(player.id)}
                       >
@@ -503,7 +501,7 @@ function ManageAuctionPage() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => { if(teamToDelete) { deleteTeam(teamToDelete); toast.success("Team deleted"); } }}
+              onClick={() => { if (teamToDelete) { deleteTeam(teamToDelete); toast.success("Team deleted"); } }}
               className="rounded-full bg-destructive hover:bg-destructive/90 text-white"
             >
               Delete
@@ -526,7 +524,7 @@ function ManageAuctionPage() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => { if(playerToDelete) { deletePlayer(playerToDelete); toast.success("Player deleted"); } }}
+              onClick={() => { if (playerToDelete) { deletePlayer(playerToDelete); toast.success("Player deleted"); } }}
               className="rounded-full bg-destructive hover:bg-destructive/90 text-white"
             >
               Delete

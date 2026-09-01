@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,12 @@ import { FallbackImage } from "@/components/ui/fallback-image";
 import { CurrentPlayerCard } from "@/components/auction/CurrentPlayerCard";
 import { TeamBidCard } from "@/components/auction/TeamBidCard";
 import { useTeams } from "@/hooks/useTeams";
-import { usePlayers } from "@/hooks/usePlayers";
-import { auctionDetailQueryOptions } from "@/lib/queries/auctions";
+import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
 import { authClient } from "@/lib/auth-client";
 import { computeTeamStats } from "@/lib/team-stats";
+import { exportAuctionPDF } from "@/lib/pdf-export";
 import type { Player, Team } from "@/lib/auction-client";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,12 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/auctioneer
       throw redirect({ to: "/my-auctions" });
     }
 
+    // Preload teams and players concurrently for zero-latency instant rendering
+    void Promise.all([
+      context.queryClient.prefetchQuery(teamsQueryOptions(params.id)),
+      context.queryClient.prefetchQuery(playersQueryOptions(params.id)),
+    ]);
+
     return { auction };
   },
   component: AuctioneerConsole,
@@ -47,6 +55,8 @@ function AuctioneerConsole() {
   const { auction } = Route.useLoaderData();
   const { mode: modeParam } = Route.useSearch();
   const mode: "trial" | "live" = modeParam ?? (auction.status === "live" ? "live" : "trial");
+
+  useRealtimeUpdates(auction.id);
 
   const { teams, isPending: teamsPending } = useTeams(auction.id);
   const { players, isPending: playersPending, updatePlayer, refetch: refetchPlayers } = usePlayers(auction.id);
@@ -59,6 +69,7 @@ function AuctioneerConsole() {
   const [pickerQuery, setPickerQuery] = useState("");
   const [trialOverrides, setTrialOverrides] = useState<Record<string, TrialOverride>>({});
   const [shuffledIds, setShuffledIds] = useState<string[]>([]);
+  const [replacedPlayerId, setReplacedPlayerId] = useState<string | null>(null);
   const [viewingTeamId, setViewingTeamId] = useState<string | null>(null);
   const [hasPromptedReset, setHasPromptedReset] = useState(false);
   const [lastSoldTeamId, setLastSoldTeamId] = useState<string | null>(null);
@@ -124,7 +135,7 @@ function AuctioneerConsole() {
       targetPlayerId = actionHistory[actionHistory.length - 1] ?? null;
     } else {
       // Fallback: find the non-pending player with the latest updatedAt
-      const nonPending = players.filter(
+      const nonPending = effectivePlayers.filter(
         (p) => effectiveStatus(p) === "sold" || effectiveStatus(p) === "unsold"
       );
       if (nonPending.length > 0) {
@@ -140,19 +151,21 @@ function AuctioneerConsole() {
       return;
     }
 
-    const playerToUndo = players.find((p) => p.id === targetPlayerId);
+    const playerToUndo = effectivePlayers.find((p) => p.id === targetPlayerId);
     if (!playerToUndo) {
       toast.error("Player not found for undo.");
       return;
     }
 
-    const previousTeamId = mode === "live" 
-      ? playerToUndo.teamId 
-      : (trialOverrides[targetPlayerId]?.teamId ?? playerToUndo.teamId);
+    const previousTeamId = playerToUndo.teamId;
+    const previousSoldPrice = playerToUndo.soldPrice;
 
-    const previousSoldPrice = mode === "live"
-      ? playerToUndo.soldPrice
-      : (trialOverrides[targetPlayerId]?.soldPrice ?? playerToUndo.soldPrice);
+    // Immediately remove local override so UI updates instantly
+    setTrialOverrides((prev) => {
+      const next = { ...prev };
+      delete next[targetPlayerId!];
+      return next;
+    });
 
     if (mode === "live") {
       const toastId = toast.loading(`Undoing last action for ${playerToUndo.name}...`);
@@ -163,15 +176,10 @@ function AuctioneerConsole() {
         });
         toast.success(`Undid last action. ${playerToUndo.name} is now pending.`, { id: toastId });
       } catch (error) {
-        toast.error("Failed to undo last action.", { id: toastId });
+        toast.error("Failed to undo last action in database.", { id: toastId });
         return;
       }
     } else {
-      setTrialOverrides((prev) => {
-        const next = { ...prev };
-        delete next[targetPlayerId!];
-        return next;
-      });
       toast.success(`Undid last action. ${playerToUndo.name} is now pending.`);
     }
 
@@ -185,51 +193,42 @@ function AuctioneerConsole() {
   }
 
   async function handleResetAllPlayers() {
+    setCurrentPlayerId(null);
+    setSelectedTeamId(null);
+    setLastSoldTeamId(null);
+    setCurrentBid(auction.minimumBid);
+    setSelectionMode("random");
+    setActionHistory([]);
+    setShuffledIds([]);
+    setReplacedPlayerId(null);
+    setTrialOverrides({});
+
     if (mode === "live") {
       const soldOrUnsold = players.filter(
         (p) => p.auctionRoundStatus === "sold" || p.auctionRoundStatus === "unsold"
       );
-      if (soldOrUnsold.length === 0) return;
-      
-      const toastId = toast.loading("Resetting all players back to pending...");
-      try {
-        await Promise.all(
-          soldOrUnsold.map((p) =>
-            updatePlayer({
-              id: p.id,
-              patch: { teamId: null, soldPrice: null, auctionRoundStatus: "pending" },
-            })
-          )
-        );
-        toast.success("Auction reset successfully! All players are now pending.", { id: toastId });
-        setCurrentPlayerId(null);
-        setSelectedTeamId(null);
-        setActionHistory([]);
-      } catch (error) {
-        toast.error("Failed to reset some players.", { id: toastId });
+      if (soldOrUnsold.length > 0) {
+        const toastId = toast.loading("Resetting all players back to pending in database...");
+        try {
+          await Promise.all(
+            soldOrUnsold.map((p) =>
+              updatePlayer({
+                id: p.id,
+                patch: { teamId: null, soldPrice: null, auctionRoundStatus: "pending" },
+              })
+            )
+          );
+          toast.success("Auction reset successfully! All players are now pending.", { id: toastId });
+        } catch (error) {
+          toast.error("Failed to reset some players in database.", { id: toastId });
+        }
+      } else {
+        toast.success("Auction reset! All selection states cleared.");
       }
     } else {
-      setTrialOverrides({});
-      setCurrentPlayerId(null);
-      setSelectedTeamId(null);
-      setActionHistory([]);
       toast.success("Trial session cleared successfully!");
     }
   }
-
-  // Automatically reset on mount (refresh / reopen) if there are already sold/unsold players
-  useEffect(() => {
-    if (playersPending || players.length === 0 || hasPromptedReset) return;
-
-    setHasPromptedReset(true);
-
-    const hasSoldOrUnsold = players.some(
-      (p) => effectiveStatus(p) === "sold" || effectiveStatus(p) === "unsold"
-    );
-    if (hasSoldOrUnsold) {
-      handleResetAllPlayers();
-    }
-  }, [players, playersPending, hasPromptedReset, mode]);
 
   function getNextAvailableTeamId(fromTeamId: string): string | null {
     if (orderedTeams.length === 0) return null;
@@ -271,96 +270,181 @@ function AuctioneerConsole() {
     return Infinity;
   }
 
+  function shuffleArray<T>(array: T[]): T[] {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = copy[i] as T;
+      copy[i] = copy[j] as T;
+      copy[j] = temp;
+    }
+    return copy;
+  }
+
+  function createShuffledQueue(
+    pendingList: Player[],
+    excludeId?: string,
+    deprioritizeId?: string | null
+  ): string[] {
+    const pool = excludeId ? pendingList.filter((p) => p.id !== excludeId) : pendingList;
+    const priorityPending = pool.filter((p) => getSpecialPriority(p.name) !== Infinity);
+    const nonPriorityPending = pool.filter((p) => getSpecialPriority(p.name) === Infinity);
+
+    const shuffledPriority = shuffleArray(priorityPending.map((p) => p.id));
+    const shuffledNonPriority = shuffleArray(nonPriorityPending.map((p) => p.id));
+
+    const combined = [...shuffledPriority, ...shuffledNonPriority];
+
+    // If the deprioritized player (visible before manual selection) is at index 0 and others exist, swap them away
+    if (deprioritizeId && combined.length > 1 && combined[0] === deprioritizeId) {
+      const swapIndex = 1 + Math.floor(Math.random() * (combined.length - 1));
+      const temp = combined[0]!;
+      combined[0] = combined[swapIndex]!;
+      combined[swapIndex] = temp;
+    }
+
+    return combined;
+  }
+
+  function reshuffleQueue(excludeId?: string, deprioritizeId?: string | null) {
+    const currentPending = players.filter((p) => effectiveStatus(p) === "pending");
+    const newQueue = createShuffledQueue(currentPending, excludeId, deprioritizeId ?? replacedPlayerId);
+    setShuffledIds(newQueue);
+    return newQueue;
+  }
+
   // Keep shuffled queue synchronized with pending players
   useEffect(() => {
     if (playersPending) return;
     const pending = players.filter((p) => effectiveStatus(p) === "pending");
-    const pendingIds = pending.map((p) => p.id);
-    
+    const pendingIdsSet = new Set(pending.map((p) => p.id));
+
     setShuffledIds((prev) => {
-      // Find priority players that are still pending
-      const priorityPending = pending.filter((p) => getSpecialPriority(p.name) !== Infinity);
-      const priorityPendingIds = priorityPending.map((p) => p.id);
-      
-      // Filter existing queue to only keep pending priority player IDs
-      const filteredQueuePriority = prev.filter((id) => priorityPendingIds.includes(id));
-      
-      // Find new priority players that aren't in the queue yet
-      const newPriorityIds = priorityPendingIds.filter(
-        (id) => !filteredQueuePriority.includes(id)
-      );
-      
-      // Shuffle new additions
-      const shuffledNewPriority = [...newPriorityIds];
-      for (let i = shuffledNewPriority.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = shuffledNewPriority[i] as string;
-        shuffledNewPriority[i] = shuffledNewPriority[j] as string;
-        shuffledNewPriority[j] = temp;
+      // If queue is empty and we have pending players, build full shuffled queue
+      if (prev.length === 0 && pending.length > 0) {
+        return createShuffledQueue(pending, currentPlayerId || undefined, replacedPlayerId);
       }
-      
-      const finalPriorityQueue = [...filteredQueuePriority, ...shuffledNewPriority];
-      
-      // Non-priority pending player IDs
-      const nonPriorityPendingIds = pendingIds.filter((id) => !priorityPendingIds.includes(id));
-      
-      // Filter existing queue to only keep pending non-priority player IDs
-      const filteredQueueNonPriority = prev.filter((id) => nonPriorityPendingIds.includes(id));
-      
-      // Find new non-priority players that aren't in the queue yet
-      const newNonPriorityIds = nonPriorityPendingIds.filter(
-        (id) => !filteredQueueNonPriority.includes(id)
-      );
-      
-      // Shuffle new additions
-      const shuffledNewNonPriority = [...newNonPriorityIds];
-      for (let i = shuffledNewNonPriority.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = shuffledNewNonPriority[i] as string;
-        shuffledNewNonPriority[i] = shuffledNewNonPriority[j] as string;
-        shuffledNewNonPriority[j] = temp;
+      // Filter out any IDs that are no longer pending
+      const valid = prev.filter((id) => pendingIdsSet.has(id));
+      // If new pending players appeared that aren't in queue, append them shuffled
+      const missing = pending.filter((p) => !valid.includes(p.id) && p.id !== currentPlayerId);
+      if (missing.length > 0) {
+        return [...valid, ...createShuffledQueue(missing, undefined, replacedPlayerId)];
       }
-      
-      const finalNonPriorityQueue = [...filteredQueueNonPriority, ...shuffledNewNonPriority];
-      
-      // Priority player IDs go first, then the remaining shuffled non-priority queue
-      return [...finalPriorityQueue, ...finalNonPriorityQueue];
+      return valid;
     });
-  }, [players, playersPending, mode, trialOverrides]);
+  }, [players, playersPending, mode, trialOverrides, currentPlayerId, replacedPlayerId]);
 
   // Helper to advance to the next player in the shuffled queue
   function advanceShuffledPlayer(currentId: string, soldTeamId?: string | null) {
+    setSelectionMode("random");
+    const nextPending = players.filter(
+      (p) =>
+        p.id !== currentId &&
+        effectiveStatus(p) === "pending" &&
+        trialOverrides[p.id]?.auctionRoundStatus !== "sold" &&
+        trialOverrides[p.id]?.auctionRoundStatus !== "unsold"
+    );
     const nextQueue = shuffledIds.filter((id) => id !== currentId);
-    setShuffledIds(nextQueue);
-    
-    const nextPending = pendingPlayers.filter((p) => p.id !== currentId);
-    if (nextQueue.length > 0 && nextPending.length > 0) {
-      // Find the first player from nextQueue that is still pending
-      const nextId = nextQueue.find((id) => nextPending.some((p) => p.id === id));
-      const nextPlayer = players.find((p) => p.id === nextId);
-      if (nextPlayer) {
-        startNewLot(nextPlayer, soldTeamId);
-        return;
+
+    if (nextPending.length === 0) {
+      setCurrentPlayerId(null);
+      setSelectedTeamId(null);
+      setReplacedPlayerId(null);
+      return;
+    }
+
+    // Find the next candidate ID from nextQueue
+    let candidateId = nextQueue.find((id) => nextPending.some((p) => p.id === id));
+
+    // If candidate is the player who was visible right before manual selection and other pending players exist, skip to another player
+    if (replacedPlayerId && candidateId === replacedPlayerId && nextPending.length > 1) {
+      const alternateId = nextQueue.find(
+        (id) => id !== replacedPlayerId && nextPending.some((p) => p.id === id)
+      );
+      if (alternateId) {
+        candidateId = alternateId;
+      } else {
+        const alternate = nextPending.find((p) => p.id !== replacedPlayerId);
+        if (alternate) candidateId = alternate.id;
       }
     }
-    
-    // Fallback if queue is empty or player not found
-    setCurrentPlayerId(null);
-    setSelectedTeamId(null);
+
+    let nextPlayer = candidateId ? players.find((p) => p.id === candidateId) : null;
+
+    if (!nextPlayer) {
+      const freshQueue = createShuffledQueue(nextPending, undefined, replacedPlayerId);
+      const nextId = freshQueue[0];
+      nextPlayer = players.find((p) => p.id === nextId) ?? null;
+      setShuffledIds(freshQueue.filter((id) => id !== nextId));
+    } else {
+      setShuffledIds(nextQueue.filter((id) => id !== nextPlayer!.id));
+    }
+
+    // Clear replacedPlayerId once we advance
+    setReplacedPlayerId(null);
+
+    if (nextPlayer) {
+      startNewLot(nextPlayer, soldTeamId);
+    } else {
+      setCurrentPlayerId(null);
+      setSelectedTeamId(null);
+    }
   }
 
   function effectiveStatus(player: Player): AuctionRoundStatus {
-    if (mode === "live") return player.auctionRoundStatus;
-    return trialOverrides[player.id]?.auctionRoundStatus ?? "pending";
+    return trialOverrides[player.id]?.auctionRoundStatus ?? player.auctionRoundStatus ?? "pending";
   }
 
-  const effectivePlayers: Player[] =
-    mode === "live"
-      ? players
-      : players.map((p) => {
-          const override = trialOverrides[p.id];
-          return override ? { ...p, teamId: override.teamId, soldPrice: override.soldPrice } : p;
-        });
+  const effectivePlayers: Player[] = players.map((p) => {
+    const override = trialOverrides[p.id];
+    return override
+      ? {
+          ...p,
+          teamId: override.teamId !== undefined ? override.teamId : p.teamId,
+          soldPrice: override.soldPrice !== undefined ? override.soldPrice : p.soldPrice,
+          auctionRoundStatus: override.auctionRoundStatus || p.auctionRoundStatus,
+        }
+      : p;
+  });
+
+  const teamStatsMap = useMemo(() => {
+    const teamSoldPlayersMap = new Map<string, Player[]>();
+    for (const p of effectivePlayers) {
+      if (p.teamId && (p.auctionRoundStatus === "sold" || ((p.soldPrice ?? 0) > 0))) {
+        const list = teamSoldPlayersMap.get(p.teamId) || [];
+        list.push(p);
+        teamSoldPlayersMap.set(p.teamId, list);
+      }
+    }
+
+    const map = new Map<string, ReturnType<typeof computeTeamStats>>();
+    for (const team of teams) {
+      const teamPlayers = teamSoldPlayersMap.get(team.id) || [];
+      let usedPoints = 0;
+      for (const p of teamPlayers) {
+        if (p.soldPrice) usedPoints += p.soldPrice;
+      }
+      const totalPoints = auction.pointsPerTeam;
+      const availablePoints = Math.max(0, totalPoints - usedPoints);
+      const totalPlayers = teamPlayers.length;
+      const reservedPlayers = Math.max(0, auction.playersPerTeam - totalPlayers);
+      const maxBidPoints =
+        reservedPlayers > 0
+          ? Math.min(auction.maxBid ?? 30000, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
+          : 0;
+
+      map.set(team.id, {
+        usedPoints,
+        totalPoints,
+        availablePoints,
+        totalPlayers,
+        reservedPlayers,
+        maxBidPoints: maxBidPoints > 0 ? maxBidPoints : 0,
+      });
+    }
+    return map;
+  }, [teams, effectivePlayers, auction]);
 
   const pendingPlayers = players.filter((p) => effectiveStatus(p) === "pending");
   const soldCount = players.filter((p) => effectiveStatus(p) === "sold").length;
@@ -370,7 +454,7 @@ function AuctioneerConsole() {
   function startNewLot(player: Player, soldTeamId?: string | null) {
     setCurrentPlayerId(player.id);
     setCurrentBid(auction.minimumBid);
-    
+
     const referenceTeamId = soldTeamId !== undefined ? soldTeamId : lastSoldTeamId;
     if (referenceTeamId && teams.length > 0) {
       setSelectedTeamId(referenceTeamId);
@@ -380,20 +464,49 @@ function AuctioneerConsole() {
   }
 
   function handleNewPlayer() {
-    if (pendingPlayers.length === 0) {
+    if (selectionMode === "random" && currentPlayer) {
+      toast.warning("A player is already on the auction block. Please mark them as Sold or Unsold first.");
+      return;
+    }
+
+    const availablePending = currentPlayerId
+      ? pendingPlayers.filter((p) => p.id !== currentPlayerId)
+      : pendingPlayers;
+
+    if (availablePending.length === 0) {
       toast.info("No more players available.");
       return;
     }
     if (selectionMode === "random") {
-      // Pick the first player from the shuffled queue!
-      const nextId = shuffledIds.find((id) => pendingPlayers.some((p) => p.id === id));
-      const next = players.find((p) => p.id === nextId);
+      let candidateId = shuffledIds.find((id) => availablePending.some((p) => p.id === id));
+
+      if (replacedPlayerId && candidateId === replacedPlayerId && availablePending.length > 1) {
+        const alternateId = shuffledIds.find(
+          (id) => id !== replacedPlayerId && availablePending.some((p) => p.id === id)
+        );
+        if (alternateId) {
+          candidateId = alternateId;
+        } else {
+          const alternate = availablePending.find((p) => p.id !== replacedPlayerId);
+          if (alternate) candidateId = alternate.id;
+        }
+      }
+
+      let next = candidateId ? players.find((p) => p.id === candidateId) : null;
+
+      if (!next) {
+        const freshQueue = createShuffledQueue(availablePending, undefined, replacedPlayerId);
+        const nextId = freshQueue[0];
+        next = players.find((p) => p.id === nextId) ?? null;
+        setShuffledIds(freshQueue.filter((id) => id !== nextId));
+      } else {
+        setShuffledIds((prev) => prev.filter((id) => id !== next!.id));
+      }
+
+      setReplacedPlayerId(null);
+
       if (next) {
         startNewLot(next);
-      } else {
-        // Fallback random index
-        const fallback = pendingPlayers[Math.floor(Math.random() * pendingPlayers.length)];
-        if (fallback) startNewLot(fallback);
       }
     } else {
       setPickerOpen(true);
@@ -410,53 +523,72 @@ function AuctioneerConsole() {
       toast.error("Select a team first.");
       return;
     }
-    // Guard here too (not just in TeamBidCard's disabled state) since Trial
-    // Mode never reaches the backend's own roster-cap check.
+    // Guard roster count
     const selectedTeam = teams.find((t) => t.id === selectedTeamId);
-    if (selectedTeam && computeTeamStats(selectedTeam, effectivePlayers, auction).reservedPlayers <= 0) {
+    const selectedTeamStats = teamStatsMap.get(selectedTeamId);
+    if (selectedTeam && selectedTeamStats && selectedTeamStats.reservedPlayers <= 0) {
       toast.error(`${selectedTeam.name} already has the maximum ${auction.playersPerTeam} players.`);
       return;
     }
+
+    const soldId = currentPlayer.id;
+    const soldPrice = currentBid;
+    const teamId = selectedTeamId;
+
+    // Apply immediate local state update so live mode works with the same instant responsiveness as trial mode
+    setTrialOverrides((prev) => ({
+      ...prev,
+      [soldId]: { teamId, soldPrice, auctionRoundStatus: "sold" },
+    }));
+
     if (mode === "live") {
-      try {
-        await updatePlayer({
-          id: currentPlayer.id,
-          patch: { teamId: selectedTeamId, soldPrice: currentBid, auctionRoundStatus: "sold" },
+      updatePlayer({
+        id: soldId,
+        patch: { teamId, soldPrice, auctionRoundStatus: "sold" },
+      }).catch((error) => {
+        // Revert local override if backend fails
+        setTrialOverrides((prev) => {
+          const next = { ...prev };
+          delete next[soldId];
+          return next;
         });
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to record sale.");
-        return;
-      }
-    } else {
-      setTrialOverrides((prev) => ({
-        ...prev,
-        [currentPlayer.id]: { teamId: selectedTeamId, soldPrice: currentBid, auctionRoundStatus: "sold" },
-      }));
+        toast.error(error instanceof Error ? error.message : "Failed to record sale in database.");
+      });
     }
-    toast.success(`${currentPlayer.name} sold to ${selectedTeam?.name || "Team"} for 🪙 ${currentBid.toLocaleString()}.`);
-    setLastSoldTeamId(selectedTeamId);
-    setActionHistory((prev) => [...prev, currentPlayer.id]);
-    advanceShuffledPlayer(currentPlayer.id, selectedTeamId);
+
+    toast.success(`${currentPlayer.name} sold to ${selectedTeam?.name || "Team"} for 🪙 ${soldPrice.toLocaleString()}.`);
+    setLastSoldTeamId(teamId);
+    setActionHistory((prev) => [...prev, soldId]);
+    advanceShuffledPlayer(soldId, teamId);
   }
 
   async function handleUnsold() {
     if (!currentPlayer) return;
+    const unsoldId = currentPlayer.id;
+
+    // Apply immediate local state update
+    setTrialOverrides((prev) => ({
+      ...prev,
+      [unsoldId]: { teamId: null, soldPrice: null, auctionRoundStatus: "unsold" },
+    }));
+
     if (mode === "live") {
-      try {
-        await updatePlayer({ id: currentPlayer.id, patch: { auctionRoundStatus: "unsold" } });
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to mark unsold.");
-        return;
-      }
-    } else {
-      setTrialOverrides((prev) => ({
-        ...prev,
-        [currentPlayer.id]: { teamId: null, soldPrice: null, auctionRoundStatus: "unsold" },
-      }));
+      updatePlayer({
+        id: unsoldId,
+        patch: { teamId: null, soldPrice: null, auctionRoundStatus: "unsold" },
+      }).catch((error) => {
+        setTrialOverrides((prev) => {
+          const next = { ...prev };
+          delete next[unsoldId];
+          return next;
+        });
+        toast.error(error instanceof Error ? error.message : "Failed to mark unsold in database.");
+      });
     }
+
     toast.info(`${currentPlayer.name} marked unsold.`);
-    setActionHistory((prev) => [...prev, currentPlayer.id]);
-    advanceShuffledPlayer(currentPlayer.id, null);
+    setActionHistory((prev) => [...prev, unsoldId]);
+    advanceShuffledPlayer(unsoldId, null);
   }
 
   const pendingPriorityPlayers = pendingPlayers.filter(
@@ -497,6 +629,19 @@ function AuctioneerConsole() {
         />
         <h1 className="flex-1 truncate text-xl font-black tracking-tight text-[#fffcf7]">{auction.name}</h1>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              exportAuctionPDF(auction, effectivePlayers, orderedTeams.length > 0 ? orderedTeams : teams);
+              toast.success("Auction PDF Report downloaded!");
+            }}
+            className="h-9 px-3 rounded-xl border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            title="Download Full Auction Summary PDF"
+          >
+            <FileText className="size-4" />
+            <span className="hidden sm:inline">Export PDF</span>
+          </Button>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -567,7 +712,7 @@ function AuctioneerConsole() {
                 <TeamBidCard
                   key={team.id}
                   team={team}
-                  stats={computeTeamStats(team, effectivePlayers, auction)}
+                  stats={teamStatsMap.get(team.id) || computeTeamStats(team, effectivePlayers, auction)}
                   selected={selectedTeamId === team.id}
                   onSelect={() => handleTeamSelect(team.id)}
                   onViewPlayers={() => setViewingTeamId(team.id)}
@@ -630,7 +775,10 @@ function AuctioneerConsole() {
               <div className="flex gap-1 w-36">
                 <button
                   type="button"
-                  onClick={() => setSelectionMode("random")}
+                  onClick={() => {
+                    setSelectionMode("random");
+                    reshuffleQueue(currentPlayerId || undefined);
+                  }}
                   className={cn(
                     "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
                     selectionMode === "random"
@@ -659,7 +807,11 @@ function AuctioneerConsole() {
               </div>
             </div>
             <Button
-              className="rounded-xl px-5 h-9 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_15px_rgba(161,181,216,0.35)] shrink-0"
+              className={cn(
+                "rounded-xl px-5 h-9 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_15px_rgba(161,181,216,0.35)] shrink-0",
+                selectionMode === "random" && !!currentPlayer && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={selectionMode === "random" && !!currentPlayer}
               onClick={handleNewPlayer}
             >
               New Player
@@ -773,9 +925,22 @@ function AuctioneerConsole() {
                       key={p.id}
                       type="button"
                       onClick={() => {
+                        const previouslyVisibleId =
+                          currentPlayer &&
+                          effectiveStatus(currentPlayer) === "pending" &&
+                          currentPlayer.id !== p.id
+                            ? currentPlayer.id
+                            : null;
+
+                        if (previouslyVisibleId) {
+                          setReplacedPlayerId(previouslyVisibleId);
+                        }
+
                         startNewLot(p);
                         setPickerOpen(false);
                         setPickerQuery("");
+                        setSelectionMode("manual");
+                        reshuffleQueue(p.id, previouslyVisibleId);
                       }}
                       className="flex w-full items-center gap-2.5 rounded-2xl border border-[#5c6875]/35 bg-[#2e343a]/50 p-2 text-left hover:bg-[#2e343a] hover:border-[#a1b5d8] active:scale-[0.99] transition-all text-[#fffcf7] cursor-pointer group shadow-sm"
                     >
@@ -872,15 +1037,17 @@ function AuctioneerConsole() {
       <Dialog open={!!viewingStatusList} onOpenChange={(open) => { if (!open) setViewingStatusList(null); }}>
         <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
           <DialogHeader className="shrink-0">
-            <DialogTitle className="text-xl sm:text-2xl font-black border-b border-[#5c6875]/30 pb-3 capitalize text-[#fffcf7]">
-              {viewingStatusList === "pending" ? "Available" : viewingStatusList} Players ({
-                viewingStatusList === "pending"
-                  ? pendingPlayers.length
-                  : viewingStatusList === "sold"
-                    ? soldCount
-                    : unsoldCount
-              })
-            </DialogTitle>
+            <div className="flex items-center justify-between border-b border-[#5c6875]/30 pb-3">
+              <DialogTitle className="text-xl sm:text-2xl font-black capitalize text-[#fffcf7]">
+                {viewingStatusList === "pending" ? "Available" : viewingStatusList} Players ({
+                  viewingStatusList === "pending"
+                    ? pendingPlayers.length
+                    : viewingStatusList === "sold"
+                      ? soldCount
+                      : unsoldCount
+                })
+              </DialogTitle>
+            </div>
           </DialogHeader>
           
           <div className="flex-1 space-y-2.5 overflow-y-auto pr-1">

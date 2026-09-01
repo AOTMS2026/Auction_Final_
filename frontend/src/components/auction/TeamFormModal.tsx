@@ -18,7 +18,7 @@ import type { Team } from "@/lib/auction-client";
 
 type TeamFormModalProps = {
   auctionId: string;
-  team?: Team;
+  team?: Team | undefined;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -78,6 +78,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
         toast.success("Team updated successfully");
       } else {
         await createTeam({
+          auctionId,
           name,
           shortName,
           ownerName,

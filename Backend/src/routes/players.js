@@ -73,6 +73,7 @@ router.get(
       players = await Player.find({ auctionId })
         .select("-paymentImage -sportFields.originalPhoto")
         .sort({ createdAt: -1 })
+        .allowDiskUse(true)
         .lean();
     } catch (dbError) {
       console.error("[players-api] DB Error:", dbError);
@@ -165,7 +166,14 @@ router.patch(
   "/players/:id",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const player = await Player.findById(req.params.id).catch(() => null);
+    const rawId = req.params.id ? req.params.id.trim() : "";
+    let player = null;
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      player = await Player.findById(rawId).catch(() => null);
+    }
+    if (!player) {
+      player = await Player.findOne({ _id: rawId }).catch(() => null);
+    }
     if (!player) return res.status(404).json({ error: "Player not found" });
 
     const auction = await Auction.findById(player.auctionId).catch(() => null);
@@ -203,13 +211,23 @@ router.patch(
 
     // Perform validations before modifying the player object if we are assigning a team or if soldPrice/auctionRoundStatus is changing.
     const targetTeamId = req.body.teamId !== undefined ? req.body.teamId : player.teamId;
-    if (targetTeamId) {
+    const newStatus = req.body.auctionRoundStatus !== undefined ? req.body.auctionRoundStatus : player.auctionRoundStatus;
+
+    if (newStatus === "unsold" || newStatus === "pending") {
+      player.teamId = null;
+      player.soldPrice = null;
+      player.auctionRoundStatus = newStatus;
+    } else if (targetTeamId) {
       const currentTeamId = player.teamId ? player.teamId.toString() : null;
       const nextTeamId = targetTeamId ? targetTeamId.toString() : null;
 
       // 1. Enforce roster count check if team changes
       if (nextTeamId && nextTeamId !== currentTeamId) {
-        const rosterCount = await Player.countDocuments({ teamId: nextTeamId, _id: { $ne: player._id } });
+        const rosterCount = await Player.countDocuments({
+          teamId: nextTeamId,
+          _id: { $ne: player._id },
+          auctionRoundStatus: "sold",
+        });
         if (rosterCount >= auction.playersPerTeam) {
           return res
             .status(400)
@@ -219,7 +237,6 @@ router.patch(
 
       // 2. Validate sale budget constraints if a price is specified or updated
       const newPrice = req.body.soldPrice !== undefined ? req.body.soldPrice : player.soldPrice;
-      const newStatus = req.body.auctionRoundStatus !== undefined ? req.body.auctionRoundStatus : player.auctionRoundStatus;
 
       if (newStatus === "sold" && newPrice !== null && newPrice !== undefined) {
         if (newPrice < auction.minimumBid) {
@@ -228,7 +245,11 @@ router.patch(
             .json({ error: `Sale price (🪙 ${newPrice.toLocaleString()}) cannot be below the configured minimum bid (🪙 ${auction.minimumBid.toLocaleString()}).` });
         }
 
-        const otherPlayers = await Player.find({ teamId: targetTeamId, _id: { $ne: player._id } }).select("soldPrice");
+        const otherPlayers = await Player.find({
+          teamId: targetTeamId,
+          _id: { $ne: player._id },
+          auctionRoundStatus: "sold",
+        }).select("soldPrice");
         let usedPoints = 0;
         for (const op of otherPlayers) {
           if (op.soldPrice) usedPoints += op.soldPrice;
@@ -257,7 +278,7 @@ router.patch(
       }
     }
 
-    if (req.body.teamId !== undefined) {
+    if (req.body.teamId !== undefined && newStatus !== "unsold" && newStatus !== "pending") {
       player.teamId = req.body.teamId === null ? null : req.body.teamId;
     }
 

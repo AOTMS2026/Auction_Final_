@@ -82,6 +82,8 @@ function PlayerRegistrationPage() {
   const [jerseySize, setJerseySize] = useState("");
   const [jerseyName, setJerseyName] = useState("");
   const [trouserSize, setTrouserSize] = useState("");
+  const [position, setPosition] = useState("");
+  const [dominatedHand, setDominatedHand] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [sportFields, setSportFields] = useState<Record<string, any>>({});
 
@@ -210,16 +212,16 @@ function PlayerRegistrationPage() {
       canvas.height = 256;
       const ctx = canvas.getContext("2d");
       const img = imgRef.current;
-      
+
       if (ctx && img) {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, 256, 256);
-        
+
         const nW = img.naturalWidth;
         const nH = img.naturalHeight;
         let drawW = 288;
         let drawH = 288;
-        
+
         if (nW > nH) {
           drawH = 288;
           drawW = 288 * (nW / nH);
@@ -227,17 +229,17 @@ function PlayerRegistrationPage() {
           drawW = 288;
           drawH = 288 * (nH / nW);
         }
-        
+
         drawW *= zoom;
         drawH *= zoom;
-        
+
         const containerCenter = 144;
         const drawX = (containerCenter - drawW / 2) + dragOffset.x;
         const drawY = (containerCenter - drawH / 2) + dragOffset.y;
         const scale = 256 / 288;
-        
+
         ctx.drawImage(img, drawX * scale, drawY * scale, drawW * scale, drawH * scale);
-        
+
         const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
         setPhoto(croppedDataUrl);
         setCropImageSrc(null);
@@ -382,7 +384,7 @@ function PlayerRegistrationPage() {
       }}
     >
       <SiteHeader />
-      
+
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden">
         <img
@@ -395,16 +397,16 @@ function PlayerRegistrationPage() {
         <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#fffcf7] flex flex-col items-center">
           <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap">
             {auction.id === "6a8edaddd7ed74151dbafab3" && (
-              <img 
-                src={bniLogoImg} 
-                alt="BNI Logo" 
+              <img
+                src={bniLogoImg}
+                alt="BNI Logo"
                 className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-black p-2"
               />
             )}
             {auction.coverImage ? (
-              <img 
-                src={auction.coverImage} 
-                alt={auction.name} 
+              <img
+                src={auction.coverImage}
+                alt={auction.name}
                 className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl object-cover bg-muted shrink-0"
               />
             ) : (
@@ -413,9 +415,9 @@ function PlayerRegistrationPage() {
               </div>
             )}
             {auction.id === "6a8edaddd7ed74151dbafab3" && (
-              <img 
-                src={anotherImg} 
-                alt="Another Logo" 
+              <img
+                src={anotherImg}
+                alt="Another Logo"
                 className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-white p-2"
               />
             )}
@@ -656,14 +658,14 @@ function PlayerRegistrationPage() {
               <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
                 <h3 className="font-bold text-base text-[#fffcf7]">Membership Details</h3>
                 <div className="space-y-4">
-                  <RadioGroup 
-                    value={memberType} 
+                  <RadioGroup
+                    value={memberType}
                     onValueChange={(val) => {
                       setMemberType(val as "bni" | "family");
                       setChapterName("");
                       setBniName("");
                       setRelationship("");
-                    }} 
+                    }}
                     className="flex gap-6"
                     disabled={registerMutation.isPending}
                   >
@@ -752,10 +754,10 @@ function PlayerRegistrationPage() {
                   {paymentImage ? (
                     <div className="relative w-full max-w-sm group">
                       <img src={paymentImage} alt="Payment screenshot" className="rounded-2xl border border-[#5c6875]/40 object-contain w-full h-48 bg-[#162235] shadow-md" />
-                      <Button 
-                        type="button" 
-                        variant="destructive" 
-                        size="sm" 
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
                         className="absolute top-2 right-2 rounded-full opacity-90 hover:opacity-100 shadow-md"
                         onClick={() => setPaymentImage(null)}
                       >
@@ -764,8 +766,8 @@ function PlayerRegistrationPage() {
                     </div>
                   ) : (
                     <div>
-                      <Label 
-                        htmlFor="paymentImage" 
+                      <Label
+                        htmlFor="paymentImage"
                         className="flex flex-col items-center justify-center w-full h-32 rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235]/60 hover:bg-[#162235] hover:border-[#a1b5d8] transition-colors cursor-pointer"
                       >
                         <UploadCloud className="size-8 text-[#a1b5d8] mb-1.5" />
@@ -802,9 +804,9 @@ function PlayerRegistrationPage() {
           <DialogHeader>
             <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Crop Profile Photo</DialogTitle>
           </DialogHeader>
-          
+
           <div className="relative mt-4 flex items-center justify-center bg-[#2e343a]/40 p-6 rounded-2xl w-full border border-[#5c6875]/30">
-            <div 
+            <div
               className="relative size-72 rounded-full overflow-hidden border-4 border-[#a1b5d8] bg-black select-none cursor-move shadow-xl"
               onPointerDown={(e) => {
                 setIsDragging(true);
@@ -840,7 +842,7 @@ function PlayerRegistrationPage() {
               )}
             </div>
           </div>
-          
+
           <div className="w-full space-y-4 px-4 mt-4">
             <div className="flex items-center gap-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Zoom</span>
@@ -854,7 +856,7 @@ function PlayerRegistrationPage() {
                 className="w-full accent-[#a1b5d8] h-1.5 bg-[#2e343a] rounded-lg appearance-none cursor-pointer"
               />
             </div>
-            
+
             <div className="flex justify-end gap-3 pt-2">
               <Button
                 type="button"

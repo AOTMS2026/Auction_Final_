@@ -65,5 +65,6 @@ connectDB()
     console.error("[server] failed to start:", err.message);
     process.exit(1);
   });
-// Trigger watch reload to pick up new .env database URI
-// Trigger reload after npm install
+// Trigger watch reload to pick up team optimizations
+
+

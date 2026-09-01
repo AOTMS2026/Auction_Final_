@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { auctionClient, type Player, type PlayerInput } from "@/lib/auction-client";
 
 export const playersQueryKeys = {
@@ -6,13 +6,19 @@ export const playersQueryKeys = {
   list: (auctionId: string) => [...playersQueryKeys.all, auctionId] as const,
 };
 
+export function playersQueryOptions(auctionId: string) {
+  return queryOptions({
+    queryKey: playersQueryKeys.list(auctionId),
+    queryFn: () => auctionClient.getPlayers(auctionId),
+    staleTime: 30 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
 export function usePlayers(auctionId: string) {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
-    queryKey: playersQueryKeys.list(auctionId),
-    queryFn: () => auctionClient.getPlayers(auctionId),
-  });
+  const query = useQuery(playersQueryOptions(auctionId));
 
   const createMutation = useMutation({
     mutationFn: (input: PlayerInput) => auctionClient.createPlayer(input),

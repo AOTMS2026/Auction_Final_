@@ -10,18 +10,20 @@ export type ComputedTeamStats = {
 };
 
 export function computeTeamStats(team: Team, players: Player[], auction: Auction): ComputedTeamStats {
-  const teamPlayers = players.filter((p) => p.teamId === team.id);
+  const teamPlayers = players.filter(
+    (p) => p.teamId === team.id && (p.auctionRoundStatus === "sold" || ((p.soldPrice ?? 0) > 0))
+  );
   let usedPoints = 0;
   for (const p of teamPlayers) {
     if (p.soldPrice) usedPoints += p.soldPrice;
   }
   const totalPoints = auction.pointsPerTeam;
-  const availablePoints = totalPoints - usedPoints;
+  const availablePoints = Math.max(0, totalPoints - usedPoints);
   const totalPlayers = teamPlayers.length;
-  const reservedPlayers = auction.playersPerTeam - totalPlayers;
+  const reservedPlayers = Math.max(0, auction.playersPerTeam - totalPlayers);
   const maxBidPoints =
     reservedPlayers > 0
-      ? Math.min(auction.maxBid, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
+      ? Math.min(auction.maxBid ?? 30000, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
       : 0;
 
   return {

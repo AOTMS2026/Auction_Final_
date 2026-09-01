@@ -80,6 +80,7 @@ router.get(
       Auction.findById(auctionId).select("visibility createdBy").lean().catch(() => null),
       Team.find({ auctionId: new mongoose.Types.ObjectId(auctionId) })
         .sort({ createdAt: 1 })
+        .allowDiskUse(true)
         .lean()
         .catch(() => []),
     ]);
@@ -202,9 +203,10 @@ router.get(
         .select("visibility createdBy pointsPerTeam playersPerTeam maxBid minimumBid")
         .lean()
         .catch(() => null),
-      Player.find({ teamId: team._id, auctionId: team.auctionId })
+      Player.find({ teamId: team._id, auctionId: team.auctionId, auctionRoundStatus: "sold" })
         .select("soldPrice")
         .sort({ updatedAt: -1 })
+        .allowDiskUse(true)
         .lean()
         .catch(() => []),
     ]);
