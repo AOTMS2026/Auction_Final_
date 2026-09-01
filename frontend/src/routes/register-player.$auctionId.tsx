@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 import { auctionClient, PlayerInput } from "@/lib/auction-client";
 import { auctionDetailQueryOptions } from "@/lib/queries/auctions";
+import { usePlayers } from "@/hooks/usePlayers";
 import { SPORT_CONFIGS } from "@/lib/validations/player";
 import stadiumImg from "@/assets/stadium-band.jpg";
 import bniLogoImg from "@/assets/bni-logo.png";
@@ -148,6 +149,7 @@ function PlayerRegistrationPage() {
   const isJsc = auction.id === "6a8ed4afb1d04e719c5866a6";
 
   const [phoneError, setPhoneError] = useState("");
+  const { players } = usePlayers(auction.id);
 
   const registerMutation = useMutation({
     mutationFn: (input: PlayerInput) => auctionClient.registerPlayer(input),
@@ -268,6 +270,17 @@ function PlayerRegistrationPage() {
       toast.error("Please provide a valid name and exactly 10-digit phone number");
       return;
     }
+
+    const trimmedPhone = phone.trim();
+    const isDuplicate = players?.some(
+      (p) => p.phone?.trim() === trimmedPhone
+    );
+    if (isDuplicate) {
+      setPhoneError("Duplicate phone number not allowed! This number is already registered in this auction.");
+      toast.error("Duplicate phone number not allowed! This number is already registered in this auction.");
+      return;
+    }
+
     if (!age) {
       toast.error("Please provide your age");
       return;

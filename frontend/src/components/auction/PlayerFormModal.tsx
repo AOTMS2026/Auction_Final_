@@ -169,6 +169,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     if (open && !player) {
       setName("");
       setPhone("");
+      setPhoneError("");
       setAge("");
       setCategory("");
       setGender("");
@@ -190,17 +191,18 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setSoldPrice("");
       setSportFields({});
     } else if (open && player) {
-      setName(player.name);
-      setPhone(player.phone);
+      setName(player.name || "");
+      setPhone(player.phone || "");
+      setPhoneError("");
       setAge(player.age?.toString() || "");
-      setCategory(player.category);
-      setGender(player.gender || "");
-      setCity(player.city || "");
-      setPlayerLevel(player.playerLevel || "");
+      setCategory(player.category || "");
+      setGender(player.gender ? (player.gender.trim().charAt(0).toUpperCase() + player.gender.trim().slice(1).toLowerCase()) : "");
+      setCity(player.city ? player.city.trim().toLowerCase() : "");
+      setPlayerLevel(player.playerLevel ? (player.playerLevel.trim().charAt(0).toUpperCase() + player.playerLevel.trim().slice(1).toLowerCase()) : "");
       setPaymentMode(player.paymentMode || "");
       setUtrNumber(player.utrNumber || "");
       setPaymentImage(player.paymentImage || null);
-      setBaseValue(player.baseValue.toString());
+      setBaseValue(player.baseValue?.toString() || "0");
       
       const fetchFullDetails = async () => {
         setLoadingFullDetails(true);
@@ -218,10 +220,10 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
         }
       };
       fetchFullDetails();
-      setJerseySize(player.jerseySize);
-      setJerseyName(player.jerseyName);
-      setTrouserSize(player.trouserSize);
-      setCustomData(player.customData);
+      setJerseySize(player.jerseySize || "");
+      setJerseyName(player.jerseyName || "");
+      setTrouserSize(player.trouserSize || "");
+      setCustomData(player.customData || "");
       const rawHand = player.sportFields?.["Dominated Hand"] ||
         (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData || ""));
       setDominatedHand(normalizeHand(rawHand));
@@ -356,6 +358,16 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     e.preventDefault();
     if (!name.trim() || !phone.trim() || phone.trim().length !== 10) {
       toast.error("Please provide a valid name and exactly 10-digit phone number");
+      return;
+    }
+
+    const trimmedPhone = phone.trim();
+    const isDuplicate = players.some(
+      (p) => p.phone?.trim() === trimmedPhone && (!player || p.id !== player.id)
+    );
+    if (isDuplicate) {
+      setPhoneError("Duplicate phone number not allowed! This number is already registered in this auction.");
+      toast.error("Duplicate phone number not allowed! This number is already registered in this auction.");
       return;
     }
 
@@ -609,7 +621,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                       <SelectItem value="A" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">A</SelectItem>
                       <SelectItem value="B+" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">B+</SelectItem>
                       <SelectItem value="B" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">B</SelectItem>
-                      <SelectItem value="C" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">C</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -912,7 +923,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                         <SelectValue placeholder="Select Chapter" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                        {CHAPTERS.map((ch) => (
+                        {Array.from(new Set([...CHAPTERS, ...(chapterName ? [chapterName] : [])])).map((ch) => (
                           <SelectItem key={ch} value={ch} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
                             {ch}
                           </SelectItem>
@@ -943,7 +954,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                           <SelectValue placeholder="Select Chapter" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                          {CHAPTERS.map((ch) => (
+                          {Array.from(new Set([...CHAPTERS, ...(chapterName ? [chapterName] : [])])).map((ch) => (
                             <SelectItem key={ch} value={ch} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
                               {ch}
                             </SelectItem>

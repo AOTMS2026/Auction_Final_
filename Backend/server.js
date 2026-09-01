@@ -65,6 +65,7 @@ connectDB()
     console.error("[server] failed to start:", err.message);
     process.exit(1);
   });
-// Trigger watch reload to pick up team optimizations
+// Trigger watch reload to pick up team and player optimizations
+// Reloaded at: 2026-09-01T18:36:00.000Z
 
 

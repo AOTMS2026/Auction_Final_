@@ -113,9 +113,14 @@ router.post(
     }
 
     const trimmedPhone = phone.trim();
+    const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+    const phoneFilter = phoneDigits && phoneDigits !== trimmedPhone
+      ? { $in: [trimmedPhone, phoneDigits] }
+      : trimmedPhone;
+
     const existingPlayer = await Player.findOne({
       auctionId: new mongoose.Types.ObjectId(auctionId),
-      phone: trimmedPhone,
+      phone: phoneFilter,
     }).lean();
 
     if (existingPlayer) {
@@ -162,9 +167,14 @@ router.post(
     }
 
     const trimmedPhone = phone.trim();
+    const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+    const phoneFilter = phoneDigits && phoneDigits !== trimmedPhone
+      ? { $in: [trimmedPhone, phoneDigits] }
+      : trimmedPhone;
+
     const existingPlayer = await Player.findOne({
       auctionId: new mongoose.Types.ObjectId(auctionId),
-      phone: trimmedPhone,
+      phone: phoneFilter,
     }).lean();
 
     if (existingPlayer) {
@@ -222,10 +232,15 @@ router.patch(
 
     if (req.body.phone !== undefined && req.body.phone.trim() !== player.phone) {
       const trimmedPhone = req.body.phone.trim();
+      const phoneDigits = req.body.phone.replace(/\D/g, "").slice(-10);
+      const phoneFilter = phoneDigits && phoneDigits !== trimmedPhone
+        ? { $in: [trimmedPhone, phoneDigits] }
+        : trimmedPhone;
+
       const existingPlayer = await Player.findOne({
         _id: { $ne: player._id },
         auctionId: player.auctionId,
-        phone: trimmedPhone,
+        phone: phoneFilter,
       }).lean();
 
       if (existingPlayer) {
