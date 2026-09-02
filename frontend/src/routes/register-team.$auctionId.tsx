@@ -178,19 +178,30 @@ function PublicRegisterTeamPage() {
 
   if (success && auction) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div
+        className="min-h-screen text-[#ffffff] flex flex-col selection:bg-[#38bdf8] selection:text-[#ffffff]"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
+        }}
+      >
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-card rounded-2xl p-8 text-center card-shadow border border-border">
-            <div className="mx-auto size-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+          <div className="max-w-md w-full bg-[#162a34]/95 rounded-3xl p-8 text-center border-2 border-emerald-400 shadow-[0_20px_60px_rgba(15,35,45,0.9)] backdrop-blur-xl">
+            <div className="mx-auto size-16 bg-emerald-950/80 text-emerald-400 border-2 border-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
               <CheckCircle2 className="size-10" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Registration Complete!</h2>
-            <p className="text-muted-foreground mb-6">
-              You have successfully registered the team <strong>{name}</strong> for <strong>{auction.name}</strong>.
+            <h2 className="text-2xl font-black text-[#ffffff] mb-2 tracking-tight drop-shadow-sm">Registration Complete!</h2>
+            <p className="text-[#f2e9dc]/80 mb-6 font-medium">
+              You have successfully registered the team <strong className="text-[#38bdf8]">{name}</strong> for <strong className="text-[#38bdf8]">{auction.name}</strong>.
             </p>
             <div className="flex flex-col gap-3">
-              <Button onClick={() => setSuccess(false)} variant="outline">Register Another Team</Button>
+              <Button
+                onClick={() => setSuccess(false)}
+                className="w-full rounded-full py-3.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30"
+              >
+                Register Another Team
+              </Button>
             </div>
           </div>
         </main>
@@ -200,10 +211,10 @@ function PublicRegisterTeamPage() {
 
   return (
     <div
-      className="min-h-screen text-[#fffcf7] flex flex-col selection:bg-[#a1b5d8] selection:text-[#162235]"
+      className="min-h-screen text-[#ffffff] flex flex-col selection:bg-[#38bdf8] selection:text-[#ffffff]"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+          "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
       }}
     >
       <SiteHeader />
@@ -214,10 +225,10 @@ function PublicRegisterTeamPage() {
           src={auction?.coverImage || stadiumImg}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-50"
+          className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#171a1d]/80 via-[#171a1d]/90 to-[#171a1d]" />
-        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#fffcf7] flex flex-col items-center">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#142630]/80 via-[#142630]/90 to-[#142630]" />
+        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#ffffff] flex flex-col items-center">
           {isPending ? (
             <div className="flex flex-col items-center gap-4">
               <Skeleton className="size-24 sm:size-28 rounded-2xl bg-white/20" />
@@ -236,30 +247,30 @@ function PublicRegisterTeamPage() {
                   <img 
                     src={bniLogoImg} 
                     alt="BNI Logo" 
-                    className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-black p-2"
+                    className="h-24 sm:h-28 w-auto rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-contain bg-black p-2"
                   />
                 )}
                 {auction.coverImage ? (
                   <img 
                     src={auction.coverImage} 
                     alt={auction.name} 
-                    className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl object-cover bg-muted shrink-0"
+                    className="size-24 sm:size-28 rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-cover bg-muted shrink-0"
                   />
                 ) : (
-                  <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl bg-[#162235] flex items-center justify-center shrink-0">
-                    <span className="text-2xl sm:text-3xl font-black text-[#a1b5d8]">{auction.name.substring(0, 2).toUpperCase()}</span>
+                  <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl bg-[#142630] flex items-center justify-center shrink-0">
+                    <span className="text-2xl sm:text-3xl font-black text-[#38bdf8]">{auction.name.substring(0, 2).toUpperCase()}</span>
                   </div>
                 )}
                 {auction.id === "6a8edaddd7ed74151dbafab3" && (
                   <img 
                     src={anotherImg} 
                     alt="Another Logo" 
-                    className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-white p-2"
+                    className="h-24 sm:h-28 w-auto rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-contain bg-white p-2"
                   />
                 )}
               </div>
-              <h1 className="text-3xl font-black sm:text-5xl mb-3 tracking-tight drop-shadow-md uppercase text-[#fffcf7]">TEAM REGISTRATION</h1>
-              <p className="text-base sm:text-lg text-[#abb4bd] font-medium tracking-wide">Register your team for <span className="text-[#fffcf7] font-bold">{auction.name}</span></p>
+              <h1 className="text-3xl font-black sm:text-5xl mb-3 tracking-tight drop-shadow-md uppercase text-[#ffffff]">TEAM REGISTRATION</h1>
+              <p className="text-base sm:text-lg text-[#f2e9dc]/80 font-medium tracking-wide">Register your team for <span className="text-[#38bdf8] font-black">{auction.name}</span></p>
             </>
           )}
         </div>
@@ -267,20 +278,20 @@ function PublicRegisterTeamPage() {
 
       <main className="flex-1 mx-auto max-w-3xl w-full px-4 py-8 sm:py-10 -mt-6 relative z-10">
         {isPending ? (
-          <div className="space-y-6 bg-[#2e343a]/80 p-6 sm:p-8 rounded-3xl border border-[#5c6875]/30 card-shadow">
+          <div className="space-y-6 bg-[#162a34]/95 p-6 sm:p-8 rounded-3xl border-2 border-[#38bdf8]/40 card-shadow">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
         ) : isError || !auction ? (
-          <div className="bg-[#2e343a]/80 p-8 rounded-3xl border border-destructive/20 text-center card-shadow">
+          <div className="bg-[#162a34]/95 p-8 rounded-3xl border-2 border-destructive/40 text-center card-shadow">
             <p className="text-destructive font-medium">Please check the link and try again.</p>
           </div>
         ) : (
-          <div className="bg-[#2e343a]/80 backdrop-blur-xl rounded-3xl border border-[#5c6875]/30 shadow-[0_15px_45px_rgba(23,26,29,0.8)] overflow-hidden text-[#fffcf7]">
-            <div className="bg-[#171a1d]/60 border-b border-[#5c6875]/30 p-4 sm:p-6 text-center">
-              <p className="text-[#abb4bd] text-sm">
-                Register your team to participate in <strong className="text-[#fffcf7]">{auction.name}</strong>
+          <div className="bg-[#162a34]/95 backdrop-blur-xl rounded-3xl border-2 border-[#38bdf8]/40 shadow-[0_20px_60px_rgba(15,35,45,0.9)] overflow-hidden text-[#ffffff]">
+            <div className="bg-[#142630]/80 border-b border-[#38bdf8]/30 p-4 sm:p-6 text-center">
+              <p className="text-[#f2e9dc]/80 text-sm font-medium">
+                Register your team to participate in <strong className="text-[#38bdf8]">{auction.name}</strong>
               </p>
             </div>
 
@@ -300,23 +311,23 @@ function PublicRegisterTeamPage() {
                               setDragOffset({ x: 0, y: 0 });
                             }
                           }}
-                          className="relative flex size-32 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#a1b5d8]/40 bg-[#162235] hover:border-[#a1b5d8] transition-all group cursor-pointer shadow-md"
+                          className="relative flex size-32 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#38bdf8]/60 bg-[#142630] hover:border-[#38bdf8] transition-all group cursor-pointer shadow-md"
                           title="Crop / Zoom existing picture"
                         >
                           <img src={logo} alt="Team Logo" className="size-full object-cover" />
-                          <div className="absolute inset-0 bg-[#171a1d]/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Pencil className="size-6 text-[#a1b5d8] mb-0.5" />
-                            <span className="text-[10px] font-black text-[#fffcf7] uppercase tracking-wider">Crop/Zoom</span>
+                          <div className="absolute inset-0 bg-[#142630]/75 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Pencil className="size-6 text-[#38bdf8] mb-0.5" />
+                            <span className="text-[10px] font-black text-[#ffffff] uppercase tracking-wider">Crop/Zoom</span>
                           </div>
                         </button>
                       ) : (
                         <Label
                           htmlFor="team-logo"
-                          className="relative flex size-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235]/60 hover:bg-[#162235] hover:border-[#a1b5d8] transition-colors"
+                          className="relative flex size-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#38bdf8]/50 bg-[#142630]/70 hover:bg-[#142630] hover:border-[#38bdf8] transition-colors"
                         >
                           <div className="flex flex-col items-center justify-center space-y-2 p-4 text-center">
-                            <UploadCloud className="size-8 text-[#a1b5d8]" />
-                            <span className="text-[10px] text-[#abb4bd] uppercase tracking-wider font-bold">Upload Logo * (up to 10MB)</span>
+                            <UploadCloud className="size-8 text-[#38bdf8]" />
+                            <span className="text-[10px] text-[#38bdf8] uppercase tracking-wider font-bold">Upload Logo * (up to 10MB)</span>
                           </div>
                         </Label>
                       )}
@@ -334,7 +345,7 @@ function PublicRegisterTeamPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-xs text-[#a1b5d8] hover:text-[#fffcf7] font-bold hover:underline transition-colors mt-1"
+                        className="text-xs text-[#38bdf8] hover:text-[#ffffff] font-bold hover:underline transition-colors mt-1"
                       >
                         Upload New
                       </button>
@@ -344,7 +355,7 @@ function PublicRegisterTeamPage() {
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Team Name *</Label>
+                    <Label htmlFor="name" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Team Name *</Label>
                     <Input
                       id="name"
                       placeholder="e.g. Chennai Super Kings"
@@ -352,11 +363,11 @@ function PublicRegisterTeamPage() {
                       onChange={(e) => setName(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="shortName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Short Name (Code) *</Label>
+                    <Label htmlFor="shortName" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Short Name (Code) *</Label>
                     <Input
                       id="shortName"
                       placeholder="e.g. CSK"
@@ -365,11 +376,11 @@ function PublicRegisterTeamPage() {
                       disabled={registerMutation.isPending}
                       required
                       maxLength={5}
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ownerName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Owner/Franchisee Name *</Label>
+                    <Label htmlFor="ownerName" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Owner/Franchisee Name *</Label>
                     <Input
                       id="ownerName"
                       placeholder="e.g. N. Srinivasan"
@@ -377,11 +388,11 @@ function PublicRegisterTeamPage() {
                       onChange={(e) => setOwnerName(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ownerPhone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Contact Number *</Label>
+                    <Label htmlFor="ownerPhone" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Contact Number *</Label>
                     <Input
                       id="ownerPhone"
                       placeholder="e.g. 9876543210"
@@ -389,11 +400,11 @@ function PublicRegisterTeamPage() {
                       onChange={(e) => setOwnerPhone(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="colorTheme" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Team Color/Theme *</Label>
+                    <Label htmlFor="colorTheme" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Team Color/Theme *</Label>
                     <Input
                       id="colorTheme"
                       placeholder="e.g. Yellow & Blue"
@@ -401,7 +412,7 @@ function PublicRegisterTeamPage() {
                       onChange={(e) => setColorTheme(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                 </div>
@@ -410,7 +421,7 @@ function PublicRegisterTeamPage() {
               <div className="pt-4">
                 <Button
                   type="submit"
-                  className="w-full rounded-full py-4 h-auto font-black text-base text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_25px_rgba(161,181,216,0.4)] transition-all"
+                  className="w-full rounded-full py-4 h-auto font-black text-base text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30 cursor-pointer"
                   disabled={registerMutation.isPending}
                 >
                   {registerMutation.isPending ? (
@@ -428,12 +439,12 @@ function PublicRegisterTeamPage() {
 
       {/* Crop Dialog */}
       <Dialog open={!!cropImageSrc} onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}>
-        <DialogContent className="sm:max-w-md flex flex-col items-center rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6">
+        <DialogContent className="sm:max-w-md flex flex-col items-center rounded-3xl border-2 border-[#38bdf8]/40 bg-[#142630] text-[#ffffff] shadow-2xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Crop Team Logo</DialogTitle>
+            <DialogTitle className="text-xl font-black text-[#ffffff] tracking-tight">Crop Team Logo</DialogTitle>
           </DialogHeader>
           
-          <div className="mt-4 w-72 h-72 bg-black relative overflow-hidden rounded-2xl border-2 border-[#a1b5d8] cursor-move touch-none shadow-xl"
+          <div className="mt-4 w-72 h-72 bg-black relative overflow-hidden rounded-2xl border-4 border-[#38bdf8] cursor-move touch-none shadow-xl"
                onPointerDown={handlePointerDown}
                onPointerMove={handlePointerMove}
                onPointerUp={handlePointerUp}
@@ -456,7 +467,7 @@ function PublicRegisterTeamPage() {
           </div>
           
           <div className="w-full max-w-[288px] mt-6 flex items-center gap-4">
-            <span className="text-xs font-medium">Zoom</span>
+            <span className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Zoom</span>
             <Slider
               value={zoom}
               min={0.5}
@@ -468,8 +479,19 @@ function PublicRegisterTeamPage() {
           </div>
 
           <DialogFooter className="w-full sm:justify-between mt-6">
-            <Button variant="ghost" onClick={() => setCropImageSrc(null)}>Cancel</Button>
-            <Button onClick={performCrop}>Save Logo</Button>
+            <Button
+              variant="outline"
+              onClick={() => setCropImageSrc(null)}
+              className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#ffffff] hover:bg-[#1f3a47] font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={performCrop}
+              className="rounded-full px-6 py-2.5 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_15px_rgba(249,115,22,0.6)]"
+            >
+              Save Logo
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

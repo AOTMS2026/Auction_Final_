@@ -110,15 +110,15 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
         ) : !team ? (
           <Button
             size="icon"
-            className="fixed bottom-24 right-6 size-14 rounded-full shadow-xl sm:bottom-8 sm:right-10 bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] text-[#162235] hover:scale-105 transition-all shadow-[0_0_20px_rgba(161,181,216,0.4)] border border-[#fffcf7]/40 z-30"
+            className="fixed bottom-24 right-6 size-14 rounded-full shadow-2xl sm:bottom-8 sm:right-10 bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] text-[#ffffff] hover:scale-110 transition-all duration-300 shadow-[0_0_30px_rgba(249,115,22,0.7)] border-2 border-white/50 z-30"
           >
-            <Plus className="size-7 stroke-[2.5]" />
+            <Plus className="size-7 stroke-[3]" />
           </Button>
         ) : null}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6 sm:p-7">
+      <DialogContent className="sm:max-w-md rounded-3xl border-2 border-[#38bdf8]/40 bg-[#142630] text-[#ffffff] shadow-[0_20px_60px_rgba(10,25,32,0.95)] p-6 sm:p-7">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black text-[#fffcf7] tracking-tight">
+          <DialogTitle className="text-2xl font-black text-[#ffffff] tracking-tight">
             {team ? "Edit Team Details" : "Add New Team"}
           </DialogTitle>
         </DialogHeader>
@@ -199,23 +199,24 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
               value={colorTheme}
               onChange={(e) => setColorTheme(e.target.value)}
               disabled={isSubmitting}
-              className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+              className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#162a34]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8]"
             />
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#5c6875]/30">
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#38bdf8]/30">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
-              className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm"
+              className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#f2e9dc] hover:text-[#ffffff] hover:bg-[#203f4f] transition-all font-bold px-6 shadow-sm"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full px-6 py-2.5 h-auto font-black text-sm text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_20px_rgba(161,181,216,0.35)]"
+              className="rounded-full px-7 py-2.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30"
             >
               {isSubmitting ? (
                 <>

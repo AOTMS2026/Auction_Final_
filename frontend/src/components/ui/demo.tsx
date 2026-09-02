@@ -3,12 +3,12 @@ import { RobotHero } from "@/components/ui/robot-hero";
 const settings = {
   backgroundText: "AUCTION",
   subtitle: "Live cricket auction platform for real-time player bidding",
-  color: "#c7cdd3",
+  color: "#f2ede4",
   scale: 1,
-  pantallaColor: "#a1b5d8",
-  pantallaBrillo: 1.6,
+  pantallaColor: "#38bdf8",
+  pantallaBrillo: 2.6,
   blinkCycle: 3.0,
-  metalness: 0.3,
+  metalness: 0.25,
 };
 
 export function Demo(props: Partial<typeof settings>) {

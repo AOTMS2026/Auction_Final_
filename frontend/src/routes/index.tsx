@@ -165,15 +165,15 @@ function Index() {
 
   return (
     <div
-      className="min-h-screen text-[#fffcf7]"
+      className="min-h-screen text-[#f2e9dc]"
       style={{
-        background: "radial-gradient(ellipse at 50% 10%, #2e343a 0%, #171a1d 38%, #111417 75%, #0d0f11 100%)",
+        background: "radial-gradient(ellipse at 50% 10%, #1e3a45 0%, #162a32 35%, #122026 75%, #0e1619 100%)",
       }}
     >
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative isolate overflow-hidden border-b border-[#5c6875]/30">
+      <section className="relative isolate overflow-hidden border-b border-[#38bdf8]/30">
         <Demo />
       </section>
 
@@ -187,8 +187,8 @@ function Index() {
         className="mx-auto max-w-7xl px-4 py-20"
       >
         <div className="flex flex-col items-center justify-center text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#162235]/85 border border-[#a1b5d8]/40 text-[#a1b5d8] text-xs font-extrabold uppercase tracking-wider mb-3 shadow-[0_0_20px_rgba(161,181,216,0.25)]">
-            <span className="w-2 h-2 rounded-full bg-[#a1b5d8] animate-ping" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#162a32]/95 border-2 border-[#38bdf8]/60 text-[#ffffff] text-xs font-black uppercase tracking-wider mb-3 shadow-[0_0_25px_rgba(56,189,248,0.4)]">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#f97316] animate-ping" />
             Live Bidding Arena
           </div>
           <SectionHeading lead="Today's" highlight="Auctions" subtitle="Auctions going live on the platform right now." />
@@ -198,13 +198,13 @@ function Index() {
           {isPending ? (
             Array.from({ length: 3 }).map((_, i) => <AuctionCardSkeleton key={i} />)
           ) : isError ? (
-            <div className="col-span-full rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/75 backdrop-blur-xl p-8 text-center shadow-xl">
-              <p className="text-sm text-[#ecf0f7]">Failed to load auctions.</p>
+            <div className="col-span-full rounded-3xl border border-[#38bdf8]/30 bg-[#1e272b]/85 backdrop-blur-xl p-8 text-center shadow-xl">
+              <p className="text-sm text-[#ffffff]">Failed to load auctions.</p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => refetch()}
-                className="mt-4 border-[#a1b5d8]/50 bg-[#162235] text-[#fffcf7] hover:bg-[#2d436a]"
+                className="mt-4 border-2 border-[#38bdf8]/60 bg-[#162a32] text-[#ffffff] hover:bg-[#326a7a]"
               >
                 Try again
               </Button>
@@ -212,10 +212,10 @@ function Index() {
           ) : today.length > 0 ? (
             today.map((a) => <AuctionCard key={a.id} auction={a} />)
           ) : (
-            <div className="col-span-full rounded-3xl border border-[#5c6875]/30 bg-gradient-to-b from-[#2e343a]/50 to-[#171a1d]/80 backdrop-blur-xl p-12 text-center shadow-xl">
-              <Sparkles className="size-8 text-[#a1b5d8] mx-auto mb-3" />
-              <h4 className="text-lg font-black text-[#fffcf7]">No auctions live today</h4>
-              <p className="text-sm text-[#abb4bd] mt-1 max-w-md mx-auto">
+            <div className="col-span-full rounded-3xl border border-[#38bdf8]/30 bg-gradient-to-b from-[#1e343e]/70 to-[#122026]/90 backdrop-blur-xl p-12 text-center shadow-xl">
+              <Sparkles className="size-8 text-[#f97316] mx-auto mb-3" />
+              <h4 className="text-lg font-black text-[#ffffff]">No auctions live today</h4>
+              <p className="text-sm text-[#f2e9dc]/80 mt-1 max-w-md mx-auto">
                 Check out the upcoming tournaments below or be the first to launch today's live auction!
               </p>
             </div>
@@ -227,14 +227,14 @@ function Index() {
             <>
               <Link
                 to="/my-auctions/new"
-                className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-8 py-3.5 text-center font-black text-sm text-[#162235] shadow-[0_4px_25px_rgba(161,181,216,0.45)] transition-all hover:scale-105"
+                className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] px-8 py-3.5 text-center font-black text-sm text-[#ffffff] shadow-[0_4px_28px_rgba(249,115,22,0.6)] transition-all hover:scale-105 border border-[#ffffff]/35"
               >
                 <PlusCircle className="size-4.5" />
                 Create Auction
               </Link>
               <Link
                 to="/my-auctions"
-                className="inline-flex items-center gap-2 rounded-full border border-[#5c6875]/50 bg-[#171a1d]/90 hover:bg-[#2e343a] px-8 py-3.5 text-center font-bold text-sm text-[#abb4bd] hover:text-[#fffcf7] hover:border-[#a1b5d8]/60 shadow-sm transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a32]/95 hover:bg-[#204554] px-8 py-3.5 text-center font-extrabold text-sm text-[#ffffff] hover:border-[#ffffff] shadow-sm transition-all hover:scale-105"
               >
                 View My Auctions
               </Link>
@@ -244,7 +244,7 @@ function Index() {
               <Link
                 to="/auth"
                 search={{ next: "/my-auctions/new" }}
-                className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-8 py-3.5 text-center font-black text-sm text-[#162235] shadow-[0_4px_25px_rgba(161,181,216,0.45)] transition-all hover:scale-105"
+                className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] px-8 py-3.5 text-center font-black text-sm text-[#ffffff] shadow-[0_4px_28px_rgba(249,115,22,0.6)] transition-all hover:scale-105 border border-[#ffffff]/35"
               >
                 <PlusCircle className="size-4.5" />
                 Create Auction
@@ -252,7 +252,7 @@ function Index() {
               <Link
                 to="/auth"
                 search={{ next: "/my-auctions" }}
-                className="inline-flex items-center gap-2 rounded-full border border-[#5c6875]/50 bg-[#171a1d]/90 hover:bg-[#2e343a] px-8 py-3.5 text-center font-bold text-sm text-[#abb4bd] hover:text-[#fffcf7] hover:border-[#a1b5d8]/60 shadow-sm transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a32]/95 hover:bg-[#204554] px-8 py-3.5 text-center font-extrabold text-sm text-[#ffffff] hover:border-[#ffffff] shadow-sm transition-all hover:scale-105"
               >
                 View My Auctions
               </Link>

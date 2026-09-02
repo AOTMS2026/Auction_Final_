@@ -51,40 +51,40 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 shadow-[0_4px_30px_rgba(15,18,20,0.8)] transition-all duration-300">
+    <header className="sticky top-0 z-50 shadow-[0_6px_35px_rgba(15,35,45,0.7)] transition-all duration-300">
       {/* Top Banner (Mini Navbar) with smooth auto-hide on scroll down */}
       <div
         className={cn(
-          "bg-[#0f1214] text-[#abb4bd] text-xs border-b border-[#2e343a]/60 transition-all duration-300 ease-in-out overflow-hidden",
+          "bg-gradient-to-r from-[#172e38] via-[#20424f] to-[#172e38] text-[#f2e9dc] text-xs border-b border-[#38bdf8]/40 transition-all duration-300 ease-in-out overflow-hidden",
           hideMiniNav ? "max-h-0 opacity-0 py-0 border-transparent pointer-events-none" : "max-h-12 opacity-100 py-1.5"
         )}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4">
-          <p className="truncate font-medium tracking-wide text-[#abb4bd]">
+          <p className="truncate font-semibold tracking-wide text-[#f2e9dc]">
             World #1 cricket auction platform for local &amp; league player auctions
           </p>
           <a
             href="tel:+918019952233"
-            className="hidden items-center gap-1.5 text-[#a1b5d8] hover:text-[#fffcf7] transition-colors font-bold sm:flex"
+            className="hidden items-center gap-1.5 text-[#f97316] hover:text-[#ffffff] transition-colors font-extrabold sm:flex drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]"
           >
-            <Phone className="size-3.5" aria-hidden="true" />
+            <Phone className="size-3.5 text-[#f97316]" aria-hidden="true" />
             +91 80199-52233
           </a>
         </div>
       </div>
 
-      {/* Main Navbar Ribbon matching Slate Grey & Powder Blue Theme */}
+      {/* Main Navbar Ribbon matching Luminous Blue-Slate & Bright Linen Theme */}
       <div
-        className="relative border-b border-[#5c6875]/30 backdrop-blur-xl"
+        className="relative border-b border-[#38bdf8]/35 backdrop-blur-xl"
         style={{
           background:
-            "linear-gradient(135deg, rgba(23,26,29,0.95) 0%, rgba(28,34,39,0.95) 35%, rgba(46,52,58,0.95) 70%, rgba(22,34,53,0.95) 100%)",
+            "linear-gradient(135deg, rgba(20,40,48,0.98) 0%, rgba(30,58,70,0.97) 40%, rgba(50,106,122,0.97) 80%, rgba(38,82,98,0.98) 100%)",
         }}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-2.5">
-          {/* Logo with Curved Edge & Powder Blue Glow Border */}
+          {/* Logo with Curved Edge & Luminous Blue-Slate Glow Border */}
           <Link to="/" className="flex items-center gap-3 hover:opacity-95 transition-all group py-0.5">
-            <div className="relative p-1.5 rounded-2xl bg-[#162235]/90 backdrop-blur-md border-2 border-[#a1b5d8]/50 shadow-[0_0_20px_rgba(161,181,216,0.25)] group-hover:border-[#fffcf7] group-hover:shadow-[0_0_25px_rgba(255,252,247,0.35)] transition-all overflow-hidden flex items-center justify-center">
+            <div className="relative p-1.5 rounded-2xl bg-[#162e38]/95 backdrop-blur-md border-2 border-[#38bdf8]/80 shadow-[0_0_25px_rgba(56,189,248,0.5)] group-hover:border-[#f97316] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.7)] transition-all overflow-hidden flex items-center justify-center">
               <img
                 src="https://res.cloudinary.com/dlxveseav/image/upload/v1787290700/Super_Player_Auction/AOTMS%20%20logo.png"
                 alt="Logo"
@@ -94,20 +94,20 @@ export function SiteHeader() {
           </Link>
 
           {/* Nav Links */}
-          <nav className="hidden items-center gap-7 text-sm font-bold text-[#ecf0f7] lg:flex">
-            <Link to="/" className="hover:text-[#a1b5d8] transition-colors">
+          <nav className="hidden items-center gap-7 text-sm font-extrabold text-[#ffffff] lg:flex">
+            <Link to="/" className="hover:text-[#f97316] transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
               Home
             </Link>
             {anchors.map((a) => (
               <a
                 key={a.href}
                 href={a.href}
-                className="hover:text-[#a1b5d8] transition-colors"
+                className="hover:text-[#f97316] transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
               >
                 {a.label}
               </a>
             ))}
-            <Link to="/pricing" className="hover:text-[#a1b5d8] transition-colors">
+            <Link to="/pricing" className="hover:text-[#f97316] transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
               Pricing
             </Link>
           </nav>
@@ -118,36 +118,36 @@ export function SiteHeader() {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   aria-label="Account menu"
-                  className="rounded-full ring-offset-2 ring-offset-[#171a1d] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a1b5d8]"
+                  className="rounded-full ring-offset-2 ring-offset-[#172e38] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8]"
                 >
-                  <Avatar className="size-9 border-2 border-[#a1b5d8] shadow-sm">
+                  <Avatar className="size-9 border-2 border-[#38bdf8] shadow-[0_0_15px_rgba(56,189,248,0.4)]">
                     {user?.avatar && <AvatarImage src={user.avatar} alt="" />}
-                    <AvatarFallback className="bg-[#162235] text-sm font-black text-[#a1b5d8]">
+                    <AvatarFallback className="bg-[#162e38] text-sm font-black text-[#f97316]">
                       {getInitials(user?.name || user?.email || "?")}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-[#171a1d] text-[#fffcf7] border border-[#5c6875]/40 shadow-2xl rounded-2xl">
-                  <DropdownMenuLabel className="truncate font-medium text-[#abb4bd]">
+                <DropdownMenuContent align="end" className="w-56 bg-[#162e38] text-[#ffffff] border border-[#38bdf8]/40 shadow-2xl rounded-2xl">
+                  <DropdownMenuLabel className="truncate font-medium text-[#f2e9dc]/80">
                     {user?.email}
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[#5c6875]/30" />
-                  <DropdownMenuItem asChild className="focus:bg-[#2e343a] focus:text-[#fffcf7] cursor-pointer rounded-xl">
+                  <DropdownMenuSeparator className="bg-[#38bdf8]/20" />
+                  <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-bold">
                     <Link to="/my-auctions">
-                      <LayoutDashboard className="mr-2 size-4 text-[#a1b5d8]" /> My Auctions
+                      <LayoutDashboard className="mr-2 size-4 text-[#38bdf8]" /> My Auctions
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="focus:bg-[#2e343a] focus:text-[#fffcf7] cursor-pointer rounded-xl">
+                  <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-bold">
                     <Link to="/bookmarks">
-                      <Bookmark className="mr-2 size-4 text-[#a1b5d8]" /> Bookmarks
+                      <Bookmark className="mr-2 size-4 text-[#38bdf8]" /> Bookmarks
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="focus:bg-[#2e343a] focus:text-[#fffcf7] cursor-pointer rounded-xl">
+                  <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-bold">
                     <Link to="/profile">
-                      <Settings className="mr-2 size-4 text-[#a1b5d8]" /> Profile
+                      <Settings className="mr-2 size-4 text-[#38bdf8]" /> Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={signOut} className="focus:bg-rose-950/80 focus:text-rose-200 cursor-pointer rounded-xl text-rose-300">
+                  <DropdownMenuItem onClick={signOut} className="focus:bg-rose-950/80 focus:text-rose-200 cursor-pointer rounded-xl text-rose-300 font-bold">
                     <LogOut className="mr-2 size-4" /> Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -155,7 +155,7 @@ export function SiteHeader() {
             ) : (
               <Link
                 to="/auth"
-                className="hidden rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] px-6 py-2 text-sm font-black text-[#162235] shadow-[0_0_20px_rgba(161,181,216,0.35)] transition-all hover:scale-105 sm:inline-flex"
+                className="hidden rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] px-6 py-2 text-sm font-black text-[#ffffff] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] transition-all hover:scale-105 border border-[#ffffff]/40 sm:inline-flex"
               >
                 Register / Login
               </Link>
@@ -165,7 +165,7 @@ export function SiteHeader() {
               type="button"
               aria-label="Toggle menu"
               onClick={() => setOpen((v) => !v)}
-              className="rounded-lg p-2 text-[#fffcf7] hover:text-[#a1b5d8] hover:bg-[#2e343a]/60 transition-colors lg:hidden"
+              className="rounded-lg p-2 text-[#ffffff] hover:text-[#f97316] hover:bg-[#234857]/60 transition-colors lg:hidden"
             >
               {open ? <X className="size-6" /> : <Menu className="size-6" />}
             </button>
@@ -174,14 +174,14 @@ export function SiteHeader() {
 
         {/* Mobile Navigation Drawer */}
         {open && (
-          <nav className="border-t border-[#5c6875]/30 bg-[#171a1d]/95 backdrop-blur-xl px-4 py-3 text-sm text-[#fffcf7] lg:hidden space-y-1">
+          <nav className="border-t border-[#38bdf8]/40 bg-[#162e38]/98 backdrop-blur-xl px-4 py-3 text-sm text-[#ffffff] lg:hidden space-y-1">
             {[...nav.slice(0, 1), ...anchors, ...nav.slice(1)].map((item) =>
               "to" in item ? (
                 <Link
                   key={item.to}
                   to={item.to}
                   onClick={() => setOpen(false)}
-                  className="block py-2.5 px-3 rounded-xl hover:bg-[#2e343a] hover:text-[#a1b5d8] font-bold transition-colors"
+                  className="block py-2.5 px-3 rounded-xl hover:bg-[#234857] hover:text-[#f97316] font-extrabold transition-colors"
                 >
                   {item.label}
                 </Link>
@@ -190,7 +190,7 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="block py-2.5 px-3 rounded-xl hover:bg-[#2e343a] hover:text-[#a1b5d8] font-bold transition-colors"
+                  className="block py-2.5 px-3 rounded-xl hover:bg-[#234857] hover:text-[#f97316] font-extrabold transition-colors"
                 >
                   {item.label}
                 </a>
@@ -201,7 +201,7 @@ export function SiteHeader() {
                 <Link
                   to="/auth"
                   onClick={() => setOpen(false)}
-                  className="block w-full text-center rounded-full bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] py-2.5 text-sm font-black text-[#162235] shadow-[0_0_18px_rgba(161,181,216,0.35)]"
+                  className="block w-full text-center rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] py-2.5 text-sm font-black text-[#ffffff] shadow-[0_0_20px_rgba(249,115,22,0.6)] border border-[#ffffff]/40"
                 >
                   Register / Login
                 </Link>

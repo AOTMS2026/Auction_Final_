@@ -462,19 +462,19 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             trigger
           ) : !player ? (
             <Button
-              size="icon"
-              className="fixed bottom-24 right-6 size-14 rounded-full shadow-xl sm:bottom-8 sm:right-10 bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] text-[#162235] hover:scale-105 transition-all shadow-[0_0_20px_rgba(161,181,216,0.4)] border border-[#fffcf7]/40 z-30"
-            >
-              <Plus className="size-7 stroke-[2.5]" />
-            </Button>
-          ) : null}
-        </DialogTrigger>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6 sm:p-8">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-[#fffcf7] tracking-tight">
-              {player ? "Edit Player Details" : "Add New Player"}
-            </DialogTitle>
-          </DialogHeader>
+            size="icon"
+            className="fixed bottom-24 right-6 size-14 rounded-full shadow-2xl sm:bottom-8 sm:right-10 bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] text-[#ffffff] hover:scale-110 transition-all duration-300 shadow-[0_0_30px_rgba(249,115,22,0.7)] border-2 border-white/50 z-30"
+          >
+            <Plus className="size-7 stroke-[3]" />
+          </Button>
+        ) : null}
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl rounded-3xl border-2 border-[#38bdf8]/40 bg-[#142630] text-[#ffffff] shadow-[0_20px_60px_rgba(10,25,32,0.95)] p-6 sm:p-8">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black text-[#ffffff] tracking-tight">
+            {player ? "Edit Player Details" : "Add New Player"}
+          </DialogTitle>
+        </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-6 pt-4 text-[#fffcf7]">
             <div className="flex flex-col items-center justify-center space-y-2 pb-2">
               {photo ? (
@@ -1186,20 +1186,20 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#5c6875]/30">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#38bdf8]/30">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
-              className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm"
+              className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#f2e9dc] hover:text-[#ffffff] hover:bg-[#203f4f] transition-all font-bold px-6 shadow-sm"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full px-6 py-2.5 h-auto font-black text-sm text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_20px_rgba(161,181,216,0.35)]"
+              className="rounded-full px-7 py-2.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30"
             >
               {isSubmitting ? (
                 <><Loader2 className="mr-2 size-4 animate-spin" />Saving...</>
@@ -1275,14 +1275,14 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 type="button"
                 variant="outline"
                 onClick={() => setCropImageSrc(null)}
-                className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-5 py-2 shadow-sm"
+                className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#f2e9dc] hover:text-[#ffffff] hover:bg-[#203f4f] transition-all font-bold px-6 py-2 shadow-sm"
               >
                 Cancel
               </Button>
               <Button
                 type="button"
                 onClick={handleCropSave}
-                className="rounded-full px-5 py-2 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-md"
+                className="rounded-full px-6 py-2 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)]"
               >
                 Save Photo
               </Button>

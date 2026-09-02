@@ -379,18 +379,27 @@ function PlayerRegistrationPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div
+        className="min-h-screen text-[#ffffff] flex flex-col selection:bg-[#38bdf8] selection:text-[#ffffff]"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
+        }}
+      >
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-card rounded-2xl p-8 text-center card-shadow border border-border">
-            <div className="mx-auto size-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+          <div className="max-w-md w-full bg-[#162a34]/95 rounded-3xl p-8 text-center border-2 border-emerald-400 shadow-[0_20px_60px_rgba(15,35,45,0.9)] backdrop-blur-xl">
+            <div className="mx-auto size-16 bg-emerald-950/80 text-emerald-400 border-2 border-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
               <CheckCircle2 className="size-10" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Registration Complete!</h2>
-            <p className="text-muted-foreground mb-6">
-              You have successfully registered for <strong>{auction.name}</strong>.
+            <h2 className="text-2xl font-black text-[#ffffff] mb-2 tracking-tight drop-shadow-sm">Registration Complete!</h2>
+            <p className="text-[#f2e9dc]/80 mb-6 font-medium">
+              You have successfully registered for <strong className="text-[#38bdf8]">{auction.name}</strong>.
             </p>
-            <Button className="w-full" onClick={() => window.location.href = "/"}>
+            <Button
+              className="w-full rounded-full py-3.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30"
+              onClick={() => window.location.href = "/"}
+            >
               Return Home
             </Button>
           </div>
@@ -401,10 +410,10 @@ function PlayerRegistrationPage() {
 
   return (
     <div
-      className="min-h-screen text-[#fffcf7] flex flex-col selection:bg-[#a1b5d8] selection:text-[#162235]"
+      className="min-h-screen text-[#ffffff] flex flex-col selection:bg-[#38bdf8] selection:text-[#ffffff]"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+          "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
       }}
     >
       <SiteHeader />
@@ -415,44 +424,44 @@ function PlayerRegistrationPage() {
           src={auction.coverImage || stadiumImg}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-50"
+          className="absolute inset-0 size-full object-cover blur-sm scale-105 opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#171a1d]/80 via-[#171a1d]/90 to-[#171a1d]" />
-        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#fffcf7] flex flex-col items-center">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#142630]/80 via-[#142630]/90 to-[#142630]" />
+        <div className="relative mx-auto max-w-3xl px-4 py-12 text-center text-[#ffffff] flex flex-col items-center">
           <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 flex-wrap">
             {isBniAuction && (
               <img
                 src={bniLogoImg}
                 alt="BNI Logo"
-                className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-black p-2"
+                className="h-24 sm:h-28 w-auto rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-contain bg-black p-2"
               />
             )}
             {auction.coverImage ? (
               <img
                 src={auction.coverImage}
                 alt={auction.name}
-                className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl object-cover bg-muted shrink-0"
+                className="size-24 sm:size-28 rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-cover bg-muted shrink-0"
               />
             ) : (
-              <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#a1b5d8]/40 shadow-xl bg-[#162235] flex items-center justify-center shrink-0">
-                <span className="text-2xl sm:text-3xl font-black text-[#a1b5d8]">{auction.name.substring(0, 2).toUpperCase()}</span>
+              <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl bg-[#142630] flex items-center justify-center shrink-0">
+                <span className="text-2xl sm:text-3xl font-black text-[#38bdf8]">{auction.name.substring(0, 2).toUpperCase()}</span>
               </div>
             )}
             {isBniAuction && (
               <img
                 src={anotherImg}
                 alt="Another Logo"
-                className="h-24 sm:h-28 w-auto rounded-xl border-2 border-white/20 shadow-xl object-contain bg-white p-2"
+                className="h-24 sm:h-28 w-auto rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-contain bg-white p-2"
               />
             )}
           </div>
-          <h1 className="text-3xl font-black sm:text-5xl mb-3 tracking-tight drop-shadow-md uppercase text-[#fffcf7]">PLAYER REGISTRATION</h1>
-          <p className="text-base sm:lg text-[#abb4bd] font-medium tracking-wide">Register as a player for <span className="text-[#fffcf7] font-bold">{auction.name}</span></p>
+          <h1 className="text-3xl font-black sm:text-5xl mb-3 tracking-tight drop-shadow-md uppercase text-[#ffffff]">PLAYER REGISTRATION</h1>
+          <p className="text-base sm:text-lg text-[#f2e9dc]/80 font-medium tracking-wide">Register as a player for <span className="text-[#38bdf8] font-black">{auction.name}</span></p>
         </div>
       </section>
 
       <main className="flex-1 max-w-3xl w-full mx-auto p-4 -mt-6 relative z-10 mb-12">
-        <div className="bg-[#2e343a]/80 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-[#5c6875]/30 shadow-[0_15px_45px_rgba(23,26,29,0.8)] text-[#fffcf7]">
+        <div className="bg-[#162a34]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border-2 border-[#38bdf8]/40 shadow-[0_20px_60px_rgba(15,35,45,0.9)] text-[#ffffff]">
           <form onSubmit={onSubmit} className="space-y-6">
             <div className="flex flex-col items-center justify-center space-y-2 pb-2">
               {photo ? (
@@ -465,31 +474,31 @@ function PlayerRegistrationPage() {
                       setZoom(1);
                       setDragOffset({ x: 0, y: 0 });
                     }}
-                    className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#a1b5d8]/40 bg-[#162235] hover:border-[#a1b5d8] transition-all group cursor-pointer shadow-md"
+                    className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#38bdf8]/60 bg-[#142630] hover:border-[#38bdf8] transition-all group cursor-pointer shadow-md"
                     title="Crop / Zoom existing picture"
                   >
                     <img src={photo} alt="Player photo" className="size-full object-cover object-top" />
-                    <div className="absolute inset-0 bg-[#171a1d]/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Pencil className="size-5 text-[#a1b5d8] mb-0.5" />
-                      <span className="text-[10px] font-black text-[#fffcf7] uppercase tracking-wider">Crop/Zoom</span>
+                    <div className="absolute inset-0 bg-[#142630]/75 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Pencil className="size-5 text-[#38bdf8] mb-0.5" />
+                      <span className="text-[10px] font-black text-[#ffffff] uppercase tracking-wider">Crop/Zoom</span>
                     </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => document.getElementById("player-photo")?.click()}
-                    className="text-xs text-[#a1b5d8] hover:text-[#fffcf7] font-bold hover:underline transition-colors mt-0.5"
+                    className="text-xs text-[#38bdf8] hover:text-[#ffffff] font-bold hover:underline transition-colors mt-0.5"
                   >
                     Upload New
                   </button>
                 </div>
               ) : (
                 <Label htmlFor="player-photo" className="cursor-pointer">
-                  <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235]/60 hover:bg-[#162235] hover:border-[#a1b5d8] transition-colors shadow-inner">
-                    <Plus className="size-8 text-[#a1b5d8]" />
+                  <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#38bdf8]/50 bg-[#142630]/70 hover:bg-[#142630] hover:border-[#38bdf8] transition-colors shadow-inner">
+                    <Plus className="size-8 text-[#38bdf8]" />
                   </div>
                 </Label>
               )}
-              <span className="text-xs text-[#abb4bd] font-medium">Player Photo <span className="text-red-400 font-bold ml-0.5">*</span> (up to 10MB)</span>
+              <span className="text-xs text-[#38bdf8] font-bold">Player Photo <span className="text-red-400 font-bold ml-0.5">*</span> (up to 10MB)</span>
               <input
                 id="player-photo"
                 type="file"
@@ -502,7 +511,7 @@ function PlayerRegistrationPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="name" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Input
                   id="name"
                   placeholder="e.g. Virat Kohli"
@@ -510,11 +519,11 @@ function PlayerRegistrationPage() {
                   onChange={(e) => setName(e.target.value)}
                   disabled={registerMutation.isPending}
                   required
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                <Label htmlFor="phone" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
                   PHONE (10 DIGITS) <span className="text-red-400 font-bold ml-0.5">*</span>
                 </Label>
                 <Input
@@ -528,16 +537,16 @@ function PlayerRegistrationPage() {
                   disabled={registerMutation.isPending}
                   maxLength={10}
                   required
-                  className={`rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8] ${phoneError ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                  className={`rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold ${phoneError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 />
                 {phoneError && (
-                  <p className="text-xs font-semibold text-red-400 mt-1 flex items-center gap-1">
+                  <p className="text-xs font-bold text-red-400 mt-1 flex items-center gap-1">
                     <span>⚠️</span> {phoneError}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">AGE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                <Label htmlFor="age" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">AGE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                 <Input
                   id="age"
                   type="number"
@@ -546,23 +555,23 @@ function PlayerRegistrationPage() {
                   onChange={(e) => setAge(e.target.value)}
                   disabled={registerMutation.isPending}
                   required
-                  className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                 />
               </div>
               {/* Hunterz Volleyball Fields: Role & Dominated Hand */}
               {isHunterzVolleyball && (
                 <>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
                       PLAYING POSITION / ROLE <span className="text-red-400 font-bold ml-0.5">*</span>
                     </Label>
                     <Select value={position} onValueChange={setPosition}>
-                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                         <SelectValue placeholder="Select Position / Role" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
                         {["Attacker", "Setter", "Blocker", "Universal", "Libero", "Spiker"].map((r) => (
-                          <SelectItem key={r} value={r} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
+                          <SelectItem key={r} value={r} className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
                             {r}
                           </SelectItem>
                         ))}
@@ -571,17 +580,17 @@ function PlayerRegistrationPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
                       DOMINATED HAND <span className="text-red-400 font-bold ml-0.5">*</span>
                     </Label>
                     <Select value={dominatedHand} onValueChange={setDominatedHand}>
-                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                         <SelectValue placeholder="Select Dominated Hand" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                        <SelectItem value="Right Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Right Hand</SelectItem>
-                        <SelectItem value="Left Hand" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Left Hand</SelectItem>
-                        <SelectItem value="Both Hands" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Both Hands</SelectItem>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Right Hand" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Right Hand</SelectItem>
+                        <SelectItem value="Left Hand" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Left Hand</SelectItem>
+                        <SelectItem value="Both Hands" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Both Hands</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -592,41 +601,41 @@ function PlayerRegistrationPage() {
               {!isHunterzVolleyball && (
                 <>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">GENDER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">GENDER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Select value={gender} onValueChange={setGender}>
-                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                         <SelectValue placeholder="Select Gender" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                        <SelectItem value="Male" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Male</SelectItem>
-                        <SelectItem value="Female" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Female</SelectItem>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Male" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Male</SelectItem>
+                        <SelectItem value="Female" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Female</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">CITY <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">CITY <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Select value={city} onValueChange={setCity}>
-                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                         <SelectValue placeholder="Select City" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                        <SelectItem value="vijayawada" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Vijayawada</SelectItem>
-                        <SelectItem value="tenali" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Tenali</SelectItem>
-                        <SelectItem value="guntur" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Guntur</SelectItem>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="vijayawada" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Vijayawada</SelectItem>
+                        <SelectItem value="tenali" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Tenali</SelectItem>
+                        <SelectItem value="guntur" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Guntur</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">PLAYER LEVEL <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">PLAYER LEVEL <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Select value={playerLevel} onValueChange={setPlayerLevel}>
-                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                         <SelectValue placeholder="Select Level" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                        <SelectItem value="Beginner" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Beginner</SelectItem>
-                        <SelectItem value="Intermediate" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Intermediate</SelectItem>
-                        <SelectItem value="Advanced" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Advanced</SelectItem>
-                        <SelectItem value="Professional" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Professional</SelectItem>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Beginner" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Beginner</SelectItem>
+                        <SelectItem value="Intermediate" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Intermediate</SelectItem>
+                        <SelectItem value="Advanced" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Advanced</SelectItem>
+                        <SelectItem value="Professional" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Professional</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -638,7 +647,7 @@ function PlayerRegistrationPage() {
               isBniAuction ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label htmlFor="jerseySize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Input
                       id="jerseySize"
                       placeholder="e.g. M, L, XL"
@@ -646,11 +655,11 @@ function PlayerRegistrationPage() {
                       onChange={(e) => setJerseySize(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label htmlFor="jerseyName" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">JERSEY NAME <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Input
                       id="jerseyName"
                       placeholder="e.g. Dhoni"
@@ -658,11 +667,11 @@ function PlayerRegistrationPage() {
                       onChange={(e) => setJerseyName(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY NUMBER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label htmlFor="trouserSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">JERSEY NUMBER <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Input
                       id="trouserSize"
                       placeholder="e.g. 7"
@@ -670,18 +679,18 @@ function PlayerRegistrationPage() {
                       onChange={(e) => setTrouserSize(e.target.value)}
                       disabled={registerMutation.isPending}
                       required
-                      className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">NUMBER OF SEASONS PLAYED <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">NUMBER OF SEASONS PLAYED <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                     <Select value={bblSeasons} onValueChange={setBblSeasons}>
-                      <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                         <SelectValue placeholder="Select seasons" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
                         {Array.from({ length: 9 }).map((_, i) => (
-                          <SelectItem key={i} value={String(i)} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">
+                          <SelectItem key={i} value={String(i)} className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
                             {i}
                           </SelectItem>
                         ))}
@@ -691,7 +700,7 @@ function PlayerRegistrationPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                  <Label htmlFor="jerseySize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                   <Input
                     id="jerseySize"
                     placeholder="e.g. M, L, XL"
@@ -699,15 +708,15 @@ function PlayerRegistrationPage() {
                     onChange={(e) => setJerseySize(e.target.value)}
                     disabled={registerMutation.isPending}
                     required
-                    className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                    className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                   />
                 </div>
               )
             )}
 
             {isBniAuction && (
-              <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
-                <h3 className="font-bold text-base text-[#fffcf7]">Membership Details</h3>
+              <div className="rounded-2xl border-2 border-[#38bdf8]/35 bg-[#142630]/90 p-5 space-y-4 text-[#ffffff]">
+                <h3 className="font-black text-base text-[#ffffff]">Membership Details</h3>
                 <div className="space-y-4">
                   <RadioGroup
                     value={memberType}
@@ -721,25 +730,25 @@ function PlayerRegistrationPage() {
                     disabled={registerMutation.isPending}
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="bni" id="r-bni" className="border-[#5c6875] text-[#a1b5d8] focus:ring-[#a1b5d8]" />
-                      <Label htmlFor="r-bni" className="cursor-pointer text-sm font-semibold text-[#fffcf7]">BNI Member</Label>
+                      <RadioGroupItem value="bni" id="r-bni" className="border-2 border-[#38bdf8] text-[#38bdf8] focus:ring-[#38bdf8]" />
+                      <Label htmlFor="r-bni" className="cursor-pointer text-sm font-black text-[#ffffff]">BNI Member</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="family" id="r-family" className="border-[#5c6875] text-[#a1b5d8] focus:ring-[#a1b5d8]" />
-                      <Label htmlFor="r-family" className="cursor-pointer text-sm font-semibold text-[#fffcf7]">Family Member</Label>
+                      <RadioGroupItem value="family" id="r-family" className="border-2 border-[#38bdf8] text-[#38bdf8] focus:ring-[#38bdf8]" />
+                      <Label htmlFor="r-family" className="cursor-pointer text-sm font-black text-[#ffffff]">Family Member</Label>
                     </div>
                   </RadioGroup>
 
                   {memberType === "bni" && (
                     <div className="space-y-2 pt-2 animate-in fade-in">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Chapter Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                      <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Chapter Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                       <Select value={chapterName} onValueChange={setChapterName}>
-                        <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                        <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                           <SelectValue placeholder="Select Chapter" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                        <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
                           {CHAPTERS.map(ch => (
-                            <SelectItem key={ch} value={ch} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">{ch}</SelectItem>
+                            <SelectItem key={ch} value={ch} className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">{ch}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -749,7 +758,7 @@ function PlayerRegistrationPage() {
                   {memberType === "family" && (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2 animate-in fade-in">
                       <div className="space-y-2">
-                        <Label htmlFor="bniName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Member Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                        <Label htmlFor="bniName" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Member Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                         <Input
                           id="bniName"
                           placeholder="e.g. John Doe"
@@ -757,33 +766,33 @@ function PlayerRegistrationPage() {
                           onChange={(e) => setBniName(e.target.value)}
                           disabled={registerMutation.isPending}
                           required
-                          className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#a1b5d8]"
+                          className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Chapter Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                        <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Chapter Name <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                         <Select value={chapterName} onValueChange={setChapterName}>
-                          <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                          <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                             <SelectValue placeholder="Select Chapter" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
+                          <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
                             {CHAPTERS.map(ch => (
-                              <SelectItem key={ch} value={ch} className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">{ch}</SelectItem>
+                              <SelectItem key={ch} value={ch} className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">{ch}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Relationship <span className="text-red-400 font-bold ml-0.5">*</span></Label>
+                        <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Relationship <span className="text-red-400 font-bold ml-0.5">*</span></Label>
                         <Select value={relationship} onValueChange={setRelationship}>
-                          <SelectTrigger className="rounded-xl border-[#5c6875]/50 bg-[#2e343a]/70 text-[#fffcf7] focus:ring-[#a1b5d8]">
+                          <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
                             <SelectValue placeholder="Select Relationship" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-[#5c6875]/50 bg-[#171a1d] text-[#fffcf7]">
-                            <SelectItem value="Child" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Child</SelectItem>
-                            <SelectItem value="Spouse" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Spouse</SelectItem>
-                            <SelectItem value="Parents" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Parents</SelectItem>
-                            <SelectItem value="Siblings" className="hover:bg-[#2e343a] focus:bg-[#2e343a] text-[#fffcf7]">Siblings</SelectItem>
+                          <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                            <SelectItem value="Child" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Child</SelectItem>
+                            <SelectItem value="Spouse" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Spouse</SelectItem>
+                            <SelectItem value="Parents" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Parents</SelectItem>
+                            <SelectItem value="Siblings" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Siblings</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -795,16 +804,16 @@ function PlayerRegistrationPage() {
 
             {/* Payment Details - Only for JSC / other auctions, NOT for BNI and NOT for Hunterz Volleyball */}
             {!isBniAuction && !isHunterzVolleyball && (
-              <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
-                <h3 className="font-bold text-base text-[#fffcf7]">Payment Details</h3>
+              <div className="rounded-2xl border-2 border-[#38bdf8]/35 bg-[#142630]/90 p-5 space-y-4 text-[#ffffff]">
+                <h3 className="font-black text-base text-[#ffffff]">Payment Details</h3>
 
                 <div className="space-y-2 pt-1">
-                  <Label htmlFor="paymentImage" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">
+                  <Label htmlFor="paymentImage" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
                     Payment Screenshot <span className="text-red-400 font-bold ml-0.5">*</span>
                   </Label>
                   {paymentImage ? (
                     <div className="relative w-full max-w-sm group">
-                      <img src={paymentImage} alt="Payment screenshot" className="rounded-2xl border border-[#5c6875]/40 object-contain w-full h-48 bg-[#162235] shadow-md" />
+                      <img src={paymentImage} alt="Payment screenshot" className="rounded-2xl border-2 border-[#38bdf8]/50 object-contain w-full h-48 bg-[#142630] shadow-md" />
                       <Button
                         type="button"
                         variant="destructive"
@@ -819,11 +828,11 @@ function PlayerRegistrationPage() {
                     <div>
                       <Label
                         htmlFor="paymentImage"
-                        className="flex flex-col items-center justify-center w-full h-32 rounded-2xl border-2 border-dashed border-[#a1b5d8]/40 bg-[#162235]/60 hover:bg-[#162235] hover:border-[#a1b5d8] transition-colors cursor-pointer"
+                        className="flex flex-col items-center justify-center w-full h-32 rounded-2xl border-2 border-dashed border-[#38bdf8]/50 bg-[#142630]/70 hover:bg-[#142630] hover:border-[#38bdf8] transition-colors cursor-pointer"
                       >
-                        <UploadCloud className="size-8 text-[#a1b5d8] mb-1.5" />
-                        <span className="text-sm font-bold text-[#fffcf7]">Click to upload screenshot</span>
-                        <span className="text-xs text-[#abb4bd] mt-0.5">JPEG, PNG up to 10MB</span>
+                        <UploadCloud className="size-8 text-[#38bdf8] mb-1.5" />
+                        <span className="text-sm font-black text-[#ffffff]">Click to upload screenshot</span>
+                        <span className="text-xs text-[#f2e9dc]/70 mt-0.5">JPEG, PNG up to 10MB</span>
                       </Label>
                       <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
                     </div>
@@ -835,7 +844,7 @@ function PlayerRegistrationPage() {
             <div className="pt-4">
               <Button
                 type="submit"
-                className="w-full rounded-full py-4 h-auto font-black text-base text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_25px_rgba(161,181,216,0.4)] transition-all"
+                className="w-full rounded-full py-4 h-auto font-black text-base text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30 cursor-pointer"
                 disabled={registerMutation.isPending}
               >
                 {registerMutation.isPending ? (
@@ -851,14 +860,14 @@ function PlayerRegistrationPage() {
 
       {/* Crop Dialog */}
       <Dialog open={!!cropImageSrc} onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}>
-        <DialogContent className="sm:max-w-md flex flex-col items-center rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-2xl p-6">
+        <DialogContent className="sm:max-w-md flex flex-col items-center rounded-3xl border-2 border-[#38bdf8]/40 bg-[#142630] text-[#ffffff] shadow-2xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-[#fffcf7] tracking-tight">Crop Profile Photo</DialogTitle>
+            <DialogTitle className="text-xl font-black text-[#ffffff] tracking-tight">Crop Profile Photo</DialogTitle>
           </DialogHeader>
 
-          <div className="relative mt-4 flex items-center justify-center bg-[#2e343a]/40 p-6 rounded-2xl w-full border border-[#5c6875]/30">
+          <div className="relative mt-4 flex items-center justify-center bg-[#162a34] p-6 rounded-2xl w-full border-2 border-[#38bdf8]/30">
             <div
-              className="relative size-72 rounded-full overflow-hidden border-4 border-[#a1b5d8] bg-black select-none cursor-move shadow-xl"
+              className="relative size-72 rounded-full overflow-hidden border-4 border-[#38bdf8] bg-black select-none cursor-move shadow-xl"
               onPointerDown={(e) => {
                 setIsDragging(true);
                 setDragStart({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
@@ -896,7 +905,7 @@ function PlayerRegistrationPage() {
 
           <div className="w-full space-y-4 px-4 mt-4">
             <div className="flex items-center gap-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Zoom</span>
+              <span className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Zoom</span>
               <input
                 type="range"
                 min="1"
@@ -904,7 +913,7 @@ function PlayerRegistrationPage() {
                 step="0.05"
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="w-full accent-[#a1b5d8] h-1.5 bg-[#2e343a] rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#38bdf8] h-1.5 bg-[#162a34] rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -913,14 +922,14 @@ function PlayerRegistrationPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setCropImageSrc(null)}
-                className="rounded-full border-[#5c6875]/50 text-[#fffcf7] hover:bg-[#2e343a]"
+                className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#ffffff] hover:bg-[#1f3a47] font-bold"
               >
                 Cancel
               </Button>
               <Button
                 type="button"
                 onClick={handleCropSave}
-                className="rounded-full px-5 py-2 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-md"
+                className="rounded-full px-6 py-2.5 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_15px_rgba(249,115,22,0.6)]"
               >
                 Save Photo
               </Button>

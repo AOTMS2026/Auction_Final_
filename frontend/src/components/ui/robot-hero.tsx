@@ -710,12 +710,12 @@ export interface RobotHeroProps {
 export function RobotHero({
   backgroundText = "AUCTION",
   subtitle = "Live cricket auction platform for real-time player bidding",
-  color = "#c7cdd3",
+  color = "#f2ede4",
   scale = 1,
-  pantallaColor = "#a1b5d8",
-  pantallaBrillo = 1.6,
+  pantallaColor = "#38bdf8",
+  pantallaBrillo = 2.6,
   blinkCycle = 3.0,
-  metalness = 0.3,
+  metalness = 0.25,
   startAuctionHref = "#today",
   newAuctionTo = "/my-auctions/new",
 }: RobotHeroProps = {}) {
@@ -745,41 +745,44 @@ export function RobotHero({
       className="relative w-full h-[620px] md:h-[720px] min-h-[550px] overflow-hidden select-none"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 25%, #2e343a 0%, #1c2227 45%, #171a1d 75%, #0f1214 100%)",
+          "radial-gradient(ellipse at 50% 25%, #1e424c 0%, #17323b 35%, #122126 70%, #0d1518 100%)",
       }}
     >
-      {/* Powder Blue & Frosted Mint Ambient Sky Halo */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(161,181,216,0.25)_0%,rgba(228,240,208,0.12)_32%,transparent_70%)] pointer-events-none" />
+      {/* Radiant Blue-Slate & Vivid Chocolate Ambient Sky Halo */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(56,189,248,0.35)_0%,rgba(249,115,22,0.25)_35%,transparent_72%)] pointer-events-none" />
 
-      {/* Slate Grey & Ocean Blue Atmospheric Depth Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(67,101,160,0.22)_0%,rgba(23,26,29,0.4)_45%,transparent_72%)] pointer-events-none" />
+      {/* Atmospheric Jewel Depth Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(50,106,122,0.45)_0%,rgba(30,55,64,0.35)_48%,transparent_75%)] pointer-events-none" />
 
-      {/* Tea Green Subtle Floor Bounce */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(194,216,185,0.15)_0%,transparent_55%)] pointer-events-none" />
+      {/* Radiant Linen Floor Bounce */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(242,233,220,0.22)_0%,transparent_58%)] pointer-events-none" />
 
-      {/* Ambient Dark Vignette */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(15,18,20,0.35)_0%,transparent_20%,transparent_80%,rgba(15,18,20,0.6)_100%)] pointer-events-none" />
+      {/* Subtle Ambient Vignette */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(13,21,24,0.25)_0%,transparent_20%,transparent_80%,rgba(13,21,24,0.5)_100%)] pointer-events-none" />
 
       {/* Top Tagline, Subtitle & Action Buttons in Middle Area */}
       <div className="absolute top-8 md:top-10 left-0 right-0 z-20 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#162235]/85 border border-[#a1b5d8]/40 backdrop-blur-md shadow-[0_0_20px_rgba(161,181,216,0.25)] mb-2.5">
-          <span className="w-2 h-2 rounded-full bg-[#a1b5d8] animate-pulse" />
-          <span className="text-[11px] font-extrabold tracking-widest uppercase text-[#e4f0d0]">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#142832]/95 border-2 border-[#38bdf8]/60 backdrop-blur-md shadow-[0_0_25px_rgba(56,189,248,0.45)] mb-3">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f97316] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#f97316]" />
+          </span>
+          <span className="text-xs font-black tracking-widest uppercase text-[#ffffff]">
             Live Cricket Arena
           </span>
         </div>
-        <p className="text-sm md:text-base font-semibold text-[#fffcf7] max-w-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] mb-4">
+        <p className="text-sm md:text-base font-bold text-[#ffffff] max-w-xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)] mb-5">
           {subtitle}
         </p>
 
         {/* Start Auction & New Auction Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3.5 pointer-events-auto">
+        <div className="flex flex-wrap items-center justify-center gap-4 pointer-events-auto">
           {/* Start Auction Button */}
           <a
             href={startAuctionHref}
-            className="group relative inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full font-black text-sm text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] shadow-[0_0_25px_rgba(161,181,216,0.45)] hover:shadow-[0_0_35px_rgba(161,181,216,0.7)] hover:scale-105 transition-all duration-300 border border-[#fffcf7]/40"
+            className="group relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#d16919] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_30px_rgba(249,115,22,0.65)] hover:shadow-[0_0_45px_rgba(249,115,22,0.9)] hover:scale-105 transition-all duration-300 border border-[#ffffff]/40"
           >
-            <span className="flex items-center justify-center size-6 rounded-full bg-[#162235]/20 text-[#162235]">
+            <span className="flex items-center justify-center size-6 rounded-full bg-[#ffffff]/25 text-[#ffffff]">
               <Play className="size-3.5 fill-current ml-0.5" />
             </span>
             <span>Start Auction</span>
@@ -788,9 +791,9 @@ export function RobotHero({
           {/* New Auction Button */}
           <Link
             to={newAuctionTo}
-            className="group relative inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-sm text-[#fffcf7] bg-[#162235]/90 hover:bg-[#2d436a] border-2 border-[#a1b5d8]/50 hover:border-[#fffcf7] shadow-[0_0_20px_rgba(22,34,53,0.5)] hover:shadow-[0_0_25px_rgba(161,181,216,0.3)] hover:scale-105 transition-all duration-300 backdrop-blur-md"
+            className="group relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm text-[#ffffff] bg-[#162c36]/95 hover:bg-[#1e4454] border-2 border-[#38bdf8]/70 hover:border-[#ffffff] shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:shadow-[0_0_35px_rgba(56,189,248,0.65)] hover:scale-105 transition-all duration-300 backdrop-blur-md"
           >
-            <span className="flex items-center justify-center size-6 rounded-full bg-[#a1b5d8]/25 text-[#a1b5d8] group-hover:bg-[#fffcf7]/25 group-hover:text-[#fffcf7] transition-colors">
+            <span className="flex items-center justify-center size-6 rounded-full bg-[#38bdf8]/25 text-[#f97316] group-hover:bg-[#ffffff]/25 group-hover:text-[#ffffff] transition-colors">
               <PlusCircle className="size-4" />
             </span>
             <span>New Auction</span>
@@ -806,13 +809,13 @@ export function RobotHero({
         <h1
           className="font-sans font-black select-none whitespace-nowrap tracking-tighter uppercase"
           style={{
-            color: "#fffcf7",
-            opacity: 0.06,
+            color: "#f2e9dc",
+            opacity: 0.12,
             letterSpacing: "-0.04em",
             fontSize: "clamp(5rem, 19vw, 18rem)",
             lineHeight: 1,
             transform: "translate(0px, 40px)",
-            textShadow: "0 0 80px rgba(161, 181, 216, 0.4)",
+            textShadow: "0 0 100px rgba(56, 189, 248, 0.65), 0 0 40px rgba(249, 115, 22, 0.35)",
           }}
         >
           {backgroundText}
@@ -829,13 +832,13 @@ export function RobotHero({
             gl={{ powerPreference: "high-performance", antialias: true, alpha: true }}
             camera={{ position: [0, 0.2, 6], fov: 40 }}
           >
-            {/* Powder Blue / Porcelain Warm Ambient Light */}
-            <ambientLight intensity={0.9} color="#dae2ef" />
+            {/* Bright Linen / White Ambient Light */}
+            <ambientLight intensity={1.35} color="#ffffff" />
 
-            {/* Key White Studio Light */}
+            {/* Key Studio Light */}
             <directionalLight
               position={[3, 8, 5]}
-              intensity={1.6}
+              intensity={2.3}
               color="#ffffff"
               castShadow
               shadow-mapSize={[1024, 1024]}
@@ -847,18 +850,18 @@ export function RobotHero({
               />
             </directionalLight>
 
-            {/* Powder Blue Fill Light */}
+            {/* Luminous Blue-Slate / Cyan Fill Light */}
             <directionalLight
               position={[-4, 3, -2]}
-              intensity={1.0}
-              color="#a1b5d8"
+              intensity={1.5}
+              color="#38bdf8"
             />
 
-            {/* Tea Green Back Rim Light */}
+            {/* Radiant Chocolate / Amber Warm Back Rim Light */}
             <directionalLight
               position={[0, 4, -5]}
-              intensity={0.7}
-              color="#c2d8b9"
+              intensity={1.5}
+              color="#f97316"
             />
 
             <Suspense fallback={null}>

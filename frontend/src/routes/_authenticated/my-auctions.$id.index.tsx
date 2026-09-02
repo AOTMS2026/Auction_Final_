@@ -320,59 +320,60 @@ function ManageAuctionPage() {
 
   return (
     <div
-      className="min-h-screen text-[#fffcf7] selection:bg-[#a1b5d8] selection:text-[#162235]"
+      className="min-h-screen text-[#f2e9dc] selection:bg-[#38bdf8] selection:text-[#ffffff]"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+          "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
       }}
     >
       <SiteHeader />
 
       {/* Hero Section */}
-      <section className="relative isolate overflow-hidden pt-12 border-b border-[#5c6875]/30">
+      <section className="relative isolate overflow-hidden pt-12 border-b border-[#38bdf8]/35">
         <img
           src={stadiumImg}
           alt=""
           aria-hidden="true"
           className="absolute inset-0 size-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#171a1d] via-[#171a1d]/85 to-[#162235]/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#142630] via-[#142630]/90 to-[#1e3a45]/60" />
 
         <div className="relative mx-auto max-w-4xl px-4 pt-8">
           <div className="flex items-start gap-4 sm:gap-6">
             <FallbackImage
               src={auction.coverImage || ""}
               alt=""
-              className="size-20 rounded-2xl border-2 border-[#a1b5d8]/40 sm:size-28 object-cover shadow-lg"
+              className="size-20 rounded-2xl border-2 border-[#38bdf8]/60 sm:size-28 object-cover shadow-xl"
               fallback={
-                <span className="display grid size-full place-items-center rounded-2xl bg-gradient-to-br from-[#4365a0] to-[#6a9b57] text-2xl font-bold text-[#fffcf7] shadow-lg">
+                <span className="display grid size-full place-items-center rounded-2xl bg-gradient-to-br from-[#1e424c] to-[#38bdf8] text-2xl font-black text-[#ffffff] shadow-lg">
                   {auction.name.slice(0, 2).toUpperCase()}
                 </span>
               }
             />
-            <div className="flex-1 text-[#fffcf7]">
-              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#162235]/80 border border-[#a1b5d8]/40 text-[#a1b5d8] text-[11px] font-bold uppercase tracking-wider mb-2">
+            <div className="flex-1 text-[#ffffff]">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#162a32]/95 border-2 border-[#38bdf8]/60 text-[#ffffff] text-[11px] font-black uppercase tracking-wider mb-2 shadow-[0_0_15px_rgba(56,189,248,0.4)]">
+                <span className="size-2 rounded-full bg-[#f97316] animate-pulse" />
                 Live Tournament
               </div>
-              <h1 className="text-2xl font-black sm:text-4xl tracking-tight">{auction.name}</h1>
+              <h1 className="text-2xl font-black sm:text-4xl tracking-tight text-[#ffffff] drop-shadow-md">{auction.name}</h1>
 
-              <div className="mt-2 space-y-1.5 text-sm sm:text-base text-[#abb4bd]">
-                <p className="flex items-center gap-2">
-                  Auction Code: <span className="font-mono text-[#a1b5d8] font-bold bg-[#162235]/60 px-2 py-0.5 rounded-md border border-[#a1b5d8]/30">{auction.id.slice(-6)}</span>
-                  <button onClick={copyCode} className="hover:text-[#a1b5d8] transition-colors" aria-label="Copy code">
+              <div className="mt-2 space-y-1.5 text-sm sm:text-base text-[#f2e9dc]/90">
+                <p className="flex items-center gap-2 font-medium">
+                  Auction Code: <span className="font-mono text-[#38bdf8] font-black bg-[#162a32] px-2.5 py-0.5 rounded-md border border-[#38bdf8]/50 shadow-sm">{auction.id.slice(-6)}</span>
+                  <button onClick={copyCode} className="hover:text-[#38bdf8] text-[#f2e9dc] transition-colors" aria-label="Copy code">
                     <Copy className="size-4" />
                   </button>
                 </p>
-                <p className="flex items-center gap-2 text-[#abb4bd]">
-                  <CalendarDays className="size-4 text-[#a1b5d8]" />
+                <p className="flex items-center gap-2 text-[#f2e9dc]/90 font-medium">
+                  <CalendarDays className="size-4 text-[#38bdf8]" />
                   {format(new Date(auction.startsAt), "dd-MM-yyyy, h:mm a")}
                 </p>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[#abb4bd]">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[#f2e9dc]/90 font-medium">
                   <span className="flex items-center gap-2">
-                    <Users className="size-4 text-[#a1b5d8]" /> {auction.playersPerTeam} Player Per Team
+                    <Users className="size-4 text-[#38bdf8]" /> {auction.playersPerTeam} Player Per Team
                   </span>
                   <span className="flex items-center gap-2">
-                    <UserCheck className="size-4 text-[#e4f0d0]" /> {players ? players.length : 0} Registered
+                    <UserCheck className="size-4 text-emerald-400" /> {players ? players.length : 0} Registered
                   </span>
                   <Countdown targetDate={auction.startsAt} />
                 </div>
@@ -381,23 +382,22 @@ function ManageAuctionPage() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 pb-4">
-            <div className="flex items-center gap-2 font-bold text-[#e4f0d0]">
-              <span className="text-lg px-3 py-1 rounded-full bg-[#162235]/80 border border-[#e4f0d0]/30 shadow-sm">✨ Free Tier</span>
+            <div className="flex items-center gap-2 font-black text-emerald-300">
+              <span className="text-sm px-3.5 py-1 rounded-full bg-[#162a32] border-2 border-emerald-500/50 shadow-sm">✨ Free Tier</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
                 onClick={handleExportPDF}
                 variant="outline"
-                className="rounded-full border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] font-bold text-xs gap-1.5 transition-all shadow-sm"
+                className="rounded-full border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs gap-1.5 transition-all shadow-sm"
                 title="Download Teams & Purchased Players PDF Report"
               >
-                <FileText className="size-4" />
+                <FileText className="size-4 text-[#38bdf8]" />
                 Auction Results PDF
               </Button>
               <Button
                 onClick={handleStartAuction}
-                variant="outline"
-                className="rounded-full border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 font-semibold text-xs"
+                className="rounded-full px-7 py-2.5 h-auto font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] hover:scale-105 transition-all border border-white/40"
               >
                 Start Auction
               </Button>
@@ -407,14 +407,17 @@ function ManageAuctionPage() {
       </section>
 
       {/* Tabs Bar */}
-      <div className="bg-[#171a1d] text-[#fffcf7] border-b border-[#5c6875]/30 sticky top-[57px] z-30 backdrop-blur-md">
+      <div className="bg-[#142630]/95 text-[#ffffff] border-b border-[#38bdf8]/35 sticky top-[57px] z-30 backdrop-blur-xl">
         <div className="mx-auto flex max-w-4xl overflow-x-auto px-4 hide-scrollbar">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap px-4 py-4 text-xs font-bold tracking-wider uppercase transition-colors ${activeTab === tab ? "border-b-2 border-[#a1b5d8] text-[#a1b5d8]" : "text-[#abb4bd] hover:text-[#fffcf7]"
-                }`}
+              className={`whitespace-nowrap px-5 py-4 text-xs font-black tracking-wider uppercase transition-all ${
+                activeTab === tab 
+                  ? "border-b-2 border-[#38bdf8] text-[#38bdf8] drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" 
+                  : "text-[#f2e9dc]/70 hover:text-[#ffffff]"
+              }`}
             >
               {tab === "TEAMS" && teams ? `TEAMS (${teams.length})` : tab === "PLAYERS" && players ? `PLAYERS (${players.length})` : tab}
             </button>
@@ -430,16 +433,16 @@ function ManageAuctionPage() {
               <Button
                 onClick={handleDownloadTeamsExcel}
                 variant="outline"
-                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+                className="gap-2 rounded-full border-2 border-emerald-500/60 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-600 hover:text-white font-extrabold text-xs transition-all shadow-sm"
               >
                 <FileSpreadsheet className="size-4 text-emerald-400" /> Export teams Excel
               </Button>
               <Button
                 onClick={handleShareTeamForm}
                 variant="outline"
-                className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
+                className="gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a34] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs transition-all shadow-sm"
               >
-                <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
+                <Share2 className="size-4" /> Share Registration Link
               </Button>
             </div>
             {teamsPending ? (
@@ -608,16 +611,16 @@ function ManageAuctionPage() {
               <Button
                 onClick={handleDownloadPlayersExcel}
                 variant="outline"
-                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+                className="gap-2 rounded-full border-2 border-emerald-500/60 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-600 hover:text-white font-extrabold text-xs transition-all shadow-sm"
               >
                 <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
               </Button>
               <Button
                 onClick={handleSharePlayerForm}
                 variant="outline"
-                className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
+                className="gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a34] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs transition-all shadow-sm"
               >
-                <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
+                <Share2 className="size-4" /> Share Registration Link
               </Button>
             </div>
             {playersPending ? (
@@ -818,19 +821,19 @@ function ManageAuctionPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction className="rounded-full bg-gradient-to-r from-[#6c8cc2] to-[#a1b5d8] text-[#162235] font-bold">
+            <AlertDialogAction className="rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] text-[#ffffff] font-black shadow-[0_0_20px_rgba(249,115,22,0.6)]">
               OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Mobile Sticky Bar in Powder Blue & Tea Green */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[#5c6875]/40 bg-[#171a1d]/95 backdrop-blur-md p-4 sm:hidden z-40">
+      {/* Mobile Sticky Bar in Luminous Blue-Slate & Bright Amber */}
+      <div className="fixed bottom-0 left-0 right-0 border-t border-[#38bdf8]/40 bg-[#142630]/98 backdrop-blur-xl p-4 sm:hidden z-40 shadow-[0_-5px_25px_rgba(10,25,32,0.8)]">
         <div className="mx-auto flex max-w-md gap-3">
           <Button
             variant="outline"
-            className="flex-1 rounded-full py-2.5 h-auto font-bold text-xs border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8]/20"
+            className="flex-1 rounded-full py-3 h-auto font-black text-xs border-2 border-[#38bdf8]/50 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] shadow-sm"
             asChild
           >
             <Link to="/my-auctions/$id/edit" params={{ id: auction.id }}>
@@ -839,7 +842,7 @@ function ManageAuctionPage() {
           </Button>
           <Button
             onClick={handleStartAuction}
-            className="flex-1 rounded-full py-2.5 h-auto font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_20px_rgba(161,181,216,0.35)]"
+            className="flex-1 rounded-full py-3 h-auto font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] border border-white/40"
           >
             START AUCTION
           </Button>

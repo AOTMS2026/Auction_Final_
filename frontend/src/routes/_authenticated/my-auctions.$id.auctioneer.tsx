@@ -605,14 +605,14 @@ function AuctioneerConsole() {
   return (
     <>
       <div
-        className="h-screen w-screen text-[#fffcf7] flex flex-col overflow-hidden selection:bg-[#a1b5d8] selection:text-[#162235]"
+        className="flex h-screen w-full flex-col overflow-hidden text-[#ffffff] select-none"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 15%, #2e343a 0%, #171a1d 55%, #0f1214 100%)",
+            "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
         }}
       >
-      <header className="h-14 shrink-0 flex items-center gap-3 border-b border-[#5c6875]/40 bg-[#171a1d]/90 backdrop-blur-md px-6 text-[#fffcf7]">
-        <Button variant="ghost" size="icon" asChild className="text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] rounded-xl">
+      <header className="h-14 shrink-0 flex items-center gap-3 border-b border-[#38bdf8]/40 bg-[#142630]/95 backdrop-blur-md px-6 text-[#ffffff]">
+        <Button variant="ghost" size="icon" asChild className="text-[#f2e9dc] hover:text-[#ffffff] hover:bg-[#1f3a47] rounded-xl">
           <Link to="/my-auctions/$id" params={{ id: auction.id }} aria-label="Back to dashboard">
             <ArrowLeft className="size-5" />
           </Link>
@@ -620,14 +620,31 @@ function AuctioneerConsole() {
         <FallbackImage
           src={auction.coverImage || ""}
           alt=""
-          className="size-10 shrink-0 rounded-xl border border-[#a1b5d8]/40 object-cover"
+          className="size-10 shrink-0 rounded-xl border-2 border-[#38bdf8]/60 object-cover shadow-sm"
           fallback={
-            <span className="display grid size-full place-items-center rounded-xl bg-[#162235] text-sm font-black text-[#a1b5d8] shadow-sm">
+            <span className="display grid size-full place-items-center rounded-xl bg-[#162a34] text-sm font-black text-[#38bdf8] shadow-sm">
               {auction.name.slice(0, 2).toUpperCase()}
             </span>
           }
         />
-        <h1 className="flex-1 truncate text-xl font-black tracking-tight text-[#fffcf7]">{auction.name}</h1>
+        <h1 className="truncate text-xl font-black tracking-tight text-[#ffffff] drop-shadow-sm">{auction.name}</h1>
+
+        {/* Prominent Mode Badge (Test Mode vs Live Mode) */}
+        <div className="flex items-center">
+          {mode === "trial" ? (
+            <span className="px-3.5 py-1 rounded-full border-2 border-[#38bdf8] bg-[#162a34] text-[#38bdf8] text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(56,189,248,0.45)]">
+              🧪 Test Mode
+            </span>
+          ) : (
+            <span className="px-3.5 py-1 rounded-full border-2 border-emerald-400 bg-emerald-950 text-emerald-300 text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.5)] flex items-center gap-1.5 animate-pulse">
+              <span className="size-2 rounded-full bg-emerald-400" />
+              🔴 Live Mode
+            </span>
+          )}
+        </div>
+
+        <div className="flex-1" />
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -636,7 +653,7 @@ function AuctioneerConsole() {
               exportAuctionPDF(auction, effectivePlayers, orderedTeams.length > 0 ? orderedTeams : teams);
               toast.success("Auction PDF Report downloaded!");
             }}
-            className="h-9 px-3 rounded-xl border border-[#a1b5d8]/40 bg-[#162235]/80 text-[#a1b5d8] hover:bg-[#a1b5d8] hover:text-[#162235] flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="h-9 px-3.5 rounded-xl border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#38bdf8] hover:text-[#142630] flex items-center gap-1.5 text-xs font-black transition-all shadow-sm cursor-pointer"
             title="Download Full Auction Summary PDF"
           >
             <FileText className="size-4" />
@@ -694,17 +711,17 @@ function AuctioneerConsole() {
               mode={mode}
             />
           ) : (
-            <div className="rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/80 backdrop-blur-xl p-12 text-center text-[#abb4bd] shadow-2xl flex items-center justify-center h-full">
-              <p className="text-lg font-bold text-[#fffcf7]">Tap "New Player" at the bottom to begin.</p>
+            <div className="rounded-3xl border-2 border-[#38bdf8]/40 bg-[#162a34]/90 backdrop-blur-xl p-12 text-center text-[#f2e9dc] shadow-2xl flex items-center justify-center h-full">
+              <p className="text-lg font-black text-[#ffffff]">Tap "New Player" at the bottom to begin.</p>
             </div>
           )}
         </div>
 
         {/* Right Column: Teams List (Vertical Grid) */}
-        <div className="w-[480px] shrink-0 flex flex-col h-full bg-[#2e343a]/75 backdrop-blur-xl border border-[#5c6875]/40 rounded-3xl p-3 shadow-[0_15px_45px_rgba(23,26,29,0.8)] select-none overflow-hidden text-[#fffcf7]">
-          <div className="shrink-0 border-b border-[#5c6875]/30 pb-2 mb-2 flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Teams</h2>
-            <span className="text-[10px] text-[#a1b5d8] font-bold">Bidding Team Selection</span>
+        <div className="w-[480px] shrink-0 flex flex-col h-full bg-[#162a34]/90 backdrop-blur-xl border-2 border-[#38bdf8]/40 rounded-3xl p-3.5 shadow-[0_15px_45px_rgba(15,35,45,0.85)] select-none overflow-hidden text-[#ffffff]">
+          <div className="shrink-0 border-b border-[#38bdf8]/30 pb-2 mb-2 flex items-center justify-between">
+            <h2 className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Teams</h2>
+            <span className="text-[10px] text-[#f97316] font-black uppercase tracking-wider">Bidding Team Selection</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-2">
@@ -765,13 +782,13 @@ function AuctioneerConsole() {
       </main>
 
       {/* Bottom Controls Row */}
-      <div className="shrink-0 border-t border-[#5c6875]/40 bg-[#171a1d]/95 backdrop-blur-xl p-3 select-none text-[#fffcf7]">
+      <div className="shrink-0 border-t border-[#38bdf8]/40 bg-[#142630]/98 backdrop-blur-xl p-3 select-none text-[#ffffff]">
         <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between gap-4">
           
           {/* New Player Mode & Button */}
-          <div className="flex items-center gap-3 bg-[#2e343a]/60 border border-[#5c6875]/40 p-2 rounded-2xl shrink-0">
-            <div className="flex flex-col items-center gap-1.5 border-r border-[#5c6875]/30 pr-3">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-[#abb4bd] leading-none">New Player Mode</span>
+          <div className="flex items-center gap-3 bg-[#162a34] border-2 border-[#38bdf8]/40 p-2 rounded-2xl shrink-0">
+            <div className="flex flex-col items-center gap-1.5 border-r border-[#38bdf8]/30 pr-3">
+              <span className="text-[9px] font-black uppercase tracking-wider text-[#38bdf8] leading-none">New Player Mode</span>
               <div className="flex gap-1 w-36">
                 <button
                   type="button"
@@ -782,8 +799,8 @@ function AuctioneerConsole() {
                   className={cn(
                     "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
                     selectionMode === "random"
-                      ? "bg-[#a1b5d8] text-[#162235] border-[#a1b5d8] shadow-md"
-                      : "bg-[#171a1d]/80 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
+                      ? "bg-[#38bdf8] text-[#142630] border-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.5)] font-black"
+                      : "bg-[#142630] text-[#f2e9dc]/70 border-[#38bdf8]/30 hover:bg-[#1a3847] hover:text-[#ffffff]",
                   )}
                   title="Random Selection"
                 >
@@ -796,8 +813,8 @@ function AuctioneerConsole() {
                   className={cn(
                     "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
                     selectionMode === "manual"
-                      ? "bg-[#a1b5d8] text-[#162235] border-[#a1b5d8] shadow-md"
-                      : "bg-[#171a1d]/80 text-[#abb4bd] border-[#5c6875]/40 hover:bg-[#2e343a] hover:text-[#fffcf7]",
+                      ? "bg-[#38bdf8] text-[#142630] border-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.5)] font-black"
+                      : "bg-[#142630] text-[#f2e9dc]/70 border-[#38bdf8]/30 hover:bg-[#1a3847] hover:text-[#ffffff]",
                   )}
                   title="Manual Selection"
                 >
@@ -808,7 +825,7 @@ function AuctioneerConsole() {
             </div>
             <Button
               className={cn(
-                "rounded-xl px-5 h-9 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-[0_0_15px_rgba(161,181,216,0.35)] shrink-0",
+                "rounded-xl px-5 h-9 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30 shrink-0",
                 selectionMode === "random" && !!currentPlayer && "opacity-50 cursor-not-allowed"
               )}
               disabled={selectionMode === "random" && !!currentPlayer}
@@ -819,28 +836,28 @@ function AuctioneerConsole() {
           </div>
 
           {/* Bid Controls (Horizontal Flex) */}
-          <div className="flex-1 flex items-center gap-2.5 justify-center max-w-[680px]">
+          <div className="flex-1 flex items-center gap-3 justify-center max-w-[680px]">
             <Button 
               variant="outline" 
-              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] hover:border-[#38bdf8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(1)}
             >
-              <Plus className="size-4 text-[#a1b5d8]" /> Bid Up
+              <Plus className="size-4 text-[#38bdf8]" /> Bid Up
             </Button>
             <Button 
               variant="outline" 
-              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border border-[#5c6875]/50 bg-[#2e343a]/80 text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] hover:border-[#38bdf8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={() => handleBid(-1)}
             >
-              <Minus className="size-4 text-[#a1b5d8]" /> Bid Down
+              <Minus className="size-4 text-[#38bdf8]" /> Bid Down
             </Button>
             
-            <div className="h-6 w-px bg-[#5c6875]/40 mx-1" />
+            <div className="h-6 w-px bg-[#38bdf8]/40 mx-1" />
 
             <Button
-              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-[#47673a] to-[#71b368] hover:from-[#31572c] hover:to-[#4e8a46] text-white rounded-xl shadow-[0_0_20px_rgba(113,179,104,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-xl shadow-[0_0_25px_rgba(16,185,129,0.55)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer"
               disabled={!currentPlayer}
               onClick={handleSold}
             >
@@ -848,7 +865,7 @@ function AuctioneerConsole() {
             </Button>
             <Button 
               variant="destructive" 
-              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-[#8b2635] to-[#c93b51] hover:from-[#721f2c] hover:to-[#b03446] text-white rounded-xl shadow-[0_0_20px_rgba(201,59,81,0.3)] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-rose-600 via-rose-500 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-xl shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer" 
               disabled={!currentPlayer} 
               onClick={handleUnsold}
             >

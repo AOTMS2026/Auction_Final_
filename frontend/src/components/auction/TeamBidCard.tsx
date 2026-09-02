@@ -51,40 +51,40 @@ export function TeamBidCard({
       onDragEnd={onDragEnd}
       onDrop={onDrop}
       className={cn(
-        "relative flex w-full items-center gap-2.5 rounded-2xl border p-2 sm:p-2.5 text-left transition-all shadow-sm select-none",
+        "relative flex w-full items-center gap-2.5 rounded-2xl border-2 p-2 sm:p-2.5 text-left transition-all shadow-sm select-none",
         draggable && "cursor-grab active:cursor-grabbing",
         isFull
-          ? "border-[#5c6875]/20 bg-[#171a1d]/40 opacity-40 cursor-not-allowed"
+          ? "border-[#38bdf8]/15 bg-[#142630]/40 opacity-40 cursor-not-allowed"
           : selected
-            ? "border-[#a1b5d8] bg-[#162235] text-[#fffcf7] ring-2 ring-[#a1b5d8]/40 shadow-[0_0_20px_rgba(161,181,216,0.25)] cursor-pointer"
-            : "border-[#5c6875]/30 bg-[#171a1d]/75 text-[#fffcf7] hover:border-[#a1b5d8]/50 hover:bg-[#2e343a]/75 cursor-pointer",
-        isDragging && "opacity-30 border-dashed border-[#a1b5d8] scale-95",
-        isDragOver && "border-[#a1b5d8] border-2 scale-[1.03] bg-[#2d436a]/30 shadow-lg ring-2 ring-[#a1b5d8]/30",
+            ? "border-[#38bdf8] bg-[#1a3a4a] text-[#ffffff] ring-2 ring-[#38bdf8]/50 shadow-[0_0_20px_rgba(56,189,248,0.4)] cursor-pointer scale-[1.02]"
+            : "border-[#38bdf8]/30 bg-[#162a34]/90 text-[#ffffff] hover:border-[#38bdf8]/80 hover:bg-[#1a3a4a]/80 cursor-pointer",
+        isDragging && "opacity-30 border-dashed border-[#38bdf8] scale-95",
+        isDragOver && "border-[#38bdf8] border-2 scale-[1.03] bg-[#1e4456]/40 shadow-lg ring-2 ring-[#38bdf8]/40",
       )}
     >
-      <div className="flex size-9 sm:size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#162235] border border-[#a1b5d8]/30 shadow-md">
+      <div className="flex size-9 sm:size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#142630] border-2 border-[#38bdf8]/50 shadow-md">
         <FallbackImage
           src={team.logo || ""}
           alt={team.name}
           className="size-full object-cover"
-          fallback={<span className="text-xs font-black text-[#a1b5d8]">{team.shortName.slice(0, 3)}</span>}
+          fallback={<span className="text-xs font-black text-[#38bdf8]">{team.shortName.slice(0, 3)}</span>}
         />
       </div>
       <div className="min-w-0 flex-1 pr-6">
-        <p className="truncate text-xs sm:text-sm font-black text-[#fffcf7] leading-tight">{team.name}</p>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-xs font-bold text-[#a1b5d8] truncate">
-          <span>🪙 {formatPoints(stats.availablePoints)}</span>
-          <span className="text-[#5c6875] font-normal">•</span>
+        <p className="truncate text-xs sm:text-sm font-black text-[#ffffff] leading-tight drop-shadow-sm">{team.name}</p>
+        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-xs font-bold text-[#38bdf8] truncate">
+          <span className="font-black text-emerald-400">🪙 {formatPoints(stats.availablePoints)}</span>
+          <span className="text-[#38bdf8]/40 font-normal">•</span>
           {isFull ? (
             <span className="font-black text-rose-400">Full</span>
           ) : (
-            <span className="text-[#abb4bd]">Max: <span className="font-bold text-[#c2d8b9]">{formatPoints(stats.maxBidPoints)}</span></span>
+            <span className="text-[#f2e9dc]/80">Max: <span className="font-black text-emerald-400">{formatPoints(stats.maxBidPoints)}</span></span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-bold text-[#abb4bd] truncate">
-          <span>Sold: <span className="text-[#fffcf7] font-black">{stats.totalPlayers}</span></span>
-          <span className="text-[#5c6875] font-normal">•</span>
-          <span>Left: <span className="text-[#ffd791] font-black">{stats.reservedPlayers}</span></span>
+        <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-bold text-[#f2e9dc]/70 truncate">
+          <span>Sold: <span className="text-[#ffffff] font-black">{stats.totalPlayers}</span></span>
+          <span className="text-[#38bdf8]/40 font-normal">•</span>
+          <span>Left: <span className="text-[#f97316] font-black">{stats.reservedPlayers}</span></span>
         </div>
       </div>
 

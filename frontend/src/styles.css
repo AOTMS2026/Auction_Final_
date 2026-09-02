@@ -34,6 +34,12 @@
   --color-brand-dark: var(--brand-dark);
   --color-ink: var(--ink);
 
+  --color-charcoal: #595959;
+  --color-grey-olive: #808f85;
+  --color-blue-slate: #326a7a;
+  --color-linen: #f2e9dc;
+  --color-chocolate: #d16919;
+
   --color-olive-leaf: #606c38;
   --color-olive-leaf-100: #13160b;
   --color-olive-leaf-200: #262b16;
