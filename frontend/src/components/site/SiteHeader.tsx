@@ -157,7 +157,7 @@ export function SiteHeader() {
                 to="/auth"
                 className="hidden rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] px-6 py-2 text-sm font-black text-[#ffffff] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] transition-all hover:scale-105 border border-[#ffffff]/40 sm:inline-flex"
               >
-                Register / Login
+                Login
               </Link>
             )}
 
