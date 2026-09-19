@@ -616,9 +616,31 @@ function AuctioneerConsole() {
     ...pendingPlayers.filter((p) => getSpecialPriority(p.name) === Infinity)
   ];
   const filteredPickerPlayers = basePickerPlayers.filter((p) => {
-    const query = pickerQuery.trim().toLowerCase();
-    if (!query) return true;
-    const sNo = playerSNoMap.get(p.id)?.toString() || "";
+    const rawQuery = pickerQuery.trim().toLowerCase();
+    if (!rawQuery) return true;
+
+    const sNo = playerSNoMap.get(p.id);
+
+    // Check if query is numeric or starts with S.No prefix (e.g. "1", "#1", "sno 1", "s.no 1", "s.no#1")
+    const cleanNumQuery = rawQuery.replace(/^(#|s\.?no\.?\s*#?)/i, "").trim();
+    const isNumericQuery = /^\d+$/.test(cleanNumQuery);
+
+    if (isNumericQuery) {
+      const targetSNo = parseInt(cleanNumQuery, 10);
+      // Exact S.No match
+      if (sNo === targetSNo) return true;
+
+      // Name match if name explicitly contains the digits (e.g. "Player 1")
+      const name = p.name.toLowerCase();
+      if (name.includes(rawQuery) || name.includes(cleanNumQuery)) return true;
+
+      // Mobile phone match only for queries with 3 or more digits to prevent 1-2 digit S.No search pollution
+      const phone = p.phone.toLowerCase();
+      if (cleanNumQuery.length >= 3 && phone.includes(cleanNumQuery)) return true;
+
+      return false;
+    }
+
     const name = p.name.toLowerCase();
     const phone = p.phone.toLowerCase();
     const role = (p.sportFields?.["role"] || "").toLowerCase();
@@ -626,16 +648,11 @@ function AuctioneerConsole() {
     const city = (p.city || "").toLowerCase();
 
     return (
-      name.includes(query) ||
-      phone.includes(query) ||
-      sNo === query ||
-      sNo.includes(query) ||
-      `#${sNo}`.includes(query) ||
-      `sno ${sNo}`.includes(query) ||
-      `s.no ${sNo}`.includes(query) ||
-      role.includes(query) ||
-      category.includes(query) ||
-      city.includes(query)
+      name.includes(rawQuery) ||
+      phone.includes(rawQuery) ||
+      role.includes(rawQuery) ||
+      category.includes(rawQuery) ||
+      city.includes(rawQuery)
     );
   });
 

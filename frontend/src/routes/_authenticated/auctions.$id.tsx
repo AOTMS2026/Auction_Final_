@@ -673,19 +673,19 @@ function AuctionDetailPage() {
                     }
                     if (hasChapter) {
                       const match = p.customData?.match(/Chapter:\s*([^,|]+)/i);
-                      row["Chapter Name"] = match ? match[1].trim() : "-";
+                      row["Chapter Name"] = match?.[1] ? match[1].trim() : "-";
                     }
                     if (hasBniName) {
                       const match = p.customData?.match(/BNI Name:\s*([^,|]+)/i);
-                      row["BNI Member Name"] = match ? match[1].trim() : "-";
+                      row["BNI Member Name"] = match?.[1] ? match[1].trim() : "-";
                     }
                     if (hasRel) {
                       const match = p.customData?.match(/Rel:\s*([^,|]+)/i);
-                      row["Relationship"] = match ? match[1].trim() : "-";
+                      row["Relationship"] = match?.[1] ? match[1].trim() : "-";
                     }
                     if (hasBblSeasons) {
                       const match = p.customData?.match(/BBL Seasons:\s*([^,|]+)/i);
-                      row["Seasons Played"] = match ? match[1].trim() : "-";
+                      row["Seasons Played"] = match?.[1] ? match[1].trim() : "-";
                     }
                     if (hasOtherCustom) {
                       row["Custom Details"] = p.customData || "-";
