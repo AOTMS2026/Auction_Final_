@@ -9,6 +9,7 @@ import type { SportType } from "@/lib/auction-client";
 export function CurrentPlayerCard({
   player,
   lotNumber,
+  sNo,
   sportType,
   currentBid,
   minBid,
@@ -18,6 +19,7 @@ export function CurrentPlayerCard({
 }: {
   player: Player;
   lotNumber: number;
+  sNo?: number | undefined;
   sportType: SportType;
   currentBid: number;
   minBid?: number;
@@ -38,6 +40,7 @@ export function CurrentPlayerCard({
 
   const isDummyPhone = player.phone.startsWith("90000000");
   const playerNumber = isDummyPhone ? parseInt(player.phone.slice(8)) : null;
+  const displaySNo = sNo ?? playerNumber;
 
   return (
     <div className="rounded-3xl border-2 border-[#38bdf8]/40 bg-[#162a34]/95 backdrop-blur-xl p-4 md:p-6 shadow-[0_15px_45px_rgba(15,35,45,0.85)] flex flex-col md:flex-row gap-6 md:gap-8 h-full overflow-hidden select-none text-[#ffffff]">
@@ -68,11 +71,22 @@ export function CurrentPlayerCard({
             </div>
           )}
         </div>
-        {player.age != null && (
-          <div className="mt-3 rounded-xl bg-[#142630] border-2 border-[#38bdf8]/40 text-[#ffffff] px-4 py-2 text-center text-sm sm:text-base font-black w-full shrink-0 select-none shadow-sm">
-            {player.age} Years Old
+        <div className="mt-3 flex items-center gap-2 w-full shrink-0 select-none">
+          {player.age != null && (
+            <div className="flex-1 rounded-xl bg-[#142630] border-2 border-[#38bdf8]/40 text-[#ffffff] px-3 py-2 text-center text-sm sm:text-base font-black shadow-sm">
+              {player.age} Years
+            </div>
+          )}
+          <div className="flex-1 rounded-xl bg-[#142630] border-2 border-[#38bdf8]/40 text-[#38bdf8] px-3 py-2 text-center text-sm sm:text-base font-black shadow-sm">
+            {(() => {
+              const g = player.gender?.trim().toLowerCase();
+              if (!g) return "Gender: -";
+              if (g === "m" || g === "male") return "Gender: Male";
+              if (g === "f" || g === "w" || g === "female" || g === "woman" || g === "women") return "Gender: Female";
+              return `Gender: ${g.charAt(0).toUpperCase() + g.slice(1)}`;
+            })()}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Right Column: Details & Bid amount */}
@@ -81,10 +95,15 @@ export function CurrentPlayerCard({
         <div className="space-y-4 md:space-y-6 flex-1 flex flex-col justify-center overflow-y-auto pr-1">
           <div className="flex flex-col gap-1 text-center md:text-left">
             <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#38bdf8] uppercase tracking-wide drop-shadow-[0_0_12px_rgba(56,189,248,0.5)]">
-              Player {playerNumber ?? lotNumber}
+              {displaySNo ? `S.No #${displaySNo}` : `Player Lot #${lotNumber}`}
             </span>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#ffffff] leading-tight uppercase tracking-tight drop-shadow-md">
               {player.name}
+              {displaySNo && (
+                <span className="text-[#38bdf8] text-2xl sm:text-3xl lg:text-4xl font-bold ml-3 inline-block">
+                  (S.No #{displaySNo})
+                </span>
+              )}
             </h2>
           </div>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
@@ -96,9 +115,13 @@ export function CurrentPlayerCard({
             <span className="rounded-xl bg-[#142630] border-2 border-[#38bdf8]/60 text-[#38bdf8] px-6 py-3 text-center text-lg sm:text-xl font-black shadow-md">
               Grade {player.category || "-"}
             </span>
-            {/* Dominated Hand Badge */}
+            {/* Level Badge (Added right after Grade) */}
+            <span className="rounded-xl bg-[#142630] border-2 border-[#38bdf8]/60 text-[#a1b5d8] px-6 py-3 text-center text-lg sm:text-xl font-black shadow-md">
+              Level {player.playerLevel || "-"}
+            </span>
+            {/* City Name Badge (Green Box) */}
             <span className="rounded-xl bg-emerald-950/80 border-2 border-emerald-500/60 text-emerald-300 px-6 py-3 text-center text-lg sm:text-xl font-black shadow-md">
-              {player.customData ? player.customData.replace("Dominated Hand: ", "") : "-"}
+              City: {player.city ? (player.city.charAt(0).toUpperCase() + player.city.slice(1)) : "-"}
             </span>
             {/* Additional Spec Badges */}
             {config.specs

@@ -19,8 +19,9 @@
  */
 
 @theme inline {
-  --font-display: "Outfit", "Plus Jakarta Sans", sans-serif;
+  --font-display: "Space Grotesk", "Outfit", "Plus Jakarta Sans", sans-serif;
   --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-auction: "Space Grotesk", "Outfit", sans-serif;
   --font-mono: var(--font-geist-mono, monospace);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -700,4 +701,26 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-muted-foreground);
 }
+
+/* Auction Typography & Word Spacing */
+.font-auction {
+  font-family: var(--font-auction), sans-serif;
+  letter-spacing: 0.025em;
+  word-spacing: 0.16em;
+}
+
+.font-auction-title {
+  font-family: var(--font-auction), sans-serif;
+  letter-spacing: 0.04em;
+  word-spacing: 0.18em;
+}
+
+.word-gap-wide {
+  word-spacing: 0.18em;
+}
+
+.word-gap-normal {
+  word-spacing: 0.12em;
+}
+
 

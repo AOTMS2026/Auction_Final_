@@ -71,7 +71,7 @@ router.get(
     const cachedTeams = getCachedTeams(auctionId);
     if (cachedTeams) {
       res.set("X-Cache", "HIT");
-      res.set("Cache-Control", "public, max-age=15, stale-while-revalidate=60");
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
       return res.json({ teams: cachedTeams });
     }
 
@@ -102,7 +102,7 @@ router.get(
     console.log(`[teams-api] GET /auctions/${auctionId}/teams | Total: ${elapsed.toFixed(2)}ms | Count: ${publicTeams.length}`);
 
     res.set("X-Cache", "MISS");
-    res.set("Cache-Control", "public, max-age=15, stale-while-revalidate=60");
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.json({ teams: publicTeams });
   })
 );

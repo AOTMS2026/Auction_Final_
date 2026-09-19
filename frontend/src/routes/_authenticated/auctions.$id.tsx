@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
@@ -156,7 +157,8 @@ function AuctionNotFound() {
 }
 
 function AuctionDetailPage() {
-  const { auction } = Route.useLoaderData();
+  const { auction: initialAuction } = Route.useLoaderData();
+  const { data: auction = initialAuction } = useQuery(auctionDetailQueryOptions(initialAuction.id));
   useRealtimeUpdates(auction?.id);
   const { players, isPending: playersPending, updatePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
   const { teams, isPending: teamsPending } = useTeams(auction.id);
@@ -225,8 +227,8 @@ function AuctionDetailPage() {
                 </span>
               }
             />
-            <div className="flex-1 text-[#fffcf7]">
-              <h1 className="text-2xl font-black sm:text-4xl tracking-tight text-[#fffcf7]">{auction.name}</h1>
+            <div className="flex-1 text-[#ffffff]">
+              <h1 className="text-2xl font-black sm:text-4xl lg:text-5xl font-auction tracking-wider [word-spacing:0.18em] text-[#ffffff] uppercase drop-shadow-md">{auction.name}</h1>
               
               <div className="mt-2 space-y-1.5 text-sm sm:text-base">
                 <p className="flex items-center gap-2 text-[#abb4bd]">

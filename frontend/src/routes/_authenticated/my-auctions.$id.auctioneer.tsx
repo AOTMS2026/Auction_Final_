@@ -249,14 +249,23 @@ function AuctioneerConsole() {
 
   function handleTeamSelect(teamId: string) {
     if (selectedTeamId === teamId) return;
-
     setSelectedTeamId(teamId);
-
-    if (currentPlayer) {
-      // Automatically bid up if a player is active!
-      setCurrentBid((prev) => Math.max(auction.minimumBid, prev + auction.bidIncrement));
-    }
   }
+
+  // Auto-select initial random player on start if none is currently selected
+  useEffect(() => {
+    if (playersPending || currentPlayerId) return;
+    const pending = players.filter((p) => effectiveStatus(p) === "pending");
+    if (pending.length > 0) {
+      const queue = createShuffledQueue(pending);
+      const firstId = queue[0];
+      const firstPlayer = players.find((p) => p.id === firstId);
+      if (firstPlayer) {
+        startNewLot(firstPlayer);
+        setShuffledIds(queue.filter((id) => id !== firstId));
+      }
+    }
+  }, [playersPending]);
 
   function getSpecialPriority(name: string): number {
     const n = name.toLowerCase();
@@ -446,6 +455,14 @@ function AuctioneerConsole() {
     return map;
   }, [teams, effectivePlayers, auction]);
 
+  const playerSNoMap = useMemo(() => {
+    const map = new Map<string, number>();
+    players.forEach((p, idx) => {
+      map.set(p.id, idx + 1);
+    });
+    return map;
+  }, [players]);
+
   const pendingPlayers = players.filter((p) => effectiveStatus(p) === "pending");
   const soldCount = players.filter((p) => effectiveStatus(p) === "sold").length;
   const unsoldCount = players.filter((p) => effectiveStatus(p) === "unsold").length;
@@ -527,7 +544,7 @@ function AuctioneerConsole() {
     const selectedTeam = teams.find((t) => t.id === selectedTeamId);
     const selectedTeamStats = teamStatsMap.get(selectedTeamId);
     if (selectedTeam && selectedTeamStats && selectedTeamStats.reservedPlayers <= 0) {
-      toast.error(`${selectedTeam.name} already has the maximum ${auction.playersPerTeam} players.`);
+      toast.error("Max team reached");
       return;
     }
 
@@ -598,9 +615,29 @@ function AuctioneerConsole() {
     ...pendingPriorityPlayers,
     ...pendingPlayers.filter((p) => getSpecialPriority(p.name) === Infinity)
   ];
-  const filteredPickerPlayers = basePickerPlayers.filter((p) =>
-    p.name.toLowerCase().includes(pickerQuery.trim().toLowerCase()),
-  );
+  const filteredPickerPlayers = basePickerPlayers.filter((p) => {
+    const query = pickerQuery.trim().toLowerCase();
+    if (!query) return true;
+    const sNo = playerSNoMap.get(p.id)?.toString() || "";
+    const name = p.name.toLowerCase();
+    const phone = p.phone.toLowerCase();
+    const role = (p.sportFields?.["role"] || "").toLowerCase();
+    const category = (p.category || "").toLowerCase();
+    const city = (p.city || "").toLowerCase();
+
+    return (
+      name.includes(query) ||
+      phone.includes(query) ||
+      sNo === query ||
+      sNo.includes(query) ||
+      `#${sNo}`.includes(query) ||
+      `sno ${sNo}`.includes(query) ||
+      `s.no ${sNo}`.includes(query) ||
+      role.includes(query) ||
+      category.includes(query) ||
+      city.includes(query)
+    );
+  });
 
   return (
     <>
@@ -700,6 +737,7 @@ function AuctioneerConsole() {
             <CurrentPlayerCard
               player={currentPlayer}
               lotNumber={soldCount + unsoldCount + 1}
+              sNo={playerSNoMap.get(currentPlayer.id)}
               sportType={auction.sportType}
               currentBid={currentBid}
               minBid={auction.minimumBid}
@@ -935,8 +973,7 @@ function AuctioneerConsole() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {filteredPickerPlayers.map((p) => {
-                  const isDummy = p.phone.startsWith("90000000");
-                  const pNumber = isDummy ? parseInt(p.phone.slice(8)) : null;
+                  const sNo = playerSNoMap.get(p.id);
                   return (
                     <button
                       key={p.id}
@@ -972,12 +1009,13 @@ function AuctioneerConsole() {
                         }
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs sm:text-sm font-black text-[#fffcf7] truncate group-hover:text-[#a1b5d8] transition-colors">
-                          {p.name}
+                        <div className="text-xs sm:text-sm font-black text-[#fffcf7] truncate group-hover:text-[#a1b5d8] transition-colors flex items-center justify-between">
+                          <span>{p.name}</span>
+                          {sNo && <span className="text-[11px] font-bold text-[#38bdf8] ml-2 shrink-0">(S.No #{sNo})</span>}
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 truncate">
-                          {pNumber && <span className="font-black text-[#a1b5d8]">#{pNumber}</span>}
-                          {pNumber && <span className="text-[#5c6875]">•</span>}
+                          {sNo && <span className="font-black text-[#a1b5d8]">S.No #{sNo}</span>}
+                          {sNo && <span className="text-[#5c6875]">•</span>}
                           <span className="text-[#ecf0f7]">{p.sportFields?.["role"] || "-"}</span>
                           <span className="text-[#5c6875]">•</span>
                           <span className="text-[#c2d8b9]">Grade {p.category || "-"}</span>

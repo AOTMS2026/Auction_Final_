@@ -8,7 +8,10 @@ export function useMyAuctions() {
   const queryClient = useQueryClient();
   const query = useQuery(myAuctionsQueryOptions());
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: auctionKeys.all });
+  const invalidate = async () => {
+    await queryClient.invalidateQueries({ queryKey: auctionKeys.all, refetchType: "all" });
+    await queryClient.refetchQueries({ queryKey: auctionKeys.mine() });
+  };
 
   const createMutation = useMutation({
     mutationFn: (input: AuctionInput) => auctionClient.create(input),

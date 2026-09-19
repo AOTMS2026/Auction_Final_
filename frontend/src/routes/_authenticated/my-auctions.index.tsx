@@ -60,21 +60,21 @@ function MyAuctionsPage() {
         {/* Top Header & Create Button with Luminous Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#38bdf8]/35">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#162a32]/95 border-2 border-[#38bdf8]/60 text-[#ffffff] text-xs font-black uppercase tracking-wider mb-2 shadow-[0_0_20px_rgba(56,189,248,0.4)]">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#162a32]/95 border-2 border-[#38bdf8]/60 text-[#ffffff] text-xs font-black uppercase tracking-widest mb-2 shadow-[0_0_20px_rgba(56,189,248,0.4)] [word-spacing:0.18em] font-auction">
               <LayoutGrid className="size-3.5 text-[#38bdf8]" />
-              <span>Organizer Console</span>
+              <span>ORGANIZER CONSOLE</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#ffffff]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-auction-title tracking-wider text-[#ffffff] [word-spacing:0.22em] drop-shadow-md uppercase">
               My Auctions
             </h1>
-            <p className="mt-1 text-sm text-[#f2e9dc]/80 font-medium">
+            <p className="mt-1 text-sm text-[#f2e9dc]/85 font-medium tracking-wide [word-spacing:0.14em]">
               Manage tournaments, squad rosters, and live bidding sessions.
             </p>
           </div>
 
           <Button
             asChild
-            className="rounded-full px-7 py-3 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] hover:scale-105 transition-all duration-300 border border-white/40"
+            className="rounded-full px-7 py-3 h-auto font-black font-auction text-sm tracking-wide [word-spacing:0.14em] text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] hover:scale-105 transition-all duration-300 border border-white/40"
           >
             <Link to="/my-auctions/new">
               <Plus className="mr-1.5 size-4 stroke-[3]" /> Create Auction
@@ -176,12 +176,12 @@ function MyAuctionsPage() {
                   <Link
                     to="/my-auctions/$id"
                     params={{ id: a.id }}
-                    className="truncate text-base sm:text-lg font-black text-[#ffffff] group-hover:text-[#38bdf8] transition-colors block drop-shadow-sm"
+                    className="truncate text-base sm:text-lg font-black font-auction text-[#ffffff] group-hover:text-[#38bdf8] transition-colors block drop-shadow-sm tracking-wide [word-spacing:0.16em]"
                   >
                     {a.name}
                   </Link>
-                  <p className="mt-1 text-xs text-[#f2e9dc]/80 flex items-center gap-1.5 font-semibold">
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#142630] border border-[#38bdf8]/50 text-[#38bdf8] text-[10px] font-black uppercase tracking-wider">
+                  <p className="mt-1 text-xs text-[#f2e9dc]/80 flex items-center gap-2 font-semibold tracking-wide [word-spacing:0.12em]">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#142630] border border-[#38bdf8]/50 text-[#38bdf8] text-[10px] font-black uppercase tracking-wider font-auction">
                       {sportTypeLabels[a.sportType]}
                     </span>
                     <span>·</span>

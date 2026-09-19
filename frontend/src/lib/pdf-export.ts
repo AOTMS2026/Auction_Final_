@@ -134,19 +134,27 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
       startY += 8;
     } else {
       const tableRows = teamSoldPlayers.map((p, idx) => {
-        const isDummy = p.phone && p.phone.startsWith("90000000");
-        const pNum = isDummy ? `#${parseInt(p.phone.slice(8))}` : `#${idx + 1}`;
-        const role = p.sportFields?.["role"] || p.sportFields?.["position"] || "-";
-        const category = p.category || "-";
-        const base = p.baseValue ? `${p.baseValue.toLocaleString()}` : `${auction.minimumBid.toLocaleString()}`;
-        const sold = p.soldPrice ? `${p.soldPrice.toLocaleString()}` : "0";
+        const sNo = players.findIndex((x) => x.id === p.id) + 1;
+        const pNum = sNo > 0 ? `${sNo}` : `${idx + 1}`;
+        const gender = p.gender
+          ? p.gender.trim().toLowerCase().startsWith("m")
+            ? "Male"
+            : p.gender.trim().toLowerCase().startsWith("f") || p.gender.trim().toLowerCase().startsWith("w")
+            ? "Female"
+            : p.gender
+          : "-";
+        const jersey = p.jerseySize
+          ? `${p.jerseySize}${p.jerseyName ? ` (${p.jerseyName})` : ""}`
+          : p.jerseyName || "-";
+        const mobile = p.phone || "-";
+        const sold = p.soldPrice ? `${p.soldPrice.toLocaleString()} pts` : "0 pts";
 
-        return [pNum, p.name, role, category, base, sold];
+        return [pNum, p.name, gender, jersey, mobile, sold];
       });
 
       autoTable(doc, {
         startY: startY,
-        head: [["#", "PLAYER NAME", "ROLE", "GRADE", "BASE PRICE", "FINAL SOLD PRICE"]],
+        head: [["S.No", "Name", "Gender", "Jersey", "Mobile No", "Sold Price"]],
         body: tableRows,
         margin: { left: margin, right: margin },
         theme: "striped",
@@ -162,12 +170,12 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
           textColor: [30, 35, 42],
         },
         columnStyles: {
-          0: { cellWidth: 12, halign: "center" },
+          0: { cellWidth: 15, halign: "center" },
           1: { cellWidth: "auto", fontStyle: "bold" },
-          2: { cellWidth: 35 },
-          3: { cellWidth: 20 },
-          4: { cellWidth: 28, halign: "right" },
-          5: { cellWidth: 35, halign: "right", fontStyle: "bold", textColor: [35, 80, 30] },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 28 },
+          4: { cellWidth: 32 },
+          5: { cellWidth: 30, halign: "right", fontStyle: "bold", textColor: [35, 80, 30] },
         },
         alternateRowStyles: {
           fillColor: [248, 250, 252],
@@ -199,18 +207,26 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
     startY += 4;
 
     const unsoldRows = unsoldPlayers.map((p, idx) => {
-      const isDummy = p.phone && p.phone.startsWith("90000000");
-      const pNum = isDummy ? `#${parseInt(p.phone.slice(8))}` : `#${idx + 1}`;
-      const role = p.sportFields?.["role"] || p.sportFields?.["position"] || "-";
-      const category = p.category || "-";
-      const base = p.baseValue ? `${p.baseValue.toLocaleString()}` : `${auction.minimumBid.toLocaleString()}`;
+      const sNo = players.findIndex((x) => x.id === p.id) + 1;
+      const pNum = sNo > 0 ? `${sNo}` : `${idx + 1}`;
+      const gender = p.gender
+        ? p.gender.trim().toLowerCase().startsWith("m")
+          ? "Male"
+          : p.gender.trim().toLowerCase().startsWith("f") || p.gender.trim().toLowerCase().startsWith("w")
+          ? "Female"
+          : p.gender
+        : "-";
+      const jersey = p.jerseySize
+        ? `${p.jerseySize}${p.jerseyName ? ` (${p.jerseyName})` : ""}`
+        : p.jerseyName || "-";
+      const mobile = p.phone || "-";
 
-      return [pNum, p.name, role, category, base, "UNSOLD"];
+      return [pNum, p.name, gender, jersey, mobile, "UNSOLD"];
     });
 
     autoTable(doc, {
       startY: startY,
-      head: [["#", "PLAYER NAME", "ROLE", "GRADE", "BASE PRICE", "STATUS"]],
+      head: [["S.No", "Name", "Gender", "Jersey", "Mobile No", "Sold Price"]],
       body: unsoldRows,
       margin: { left: margin, right: margin },
       theme: "striped",
@@ -225,11 +241,11 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
         textColor: [30, 35, 42],
       },
       columnStyles: {
-        0: { cellWidth: 12, halign: "center" },
+        0: { cellWidth: 15, halign: "center" },
         1: { cellWidth: "auto", fontStyle: "bold" },
-        2: { cellWidth: 35 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 30, halign: "right" },
+        2: { cellWidth: 22 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 32 },
         5: { cellWidth: 30, halign: "center", fontStyle: "bold", textColor: [180, 40, 50] },
       },
       alternateRowStyles: {

@@ -7,7 +7,10 @@ export function useTeams(auctionId: string) {
   const queryClient = useQueryClient();
   const query = useQuery(teamsQueryOptions(auctionId));
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: auctionKeys.teams(auctionId) });
+  const invalidate = async () => {
+    await queryClient.invalidateQueries({ queryKey: auctionKeys.teams(auctionId), refetchType: "all" });
+    await queryClient.refetchQueries({ queryKey: auctionKeys.teams(auctionId) });
+  };
 
   const createMutation = useMutation({
     mutationFn: (input: TeamInput) => auctionClient.createTeam(input),

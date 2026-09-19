@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
@@ -69,7 +69,8 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/")({
 const TABS = ["TEAMS", "PLAYERS", "MVP", "SPONSORS", "LINK", "ABOUT"];
 
 function ManageAuctionPage() {
-  const { auction } = Route.useLoaderData();
+  const { auction: initialAuction } = Route.useLoaderData();
+  const { data: auction = initialAuction } = useQuery(auctionDetailQueryOptions(initialAuction.id));
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("TEAMS");
@@ -351,11 +352,11 @@ function ManageAuctionPage() {
               }
             />
             <div className="flex-1 text-[#ffffff]">
-              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#162a32]/95 border-2 border-[#38bdf8]/60 text-[#ffffff] text-[11px] font-black uppercase tracking-wider mb-2 shadow-[0_0_15px_rgba(56,189,248,0.4)]">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#162a32]/95 border-2 border-[#38bdf8]/60 text-[#ffffff] text-[11px] font-black uppercase tracking-wider mb-2 shadow-[0_0_15px_rgba(56,189,248,0.4)] font-auction [word-spacing:0.14em]">
                 <span className="size-2 rounded-full bg-[#f97316] animate-pulse" />
                 Live Tournament
               </div>
-              <h1 className="text-2xl font-black sm:text-4xl tracking-tight text-[#ffffff] drop-shadow-md">{auction.name}</h1>
+              <h1 className="text-2xl font-black sm:text-4xl lg:text-5xl font-auction tracking-wider [word-spacing:0.18em] text-[#ffffff] drop-shadow-md uppercase">{auction.name}</h1>
 
               <div className="mt-2 space-y-1.5 text-sm sm:text-base text-[#f2e9dc]/90">
                 <p className="flex items-center gap-2 font-medium">
@@ -682,6 +683,21 @@ function ManageAuctionPage() {
                               </span>
                               <span className="text-[#abb4bd]">·</span>
                               <span className="text-[#e3e6e9]">Grade {player.category || "-"}</span>
+                              <span className="text-[#abb4bd]">·</span>
+                              <span className="text-[#a1b5d8]">Level {player.playerLevel || "-"}</span>
+                              {player.gender && (
+                                <>
+                                  <span className="text-[#abb4bd]">·</span>
+                                   <span className="text-[#38bdf8] font-bold">
+                                     {(() => {
+                                       const g = player.gender.trim().toLowerCase();
+                                       if (g === "m" || g === "male") return "Male";
+                                       if (g === "f" || g === "w" || g === "female" || g === "woman" || g === "women") return "Female";
+                                       return player.gender.charAt(0).toUpperCase() + player.gender.slice(1);
+                                     })()}
+                                   </span>
+                                </>
+                              )}
                               {(() => {
                                 const dh = player.sportFields?.["Dominated Hand"] || (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData?.includes("BNI") || player.customData?.includes("Family") ? null : player.customData));
                                 if (!dh || dh === "-") return null;

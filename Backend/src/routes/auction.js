@@ -101,6 +101,7 @@ router.get(
     if (typeof req.query.visibility === "string") query.visibility = req.query.visibility;
 
     const auctions = await Auction.find(query).sort({ startsAt: 1 }).lean();
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.json({ auctions: auctions.map(toPublicAuction) });
   }),
 );
@@ -113,6 +114,7 @@ router.get(
     if (!auction || !visibleTo(auction, req)) {
       return res.status(404).json({ error: "Auction not found" });
     }
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.json({ auction: toPublicAuction(auction) });
   }),
 );

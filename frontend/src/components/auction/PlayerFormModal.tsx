@@ -431,6 +431,15 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       sportFields: updatedSportFields,
     };
 
+    if (teamId && teamId !== "none") {
+      const selectedTeam = teams.find((t) => t.id === teamId);
+      const count = rosterCount(teamId);
+      if (selectedTeam && count >= playersPerTeam) {
+        toast.error("Max team reached");
+        return;
+      }
+    }
+
     const updateExtras = {
       teamId: teamId === "none" ? null : teamId,
       soldPrice: soldPrice ? parseFloat(soldPrice) : null,
