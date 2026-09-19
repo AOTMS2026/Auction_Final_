@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -12,11 +12,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FallbackImage } from "@/components/ui/fallback-image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { AboutTab } from "@/components/auction/AboutTab";
+import { TeamFormModal } from "@/components/auction/TeamFormModal";
+import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
 
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
@@ -160,14 +178,22 @@ function AuctionDetailPage() {
   const { auction: initialAuction } = Route.useLoaderData();
   const { data: auction = initialAuction } = useQuery(auctionDetailQueryOptions(initialAuction.id));
   useRealtimeUpdates(auction?.id);
-  const { players, isPending: playersPending, updatePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
-  const { teams, isPending: teamsPending } = useTeams(auction.id);
+  const { players, isPending: playersPending, updatePlayer, deletePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
+  const { teams, isPending: teamsPending, deleteTeam } = useTeams(auction.id);
   const formatNum = formatPoints;
 
   const [activeTab, setActiveTab] = useState<"TEAMS" | "PLAYERS" | "MVP" | "SPONSORS" | "LINK" | "ABOUT">("TEAMS");
   const [previewPlayerId, setPreviewPlayerId] = useState<string | null>(null);
   const [editPlayer, setEditPlayer] = useState<Player | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+  // Teams CRUD states
+  const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
+  const [editTeamId, setEditTeamId] = useState<string | null>(null);
+
+  // Players CRUD states
+  const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
+  const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -307,66 +333,32 @@ function AuctionDetailPage() {
                     toast.error("No teams found to export.");
                     return;
                   }
-                  const teamsSummaryRows = teams.map((t, index) => {
-                    const { usedPoints, totalPoints, totalPlayers, reservedPlayers, maxBidPoints } = computeTeamStats(
-                      t,
-                      players || [],
-                      auction,
-                    );
-                    const teamBought = (players || []).filter((p) => p.teamId === t.id);
-                    return {
-                      "S.No": index + 1,
-                      "Team Name": t.name,
-                      "Team Code": t.shortName,
-                      "Owner Name": t.ownerName || "",
-                      "Owner Phone": t.ownerPhone || "",
-                      "Total Budget (Points)": totalPoints,
-                      "Used Points": usedPoints,
-                      "Remaining Points": totalPoints - usedPoints,
-                      "Max Next Bid (Points)": maxBidPoints > 0 ? maxBidPoints : 0,
-                      "Players Bought": teamBought.length,
-                      "Target Roster Size": auction.playersPerTeam,
-                      "Reserved Spots": reservedPlayers,
-                    };
+                  const teamsDetailsRows = teams.map((t, index) => ({
+                    "S.No": index + 1,
+                    "Team Name": t.name,
+                    "Team Code": t.shortName,
+                    "Owner Name": t.ownerName || "",
+                    "Owner Phone": t.ownerPhone || "",
+                    "Color Theme": t.colorTheme || "",
+                  }));
+                  const teamsSheet = XLSX.utils.json_to_sheet(teamsDetailsRows);
+                  const colWidths = Object.keys(teamsDetailsRows[0] || {}).map((key) => {
+                    let maxLen = key.length;
+                    teamsDetailsRows.forEach((row) => {
+                      const val = (row as any)[key];
+                      if (val !== undefined && val !== null) {
+                        const len = String(val).length;
+                        if (len > maxLen) maxLen = len;
+                      }
+                    });
+                    return { wch: Math.min(Math.max(maxLen + 4, 12), 40) };
                   });
-                  const teamsSheet = XLSX.utils.json_to_sheet(teamsSummaryRows);
-                  const rosterRows: any[] = [];
-                  teams.forEach((t) => {
-                    const teamBought = (players || []).filter((p) => p.teamId === t.id);
-                    if (teamBought.length === 0) {
-                      rosterRows.push({
-                        "Team Name": t.name,
-                        "Team Code": t.shortName,
-                        "Player S.No": "-",
-                        "Player Name": "No players bought yet",
-                        "Phone Number": "-",
-                        "Role": "-",
-                        "Grade": "-",
-                        "Dominated Hand": "-",
-                        "Sold Price (Points)": "-",
-                      });
-                    } else {
-                      teamBought.forEach((p, pIdx) => {
-                        rosterRows.push({
-                          "Team Name": t.name,
-                          "Team Code": t.shortName,
-                          "Player S.No": pIdx + 1,
-                          "Player Name": p.name,
-                          "Phone Number": p.phone || "",
-                          "Role": p.sportFields?.["role"] || "-",
-                          "Grade": p.category || "-",
-                          "Dominated Hand": p.sportFields?.["Dominated Hand"] || (p.customData?.startsWith("Dominated Hand: ") ? p.customData.replace("Dominated Hand: ", "") : "-"),
-                          "Sold Price (Points)": p.soldPrice ?? p.baseValue ?? 0,
-                        });
-                      });
-                    }
-                  });
-                  const rosterSheet = XLSX.utils.json_to_sheet(rosterRows);
+                  teamsSheet["!cols"] = colWidths;
+
                   const workbook = XLSX.utils.book_new();
-                  XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams Summary");
-                  XLSX.utils.book_append_sheet(workbook, rosterSheet, "Teams Rosters");
+                  XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams");
                   const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
-                  XLSX.writeFile(workbook, `${cleanTitle}_Teams_Report.xlsx`);
+                  XLSX.writeFile(workbook, `${cleanTitle}_Teams.xlsx`);
                   toast.success("Teams Excel sheet downloaded successfully!");
                 }}
                 variant="outline"
@@ -393,6 +385,7 @@ function AuctionDetailPage() {
             ) : teams.length === 0 ? (
               <div className="py-16 text-center rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/50 p-10">
                 <p className="text-[#abb4bd] font-medium">No teams listed yet.</p>
+                <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to add your first team.</p>
               </div>
             ) : (
               teams.map((team) => {
@@ -487,10 +480,37 @@ function AuctionDetailPage() {
                         })()}
                       </div>
                     </div>
+
+                    <div className="absolute bottom-3 right-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="size-8 rounded-full bg-[#171a1d]/60 text-[#abb4bd] hover:bg-[#a1b5d8]/20 hover:text-[#a1b5d8]">
+                            <MoreVertical className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+                          <DropdownMenuItem onSelect={() => setEditTeamId(team.id)} className="hover:bg-[#2e343a] cursor-pointer">
+                            <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit team
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive hover:bg-destructive/15 cursor-pointer" onSelect={() => setTeamToDelete(team.id)}>
+                            <Trash className="mr-2 size-4" /> Delete team
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 );
               })
             )}
+            {editTeamId && (
+              <TeamFormModal
+                auctionId={auction.id}
+                team={teams.find((t) => t.id === editTeamId)}
+                open={!!editTeamId}
+                onOpenChange={(open) => !open && setEditTeamId(null)}
+              />
+            )}
+            <TeamFormModal auctionId={auction.id} />
           </div>
         )}
 
@@ -503,40 +523,220 @@ function AuctionDetailPage() {
                     toast.error("No registered players found to export.");
                     return;
                   }
+
+                  const isBniAuction =
+                    auction.id === "6a8edaddd7ed74151dbafab3" ||
+                    auction.name?.toLowerCase().includes("bni") ||
+                    auction.name?.toLowerCase().includes("bbl");
+
+                  const isHunterzVolleyball =
+                    auction.id === "6a8a705aef1f9e0978b3031c" ||
+                    auction.name?.toLowerCase().includes("hunterz");
+
                   const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
+
+                  // 1. Detect which fields actually have data in this particular auction
+                  const hasAge = players.some((p) => p.age != null && String(p.age).trim() !== "");
+                  const hasRole = players.some(
+                    (p) =>
+                      (p.sportFields?.["role"] && String(p.sportFields["role"]).trim() !== "" && p.sportFields["role"] !== "-") ||
+                      (p.sportFields?.["Position"] && String(p.sportFields["Position"]).trim() !== "" && p.sportFields["Position"] !== "-"),
+                  );
+                  const hasDominatedHand =
+                    !isBniAuction &&
+                    players.some(
+                      (p) =>
+                        (p.sportFields?.["Dominated Hand"] && String(p.sportFields["Dominated Hand"]).trim() !== "" && p.sportFields["Dominated Hand"] !== "-") ||
+                        p.customData?.startsWith("Dominated Hand:") ||
+                        (p.customData && !p.customData.includes("BNI") && !p.customData.includes("Family")),
+                    );
+                  const hasCategory = players.some((p) => p.category && p.category.trim() !== "");
+                  const hasGender = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.gender && p.gender.trim() !== "");
+                  const hasCity = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.city && p.city.trim() !== "");
+                  const hasPlayerLevel = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.playerLevel && p.playerLevel.trim() !== "");
+                  const hasJerseySize = !isHunterzVolleyball && players.some((p) => p.jerseySize && p.jerseySize.trim() !== "");
+                  const hasJerseyName = !isHunterzVolleyball && (isBniAuction || players.some((p) => p.jerseyName && p.jerseyName.trim() !== ""));
+                  const hasTrouserSize = !isHunterzVolleyball && players.some((p) => p.trouserSize && p.trouserSize.trim() !== "");
+                  const hasPaymentMode = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.paymentMode && p.paymentMode.trim() !== "");
+                  const hasUtr = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.utrNumber && p.utrNumber.trim() !== "");
+
+                  // BNI and Membership custom form checks
+                  const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI") || p.customData?.includes("Family"));
+                  const hasChapter = isBniAuction || players.some((p) => p.customData?.includes("Chapter:"));
+                  const hasBniName = players.some((p) => p.customData?.includes("BNI Name:"));
+                  const hasRel = players.some((p) => p.customData?.includes("Rel:"));
+                  const hasBblSeasons = isBniAuction || players.some((p) => p.customData?.includes("BBL Seasons:"));
+                  const hasOtherCustom =
+                    !isBniAuction &&
+                    !isHunterzVolleyball &&
+                    players.some(
+                      (p) =>
+                        p.customData &&
+                        !p.customData.startsWith("Dominated Hand:") &&
+                        !p.customData.includes("BNI") &&
+                        !p.customData.includes("Family"),
+                    );
+
+                  // Collect sport-specific fields that actually have non-empty values
+                  const activeSportKeys: string[] = [];
+                  players.forEach((p) => {
+                    if (p.sportFields && typeof p.sportFields === "object") {
+                      Object.keys(p.sportFields).forEach((k) => {
+                        if (
+                          k !== "originalPhoto" &&
+                          k !== "role" &&
+                          k !== "Position" &&
+                          k !== "Dominated Hand" &&
+                          p.sportFields[k] !== undefined &&
+                          p.sportFields[k] !== null &&
+                          String(p.sportFields[k]).trim() !== "" &&
+                          String(p.sportFields[k]) !== "-" &&
+                          !activeSportKeys.includes(k)
+                        ) {
+                          activeSportKeys.push(k);
+                        }
+                      });
+                    }
+                  });
+
+                  const hasAnySold = players.some((p) => p.teamId || p.soldPrice != null);
+                  const hasTeams = teams && teams.length > 0;
+
                   const excelRows = players.map((p, index) => {
-                    const role = p.sportFields?.["role"] || "-";
-                    const dominatedHand =
-                      p.sportFields?.["Dominated Hand"] ||
-                      (p.customData?.startsWith("Dominated Hand: ")
-                        ? p.customData.replace("Dominated Hand: ", "")
-                        : (p.customData?.includes("BNI") || p.customData?.includes("Family") ? "-" : (p.customData || "-")));
-                    const soldTeamName = p.teamId ? (teamMap.get(p.teamId) || "Sold") : "Unsold";
-                    return {
+                    const row: Record<string, any> = {
                       "S.No": index + 1,
                       "Player Name": p.name || "",
                       "Phone Number": p.phone || "",
-                      "Age": p.age ?? "",
-                      "Gender": p.gender || "",
-                      "City": p.city || "",
-                      "Player Level": p.playerLevel || "",
-                      "Grade / Category": p.category || "",
-                      "Playing Position / Role": role,
-                      "Dominated Hand": dominatedHand,
-                      "Jersey Size": p.jerseySize || "",
-                      "Jersey Name": p.jerseyName || "",
-                      "Jersey Number / Trouser": p.trouserSize || "",
-                      "Base Value (Points)": p.baseValue ?? 0,
-                      "Auction Status": p.teamId ? "Sold" : "Unsold",
-                      "Sold To Team": soldTeamName,
-                      "Sold Price (Points)": p.soldPrice ?? (p.teamId ? p.baseValue : 0),
-                      "Payment Mode": p.paymentMode || "",
-                      "UTR / Ref Number": p.utrNumber || "",
-                      "Membership / Extra Details": p.customData || "",
-                      "Registration Date": p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-IN") : "",
                     };
+
+                    if (hasAge) {
+                      row["Age"] = p.age ?? "-";
+                    }
+
+                    if (hasRole) {
+                      row["Playing Position / Role"] = p.sportFields?.["role"] || p.sportFields?.["Position"] || "-";
+                    }
+
+                    if (hasDominatedHand) {
+                      const domHand =
+                        p.sportFields?.["Dominated Hand"] ||
+                        (p.customData?.startsWith("Dominated Hand: ")
+                          ? p.customData.replace("Dominated Hand: ", "")
+                          : (!p.customData?.includes("BNI") && !p.customData?.includes("Family")
+                              ? (p.customData || "-")
+                              : "-"));
+                      row["Dominated Hand"] = domHand;
+                    }
+
+                    if (hasGender) {
+                      row["Gender"] = p.gender || "-";
+                    }
+
+                    if (hasCity) {
+                      row["City"] = p.city || "-";
+                    }
+
+                    if (hasPlayerLevel) {
+                      row["Player Level"] = p.playerLevel || "-";
+                    }
+
+                    // Any active dynamic sport fields (e.g. Batting Style, Bowling Style, Spike Height)
+                    activeSportKeys.forEach((key) => {
+                      row[key] = p.sportFields?.[key] ?? "-";
+                    });
+
+                    // Grade / Category assigned after or during registration
+                    row["Grade / Category"] = p.category || "-";
+
+                    if (hasJerseySize) {
+                      row["Jersey Size"] = p.jerseySize || "-";
+                    }
+
+                    if (hasJerseyName) {
+                      row["Jersey Name"] = p.jerseyName || "-";
+                    }
+
+                    if (hasTrouserSize) {
+                      if (isBniAuction) {
+                        row["Jersey Number"] = p.trouserSize || "-";
+                      } else {
+                        row["Trouser Size"] = p.trouserSize || "-";
+                      }
+                    }
+
+                    // Membership details
+                    if (hasBniMembership) {
+                      let memType = "-";
+                      if (p.customData?.includes("BNI Member")) memType = "BNI Member";
+                      else if (p.customData?.includes("Family Member")) memType = "Family Member";
+                      row["Membership Type"] = memType;
+                    }
+                    if (hasChapter) {
+                      const match = p.customData?.match(/Chapter:\s*([^,|]+)/i);
+                      row["Chapter Name"] = match ? match[1].trim() : "-";
+                    }
+                    if (hasBniName) {
+                      const match = p.customData?.match(/BNI Name:\s*([^,|]+)/i);
+                      row["BNI Member Name"] = match ? match[1].trim() : "-";
+                    }
+                    if (hasRel) {
+                      const match = p.customData?.match(/Rel:\s*([^,|]+)/i);
+                      row["Relationship"] = match ? match[1].trim() : "-";
+                    }
+                    if (hasBblSeasons) {
+                      const match = p.customData?.match(/BBL Seasons:\s*([^,|]+)/i);
+                      row["Seasons Played"] = match ? match[1].trim() : "-";
+                    }
+                    if (hasOtherCustom) {
+                      row["Custom Details"] = p.customData || "-";
+                    }
+
+                    // Payment Details (ONLY for tournaments with payment)
+                    if (hasPaymentMode) {
+                      row["Payment Mode"] = p.paymentMode || "-";
+                    }
+                    if (hasUtr) {
+                      row["UTR / Ref Number"] = p.utrNumber || "-";
+                    }
+
+                    // Base Value
+                    row["Base Value (Points)"] = p.baseValue ?? 0;
+
+                    // Auction outcome (if teams exist or any bidding occurred)
+                    if (hasTeams || hasAnySold) {
+                      const soldTeamName = p.teamId
+                        ? (teamMap.get(p.teamId) || "Sold")
+                        : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
+                      row["Auction Status"] = p.teamId ? "Sold" : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
+                      row["Sold To Team"] = p.teamId ? soldTeamName : "-";
+                      row["Sold Price (Points)"] =
+                        p.soldPrice !== null && p.soldPrice !== undefined
+                          ? p.soldPrice
+                          : (p.teamId ? (p.baseValue ?? 0) : "-");
+                    }
+
+                    if (p.createdAt) {
+                      row["Registration Date"] = new Date(p.createdAt).toLocaleDateString("en-IN");
+                    }
+
+                    return row;
                   });
+
                   const worksheet = XLSX.utils.json_to_sheet(excelRows);
+                  const keys = Object.keys(excelRows[0] || {});
+                  const colWidths = keys.map((key) => {
+                    let maxLen = key.length;
+                    excelRows.forEach((row) => {
+                      const val = row[key];
+                      if (val !== undefined && val !== null) {
+                        const len = String(val).length;
+                        if (len > maxLen) maxLen = len;
+                      }
+                    });
+                    return { wch: Math.min(Math.max(maxLen + 3, 10), 40) };
+                  });
+                  worksheet["!cols"] = colWidths;
+
                   const workbook = XLSX.utils.book_new();
                   XLSX.utils.book_append_sheet(workbook, worksheet, "Registered Players");
                   const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -567,6 +767,7 @@ function AuctionDetailPage() {
             ) : players.length === 0 ? (
               <div className="py-16 text-center rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/50 p-10">
                 <p className="text-[#abb4bd] font-medium">No players registered yet.</p>
+                <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
               </div>
             ) : (
               players.map((player) => {
@@ -634,19 +835,43 @@ function AuctionDetailPage() {
                       }
                     />
                   <div className="shrink-0 mr-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditPlayer(player)}
-                      className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-4 py-2 text-xs shadow-sm gap-1.5"
-                    >
-                      <Pencil className="size-3 text-[#a1b5d8]" /> Edit Grade
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full size-9 bg-[#171a1d]/60 text-[#abb4bd] hover:bg-[#a1b5d8]/20 hover:text-[#a1b5d8]">
+                          <MoreVertical className="size-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+                        <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer">
+                          <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit player
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive hover:bg-destructive/15 cursor-pointer" onSelect={() => setPlayerToDelete(player.id)}>
+                          <Trash className="mr-2 size-4" /> Delete player
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               );
             })
           )}
+            {editPlayerId && (
+              <PlayerFormModal
+                auctionId={auction.id}
+                sportType={auction.sportType}
+                playersPerTeam={auction.playersPerTeam}
+                player={players.find((p) => p.id === editPlayerId)}
+                open={!!editPlayerId}
+                onOpenChange={(open) => {
+                  if (!open) setEditPlayerId(null);
+                }}
+              />
+            )}
+            <PlayerFormModal
+              auctionId={auction.id}
+              sportType={auction.sportType}
+              playersPerTeam={auction.playersPerTeam}
+            />
           </div>
         )}
 
@@ -850,6 +1075,74 @@ function AuctionDetailPage() {
           <AboutTab auction={auction} teams={teams} players={players} />
         )}
       </main>
+
+      {/* Delete Team Dialog */}
+      <AlertDialog open={!!teamToDelete} onOpenChange={(o) => !o && setTeamToDelete(null)}>
+        <AlertDialogContent className="rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Team?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#abb4bd]">
+              This will delete the team and unassign any players sold to it. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (teamToDelete) {
+                  try {
+                    await deleteTeam(teamToDelete);
+                    toast.success("Team deleted");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Failed to delete team");
+                  } finally {
+                    setTeamToDelete(null);
+                  }
+                }
+              }}
+              className="rounded-full bg-destructive hover:bg-destructive/90 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Player Dialog */}
+      <AlertDialog open={!!playerToDelete} onOpenChange={(o) => !o && setPlayerToDelete(null)}>
+        <AlertDialogContent className="rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Player?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#abb4bd]">
+              This action cannot be undone. If the player was sold, the team's spent budget will be reversed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (playerToDelete) {
+                  try {
+                    await deletePlayer(playerToDelete);
+                    toast.success("Player deleted");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Failed to delete player");
+                  } finally {
+                    setPlayerToDelete(null);
+                  }
+                }
+              }}
+              className="rounded-full bg-destructive hover:bg-destructive/90 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <EditGradeModal
         player={editPlayer}

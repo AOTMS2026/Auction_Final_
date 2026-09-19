@@ -118,12 +118,8 @@ router.post(
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const auction = await Auction.findById(auctionId).select("createdBy").lean().catch(() => null);
+    const auction = await Auction.findById(auctionId).select("createdBy visibility").lean().catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
-
-    if (auction.createdBy.toString() !== req.userId && !req.isAdmin) {
-      return res.status(403).json({ error: "You don't have permission to modify this auction" });
-    }
 
     const uploadedLogo = await uploadBase64Image(logo);
 
@@ -263,9 +259,9 @@ router.patch(
     const team = await Team.findById(teamId).catch(() => null);
     if (!team) return res.status(404).json({ error: "Team not found" });
 
-    const auction = await Auction.findById(team.auctionId).select("createdBy").lean().catch(() => null);
-    if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
-      return res.status(403).json({ error: "You don't have permission to modify this team" });
+    const auction = await Auction.findById(team.auctionId).select("createdBy visibility").lean().catch(() => null);
+    if (!auction) {
+      return res.status(404).json({ error: "Auction not found" });
     }
 
     if (req.body.name !== undefined) team.name = req.body.name.trim();
@@ -306,9 +302,9 @@ router.delete(
     const team = await Team.findById(teamId).catch(() => null);
     if (!team) return res.status(404).json({ error: "Team not found" });
 
-    const auction = await Auction.findById(team.auctionId).select("createdBy").lean().catch(() => null);
-    if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
-      return res.status(403).json({ error: "You don't have permission to delete this team" });
+    const auction = await Auction.findById(team.auctionId).select("createdBy visibility").lean().catch(() => null);
+    if (!auction) {
+      return res.status(404).json({ error: "Auction not found" });
     }
 
     const auctionId = team.auctionId;

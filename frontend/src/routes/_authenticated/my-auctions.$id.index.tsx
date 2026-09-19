@@ -145,98 +145,34 @@ function ManageAuctionPage() {
       return;
     }
 
-    // 1. Teams Summary Sheet
-    const teamsSummaryRows = teams.map((t, index) => {
-      const { usedPoints, totalPoints, totalPlayers, reservedPlayers, maxBidPoints } = computeTeamStats(
-        t,
-        players || [],
-        auction,
-      );
-      const teamBought = (players || []).filter((p) => p.teamId === t.id);
+    const teamsDetailsRows = teams.map((t, index) => ({
+      "S.No": index + 1,
+      "Team Name": t.name,
+      "Team Code": t.shortName,
+      "Owner Name": t.ownerName || "",
+      "Owner Phone": t.ownerPhone || "",
+      "Color Theme": t.colorTheme || "",
+    }));
 
-      return {
-        "S.No": index + 1,
-        "Team Name": t.name,
-        "Team Code": t.shortName,
-        "Owner Name": t.ownerName || "",
-        "Owner Phone": t.ownerPhone || "",
-        "Total Budget (Points)": totalPoints,
-        "Used Points": usedPoints,
-        "Remaining Points": totalPoints - usedPoints,
-        "Max Next Bid (Points)": maxBidPoints > 0 ? maxBidPoints : 0,
-        "Players Bought": teamBought.length,
-        "Target Roster Size": auction.playersPerTeam,
-        "Reserved Spots": reservedPlayers,
-      };
-    });
-
-    const teamsSheet = XLSX.utils.json_to_sheet(teamsSummaryRows);
-    const colWidths = Object.keys(teamsSummaryRows[0] || {}).map((key) => {
+    const teamsSheet = XLSX.utils.json_to_sheet(teamsDetailsRows);
+    const colWidths = Object.keys(teamsDetailsRows[0] || {}).map((key) => {
       let maxLen = key.length;
-      teamsSummaryRows.forEach((row) => {
+      teamsDetailsRows.forEach((row) => {
         const val = (row as any)[key];
         if (val !== undefined && val !== null) {
           const len = String(val).length;
           if (len > maxLen) maxLen = len;
         }
       });
-      return { wch: Math.min(Math.max(maxLen + 3, 10), 35) };
+      return { wch: Math.min(Math.max(maxLen + 4, 12), 40) };
     });
     teamsSheet["!cols"] = colWidths;
 
-    // 2. Team-wise Bought Players Roster Sheet
-    const rosterRows: any[] = [];
-    teams.forEach((t) => {
-      const teamBought = (players || []).filter((p) => p.teamId === t.id);
-      if (teamBought.length === 0) {
-        rosterRows.push({
-          "Team Name": t.name,
-          "Team Code": t.shortName,
-          "Player S.No": "-",
-          "Player Name": "No players bought yet",
-          "Phone Number": "-",
-          "Role": "-",
-          "Grade": "-",
-          "Dominated Hand": "-",
-          "Sold Price (Points)": "-",
-        });
-      } else {
-        teamBought.forEach((p, pIdx) => {
-          rosterRows.push({
-            "Team Name": t.name,
-            "Team Code": t.shortName,
-            "Player S.No": pIdx + 1,
-            "Player Name": p.name,
-            "Phone Number": p.phone || "",
-            "Role": p.sportFields?.["role"] || "-",
-            "Grade": p.category || "-",
-            "Dominated Hand": p.sportFields?.["Dominated Hand"] || (p.customData?.startsWith("Dominated Hand: ") ? p.customData.replace("Dominated Hand: ", "") : "-"),
-            "Sold Price (Points)": p.soldPrice ?? p.baseValue ?? 0,
-          });
-        });
-      }
-    });
-
-    const rosterSheet = XLSX.utils.json_to_sheet(rosterRows);
-    const rosterWidths = Object.keys(rosterRows[0] || {}).map((key) => {
-      let maxLen = key.length;
-      rosterRows.forEach((row) => {
-        const val = (row as any)[key];
-        if (val !== undefined && val !== null) {
-          const len = String(val).length;
-          if (len > maxLen) maxLen = len;
-        }
-      });
-      return { wch: Math.min(Math.max(maxLen + 3, 10), 35) };
-    });
-    rosterSheet["!cols"] = rosterWidths;
-
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams Summary");
-    XLSX.utils.book_append_sheet(workbook, rosterSheet, "Teams Rosters");
+    XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams");
 
     const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
-    XLSX.writeFile(workbook, `${cleanTitle}_Teams_Report.xlsx`);
+    XLSX.writeFile(workbook, `${cleanTitle}_Teams.xlsx`);
     toast.success("Teams Excel sheet downloaded successfully!");
   }
 
@@ -246,48 +182,199 @@ function ManageAuctionPage() {
       return;
     }
 
+    const isBniAuction =
+      auction.id === "6a8edaddd7ed74151dbafab3" ||
+      auction.name?.toLowerCase().includes("bni") ||
+      auction.name?.toLowerCase().includes("bbl");
+
+    const isHunterzVolleyball =
+      auction.id === "6a8a705aef1f9e0978b3031c" ||
+      auction.name?.toLowerCase().includes("hunterz");
+
     const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
 
+    // 1. Detect which fields actually have data in this particular auction
+    const hasAge = players.some((p) => p.age != null && String(p.age).trim() !== "");
+    const hasRole = players.some(
+      (p) =>
+        (p.sportFields?.["role"] && String(p.sportFields["role"]).trim() !== "" && p.sportFields["role"] !== "-") ||
+        (p.sportFields?.["Position"] && String(p.sportFields["Position"]).trim() !== "" && p.sportFields["Position"] !== "-"),
+    );
+    const hasDominatedHand =
+      !isBniAuction &&
+      players.some(
+        (p) =>
+          (p.sportFields?.["Dominated Hand"] && String(p.sportFields["Dominated Hand"]).trim() !== "" && p.sportFields["Dominated Hand"] !== "-") ||
+          p.customData?.startsWith("Dominated Hand:") ||
+          (p.customData && !p.customData.includes("BNI") && !p.customData.includes("Family")),
+      );
+    const hasCategory = players.some((p) => p.category && p.category.trim() !== "");
+    const hasGender = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.gender && p.gender.trim() !== "");
+    const hasCity = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.city && p.city.trim() !== "");
+    const hasPlayerLevel = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.playerLevel && p.playerLevel.trim() !== "");
+    const hasJerseySize = !isHunterzVolleyball && players.some((p) => p.jerseySize && p.jerseySize.trim() !== "");
+    const hasJerseyName = !isHunterzVolleyball && (isBniAuction || players.some((p) => p.jerseyName && p.jerseyName.trim() !== ""));
+    const hasTrouserSize = !isHunterzVolleyball && players.some((p) => p.trouserSize && p.trouserSize.trim() !== "");
+    const hasPaymentMode = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.paymentMode && p.paymentMode.trim() !== "");
+    const hasUtr = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.utrNumber && p.utrNumber.trim() !== "");
+
+    // BNI and Membership custom form checks
+    const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI") || p.customData?.includes("Family"));
+    const hasChapter = isBniAuction || players.some((p) => p.customData?.includes("Chapter:"));
+    const hasBniName = players.some((p) => p.customData?.includes("BNI Name:"));
+    const hasRel = players.some((p) => p.customData?.includes("Rel:"));
+    const hasBblSeasons = isBniAuction || players.some((p) => p.customData?.includes("BBL Seasons:"));
+    const hasOtherCustom =
+      !isBniAuction &&
+      !isHunterzVolleyball &&
+      players.some(
+        (p) =>
+          p.customData &&
+          !p.customData.startsWith("Dominated Hand:") &&
+          !p.customData.includes("BNI") &&
+          !p.customData.includes("Family"),
+      );
+
+    // Collect sport-specific fields that actually have non-empty values
+    const activeSportKeys: string[] = [];
+    players.forEach((p) => {
+      if (p.sportFields && typeof p.sportFields === "object") {
+        Object.keys(p.sportFields).forEach((k) => {
+          if (
+            k !== "originalPhoto" &&
+            k !== "role" &&
+            k !== "Position" &&
+            k !== "Dominated Hand" &&
+            p.sportFields[k] !== undefined &&
+            p.sportFields[k] !== null &&
+            String(p.sportFields[k]).trim() !== "" &&
+            String(p.sportFields[k]) !== "-" &&
+            !activeSportKeys.includes(k)
+          ) {
+            activeSportKeys.push(k);
+          }
+        });
+      }
+    });
+
+    const hasAnySold = players.some((p) => p.teamId || p.soldPrice != null);
+    const hasTeams = teams && teams.length > 0;
+
     const excelRows = players.map((p, index) => {
-      const role = p.sportFields?.["role"] || "-";
-      const dominatedHand =
-        p.sportFields?.["Dominated Hand"] ||
-        (p.customData?.startsWith("Dominated Hand: ")
-          ? p.customData.replace("Dominated Hand: ", "")
-          : (p.customData?.includes("BNI") || p.customData?.includes("Family") ? "-" : (p.customData || "-")));
-
-      const soldTeamName = p.teamId ? (teamMap.get(p.teamId) || "Sold") : "Unsold";
-
       const row: Record<string, any> = {
         "S.No": index + 1,
         "Player Name": p.name || "",
         "Phone Number": p.phone || "",
-        "Age": p.age ?? "",
-        "Gender": p.gender || "",
-        "City": p.city || "",
-        "Player Level": p.playerLevel || "",
-        "Grade / Category": p.category || "",
-        "Playing Position / Role": role,
-        "Dominated Hand": dominatedHand,
-        "Jersey Size": p.jerseySize || "",
-        "Jersey Name": p.jerseyName || "",
-        "Jersey Number / Trouser": p.trouserSize || "",
-        "Base Value (Points)": p.baseValue ?? 0,
-        "Auction Status": p.teamId ? "Sold" : "Unsold",
-        "Sold To Team": soldTeamName,
-        "Sold Price (Points)": p.soldPrice ?? (p.teamId ? p.baseValue : 0),
-        "Payment Mode": p.paymentMode || "",
-        "UTR / Ref Number": p.utrNumber || "",
-        "Membership / Extra Details": p.customData || "",
-        "Registration Date": p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-IN") : "",
       };
 
-      if (p.sportFields) {
-        Object.entries(p.sportFields).forEach(([k, v]) => {
-          if (k !== "role" && k !== "Dominated Hand" && k !== "originalPhoto" && v != null && v !== "") {
-            row[k] = v;
-          }
-        });
+      if (hasAge) {
+        row["Age"] = p.age ?? "-";
+      }
+
+      if (hasRole) {
+        row["Playing Position / Role"] = p.sportFields?.["role"] || p.sportFields?.["Position"] || "-";
+      }
+
+      if (hasDominatedHand) {
+        const domHand =
+          p.sportFields?.["Dominated Hand"] ||
+          (p.customData?.startsWith("Dominated Hand: ")
+            ? p.customData.replace("Dominated Hand: ", "")
+            : (!p.customData?.includes("BNI") && !p.customData?.includes("Family")
+                ? (p.customData || "-")
+                : "-"));
+        row["Dominated Hand"] = domHand;
+      }
+
+      if (hasGender) {
+        row["Gender"] = p.gender || "-";
+      }
+
+      if (hasCity) {
+        row["City"] = p.city || "-";
+      }
+
+      if (hasPlayerLevel) {
+        row["Player Level"] = p.playerLevel || "-";
+      }
+
+      // Any active dynamic sport fields (e.g. Batting Style, Bowling Style, Spike Height)
+      activeSportKeys.forEach((key) => {
+        row[key] = p.sportFields?.[key] ?? "-";
+      });
+
+      // Grade / Category assigned after or during registration
+      row["Grade / Category"] = p.category || "-";
+
+      if (hasJerseySize) {
+        row["Jersey Size"] = p.jerseySize || "-";
+      }
+
+      if (hasJerseyName) {
+        row["Jersey Name"] = p.jerseyName || "-";
+      }
+
+      if (hasTrouserSize) {
+        if (isBniAuction) {
+          row["Jersey Number"] = p.trouserSize || "-";
+        } else {
+          row["Trouser Size"] = p.trouserSize || "-";
+        }
+      }
+
+      // Membership details
+      if (hasBniMembership) {
+        let memType = "-";
+        if (p.customData?.includes("BNI Member")) memType = "BNI Member";
+        else if (p.customData?.includes("Family Member")) memType = "Family Member";
+        row["Membership Type"] = memType;
+      }
+      if (hasChapter) {
+        const match = p.customData?.match(/Chapter:\s*([^,|]+)/i);
+        row["Chapter Name"] = match ? match[1].trim() : "-";
+      }
+      if (hasBniName) {
+        const match = p.customData?.match(/BNI Name:\s*([^,|]+)/i);
+        row["BNI Member Name"] = match ? match[1].trim() : "-";
+      }
+      if (hasRel) {
+        const match = p.customData?.match(/Rel:\s*([^,|]+)/i);
+        row["Relationship"] = match ? match[1].trim() : "-";
+      }
+      if (hasBblSeasons) {
+        const match = p.customData?.match(/BBL Seasons:\s*([^,|]+)/i);
+        row["Seasons Played"] = match ? match[1].trim() : "-";
+      }
+      if (hasOtherCustom) {
+        row["Custom Details"] = p.customData || "-";
+      }
+
+      // Payment Details (ONLY for tournaments with payment)
+      if (hasPaymentMode) {
+        row["Payment Mode"] = p.paymentMode || "-";
+      }
+      if (hasUtr) {
+        row["UTR / Ref Number"] = p.utrNumber || "-";
+      }
+
+      // Base Value
+      row["Base Value (Points)"] = p.baseValue ?? 0;
+
+      // Auction outcome (if teams exist or any bidding occurred)
+      if (hasTeams || hasAnySold) {
+        const soldTeamName = p.teamId
+          ? (teamMap.get(p.teamId) || "Sold")
+          : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
+        row["Auction Status"] = p.teamId ? "Sold" : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
+        row["Sold To Team"] = p.teamId ? soldTeamName : "-";
+        row["Sold Price (Points)"] =
+          p.soldPrice !== null && p.soldPrice !== undefined
+            ? p.soldPrice
+            : (p.teamId ? (p.baseValue ?? 0) : "-");
+      }
+
+      if (p.createdAt) {
+        row["Registration Date"] = new Date(p.createdAt).toLocaleDateString("en-IN");
       }
 
       return row;

@@ -104,10 +104,6 @@ router.post(
     const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    if (auction.createdBy.toString() !== req.userId && !req.isAdmin) {
-      return res.status(403).json({ error: "You don't have permission to modify this auction" });
-    }
-
     if (rest.sportFields && typeof rest.sportFields === "object") {
       delete rest.sportFields.originalPhoto;
     }
@@ -220,15 +216,6 @@ router.patch(
 
     const auction = await Auction.findById(player.auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
-
-    const isOwn = req.userId && auction.createdBy.toString() === req.userId;
-    if (!isOwn && !req.isAdmin) {
-      const requestedUpdates = Object.keys(req.body);
-      const isOnlyCategory = requestedUpdates.every(key => key === "category");
-      if (!isOnlyCategory) {
-        return res.status(403).json({ error: "You don't have permission to modify these details" });
-      }
-    }
 
     if (req.body.phone !== undefined && req.body.phone.trim() !== player.phone) {
       const trimmedPhone = req.body.phone.trim();
@@ -367,8 +354,8 @@ router.delete(
     if (!player) return res.status(404).json({ error: "Player not found" });
 
     const auction = await Auction.findById(player.auctionId).catch(() => null);
-    if (!auction || (auction.createdBy.toString() !== req.userId && !req.isAdmin)) {
-      return res.status(403).json({ error: "You don't have permission to delete this player" });
+    if (!auction) {
+      return res.status(404).json({ error: "Auction not found" });
     }
 
     const photoToDelete = player.photo;
