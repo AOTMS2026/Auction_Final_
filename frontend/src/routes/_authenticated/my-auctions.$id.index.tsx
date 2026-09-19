@@ -771,7 +771,7 @@ function ManageAuctionPage() {
                               <span className="text-[#abb4bd]">·</span>
                               <span className="text-[#e3e6e9]">Grade {player.category || "-"}</span>
                               <span className="text-[#abb4bd]">·</span>
-                              <span className="text-[#a1b5d8]">Level {player.playerLevel || "-"}</span>
+                              <span className="text-[#a1b5d8]">Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}</span>
                               {player.gender && (
                                 <>
                                   <span className="text-[#abb4bd]">·</span>

@@ -137,7 +137,7 @@ export function CurrentPlayerCard({
             </span>
             {/* Level Badge (Added right after Grade) */}
             <span className="rounded-xl bg-[#142630] border-2 border-[#38bdf8]/60 text-[#a1b5d8] px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
-              Level {player.playerLevel || "-"}
+              Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}
             </span>
             {/* City Name Badge (Green Box) */}
             <span className="rounded-xl bg-emerald-950/80 border-2 border-emerald-500/60 text-emerald-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
