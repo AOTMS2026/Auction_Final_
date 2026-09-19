@@ -124,11 +124,6 @@ export function CurrentPlayerCard({
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#ffffff] leading-tight uppercase tracking-tight drop-shadow-md">
               {player.name}
-              {displaySNo && (
-                <span className="text-[#38bdf8] text-2xl sm:text-3xl lg:text-4xl font-bold ml-3 inline-block">
-                  (S.No #{displaySNo})
-                </span>
-              )}
             </h2>
           </div>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">

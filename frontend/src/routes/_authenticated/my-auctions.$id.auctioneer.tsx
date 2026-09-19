@@ -1031,8 +1031,6 @@ function AuctioneerConsole() {
                           {sNo && <span className="text-[11px] font-bold text-[#38bdf8] ml-2 shrink-0">(S.No #{sNo})</span>}
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 truncate">
-                          {sNo && <span className="font-black text-[#a1b5d8]">S.No #{sNo}</span>}
-                          {sNo && <span className="text-[#5c6875]">•</span>}
                           <span className="text-[#ecf0f7]">{p.sportFields?.["role"] || "-"}</span>
                           <span className="text-[#5c6875]">•</span>
                           <span className="text-[#c2d8b9]">Grade {p.category || "-"}</span>
