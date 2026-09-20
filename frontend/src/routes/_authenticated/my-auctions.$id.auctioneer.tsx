@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText } from "lucide-react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, Pencil, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -78,6 +78,45 @@ function AuctioneerConsole() {
   const [orderedTeams, setOrderedTeams] = useState<Team[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [editingSoldPlayerId, setEditingSoldPlayerId] = useState<string | null>(null);
+  const [editingSoldAmount, setEditingSoldAmount] = useState<string>("");
+
+  async function handleSaveSoldPrice(playerId: string, playerName: string) {
+    const val = parseFloat(editingSoldAmount);
+    if (!Number.isFinite(val) || val < 0) {
+      toast.error("Please enter a valid amount.");
+      return;
+    }
+
+    const targetPlayer = effectivePlayers.find((p) => p.id === playerId);
+    const currentTeamId = targetPlayer?.teamId ?? viewingTeamId;
+
+    setTrialOverrides((prev) => ({
+      ...prev,
+      [playerId]: {
+        ...prev[playerId],
+        soldPrice: val,
+        teamId: currentTeamId,
+        auctionRoundStatus: "sold",
+      },
+    }));
+
+    if (mode === "live") {
+      try {
+        await updatePlayer({
+          id: playerId,
+          patch: { soldPrice: val },
+        });
+        toast.success(`Updated ${playerName}'s sold price to 🪙 ${val.toLocaleString()}`);
+      } catch {
+        toast.error("Failed to update sold price in database.");
+      }
+    } else {
+      toast.success(`Updated ${playerName}'s sold price to 🪙 ${val.toLocaleString()}`);
+    }
+
+    setEditingSoldPlayerId(null);
+  }
 
   // Sync ordered teams when teams load or change
   useEffect(() => {
@@ -1093,9 +1132,54 @@ function AuctioneerConsole() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-base sm:text-lg font-black text-[#c2d8b9] bg-[#23341d]/70 px-3.5 py-1.5 rounded-xl border border-[#47673a] shadow-sm">
-                      🪙 {p.soldPrice?.toLocaleString() ?? "0"}
-                    </span>
+                    {editingSoldPlayerId === p.id ? (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Input
+                          type="number"
+                          value={editingSoldAmount}
+                          onChange={(e) => setEditingSoldAmount(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveSoldPrice(p.id, p.name);
+                            if (e.key === "Escape") setEditingSoldPlayerId(null);
+                          }}
+                          autoFocus
+                          className="w-24 sm:w-28 h-9 text-xs sm:text-sm font-black text-[#c2d8b9] bg-[#0f1712] border-2 border-emerald-500 rounded-xl text-center focus-visible:ring-emerald-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveSoldPrice(p.id, p.name)}
+                          className="size-8 rounded-xl bg-emerald-500/20 border border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                          title="Save price"
+                        >
+                          <Check className="size-4 stroke-[3]" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSoldPlayerId(null)}
+                          className="size-8 rounded-xl bg-[#142630] border border-[#38bdf8]/35 text-[#abb4bd] hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                          title="Cancel"
+                        >
+                          <X className="size-4 stroke-[2.5]" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-base sm:text-lg font-black text-[#c2d8b9] bg-[#23341d]/70 px-3.5 py-1.5 rounded-xl border border-[#47673a] shadow-sm flex items-center gap-1">
+                          🪙 {p.soldPrice?.toLocaleString() ?? "0"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSoldPlayerId(p.id);
+                            setEditingSoldAmount((p.soldPrice ?? 0).toString());
+                          }}
+                          className="text-[#a1b5d8] hover:text-white p-2 hover:bg-[#2e343a] rounded-xl transition-all border border-[#5c6875]/40 hover:border-[#a1b5d8] cursor-pointer"
+                          title="Edit sold price"
+                        >
+                          <Pencil className="size-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -1172,9 +1256,54 @@ function AuctioneerConsole() {
                     {viewingStatusList === "sold" ? (
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <span className="text-xs font-black text-[#a1b5d8] uppercase tracking-wider">{buyerTeam?.name || "Sold"}</span>
-                        <span className="text-base sm:text-lg font-black text-[#c2d8b9] bg-[#23341d]/70 px-3.5 py-1.5 rounded-xl border border-[#47673a] shadow-sm">
-                          🪙 {p.soldPrice?.toLocaleString() ?? "0"}
-                        </span>
+                        {editingSoldPlayerId === p.id ? (
+                          <div className="flex items-center gap-1.5 shrink-0 mt-1">
+                            <Input
+                              type="number"
+                              value={editingSoldAmount}
+                              onChange={(e) => setEditingSoldAmount(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleSaveSoldPrice(p.id, p.name);
+                                if (e.key === "Escape") setEditingSoldPlayerId(null);
+                              }}
+                              autoFocus
+                              className="w-24 sm:w-28 h-9 text-xs sm:text-sm font-black text-[#c2d8b9] bg-[#0f1712] border-2 border-emerald-500 rounded-xl text-center focus-visible:ring-emerald-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleSaveSoldPrice(p.id, p.name)}
+                              className="size-8 rounded-xl bg-emerald-500/20 border border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                              title="Save price"
+                            >
+                              <Check className="size-4 stroke-[3]" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingSoldPlayerId(null)}
+                              className="size-8 rounded-xl bg-[#142630] border border-[#38bdf8]/35 text-[#abb4bd] hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                              title="Cancel"
+                            >
+                              <X className="size-4 stroke-[2.5]" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-base sm:text-lg font-black text-[#c2d8b9] bg-[#23341d]/70 px-3.5 py-1.5 rounded-xl border border-[#47673a] shadow-sm flex items-center gap-1">
+                              🪙 {p.soldPrice?.toLocaleString() ?? "0"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingSoldPlayerId(p.id);
+                                setEditingSoldAmount((p.soldPrice ?? 0).toString());
+                              }}
+                              className="text-[#a1b5d8] hover:text-white p-2 hover:bg-[#2e343a] rounded-xl transition-all border border-[#5c6875]/40 hover:border-[#a1b5d8] cursor-pointer"
+                              title="Edit sold price"
+                            >
+                              <Pencil className="size-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ) : viewingStatusList === "pending" ? (
                       <span className="text-sm font-bold text-[#a1b5d8] bg-[#162235]/70 px-3.5 py-1 rounded-full border border-[#4365a0] shrink-0">
