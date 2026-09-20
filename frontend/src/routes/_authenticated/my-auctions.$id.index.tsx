@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import * as XLSX from "xlsx";
@@ -698,6 +698,26 @@ function ManageAuctionPage() {
         {activeTab === "PLAYERS" && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-end gap-2">
+              {players.filter((p) => p.auctionRoundStatus === "unsold").length > 0 && (
+                <Button
+                  onClick={async () => {
+                    const count = players.filter((p) => p.auctionRoundStatus === "unsold").length;
+                    if (window.confirm(`Repeat all ${count} unsold players and make them available again?`)) {
+                      try {
+                        await auctionClient.repeatUnsoldPlayers(auction.id);
+                        await queryClient.invalidateQueries({ queryKey: ["players", auction.id] });
+                        toast.success(`Repeated all ${count} unsold players!`);
+                      } catch (err: any) {
+                        toast.error(err?.message || "Failed to repeat unsold players.");
+                      }
+                    }
+                  }}
+                  variant="outline"
+                  className="gap-2 rounded-full border-2 border-amber-500/60 bg-amber-950/70 text-amber-300 hover:bg-amber-600 hover:text-white font-extrabold text-xs transition-all shadow-sm cursor-pointer"
+                >
+                  <RotateCcw className="size-4 text-amber-400" /> Repeat All Unsold ({players.filter((p) => p.auctionRoundStatus === "unsold").length})
+                </Button>
+              )}
               <Button
                 onClick={handleDownloadPlayersExcel}
                 variant="outline"
@@ -764,6 +784,11 @@ function ManageAuctionPage() {
                                 <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold">
                                   SOLD ({player.soldPrice ? formatNum(player.soldPrice) : ""} pts)
                                 </span>
+                              ) : player.auctionRoundStatus === "unsold" ? (
+                                <span className="px-3 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
+                                  <span className="size-1.5 rounded-full bg-rose-400" />
+                                  <span>UNSOLD</span>
+                                </span>
                               ) : null}
                             </div>
                             <p className="text-xs sm:text-sm font-semibold text-[#a1b5d8] mt-1 leading-snug flex items-center gap-2 flex-wrap">
@@ -816,6 +841,24 @@ function ManageAuctionPage() {
                         <DropdownMenuItem onSelect={() => setChangeTeamPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer">
                           <Shield className="mr-2 size-4 text-[#38bdf8]" /> Change Team
                         </DropdownMenuItem>
+                        {player.auctionRoundStatus === "unsold" && (
+                          <DropdownMenuItem
+                            onSelect={async () => {
+                              try {
+                                await updatePlayer({
+                                  id: player.id,
+                                  patch: { auctionRoundStatus: "pending", teamId: null, soldPrice: null },
+                                });
+                                toast.success(`${player.name} is now available!`);
+                              } catch {
+                                toast.error("Failed to repeat player.");
+                              }
+                            }}
+                            className="hover:bg-[#2e343a] cursor-pointer text-amber-300"
+                          >
+                            <RotateCcw className="mr-2 size-4 text-amber-400" /> Repeat / Mark Available
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem className="text-destructive hover:bg-destructive/15 cursor-pointer" onSelect={() => setPlayerToDelete(player.id)}>
                           <Trash className="mr-2 size-4" /> Delete player
                         </DropdownMenuItem>
