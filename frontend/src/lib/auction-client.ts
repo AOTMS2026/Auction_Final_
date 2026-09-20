@@ -299,4 +299,10 @@ export const auctionClient = {
     const data = await request<PlayerProfile>(`/api/players/profile/${phone}`);
     return data;
   },
+
+  async repeatUnsoldPlayers(auctionId: string): Promise<{ message: string; count: number }> {
+    return await request<{ message: string; count: number }>(`/api/auctions/${auctionId}/repeat-unsold`, {
+      method: "POST",
+    });
+  },
 };

@@ -501,4 +501,31 @@ router.get(
   })
 );
 
+// Repeat / re-auction all unsold players for an auction
+router.post(
+  "/auctions/:id/repeat-unsold",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const auctionId = req.params.id;
+    if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+      return res.status(400).json({ error: "Invalid auction ID" });
+    }
+
+    const auction = await Auction.findById(auctionId).catch(() => null);
+    if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    const result = await Player.updateMany(
+      { auctionId: new mongoose.Types.ObjectId(auctionId), auctionRoundStatus: "unsold" },
+      { $set: { auctionRoundStatus: "pending", teamId: null, soldPrice: null } }
+    );
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`auction:${auctionId}`).emit("playerUpdated", { bulk: true });
+    }
+
+    res.json({ message: `Repeated ${result.modifiedCount} unsold players`, count: result.modifiedCount });
+  })
+);
+
 module.exports = router;

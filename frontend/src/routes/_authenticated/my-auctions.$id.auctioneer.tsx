@@ -18,7 +18,7 @@ import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auct
 import { authClient } from "@/lib/auth-client";
 import { computeTeamStats } from "@/lib/team-stats";
 import { exportAuctionPDF } from "@/lib/pdf-export";
-import type { Player, Team } from "@/lib/auction-client";
+import { auctionClient, type Player, type Team } from "@/lib/auction-client";
 import { cn } from "@/lib/utils";
 
 type AuctionRoundStatus = "pending" | "sold" | "unsold";
@@ -82,6 +82,8 @@ function AuctioneerConsole() {
   const [editingSoldPlayerId, setEditingSoldPlayerId] = useState<string | null>(null);
   const [editingSoldAmount, setEditingSoldAmount] = useState<string>("");
   const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
+  const [pickerTab, setPickerTab] = useState<"pending" | "unsold" | "all">("pending");
+  const [isRepeatingUnsold, setIsRepeatingUnsold] = useState(false);
 
   async function handleSaveSoldPrice(playerId: string, playerName: string) {
     const val = parseFloat(editingSoldAmount);
@@ -118,6 +120,89 @@ function AuctioneerConsole() {
     }
 
     setEditingSoldPlayerId(null);
+  }
+
+  async function handleRepeatSinglePlayer(targetPlayer: Player) {
+    // 1. Clear trial override locally
+    setTrialOverrides((prev) => {
+      const next = { ...prev };
+      delete next[targetPlayer.id];
+      return next;
+    });
+
+    // 2. In live mode, update status to pending in database
+    if (mode === "live") {
+      const toastId = toast.loading(`Repeating ${targetPlayer.name} back to auction...`);
+      try {
+        await updatePlayer({
+          id: targetPlayer.id,
+          patch: { auctionRoundStatus: "pending", teamId: null, soldPrice: null },
+        });
+        toast.success(`${targetPlayer.name} is back on the auction block!`, { id: toastId });
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to repeat player in database.", { id: toastId });
+        return;
+      }
+    } else {
+      toast.success(`${targetPlayer.name} is back on the auction block!`);
+    }
+
+    // 3. Put player onto block immediately
+    startNewLot(targetPlayer);
+    setViewingStatusList(null);
+    setPickerOpen(false);
+    setSelectionMode("manual");
+    reshuffleQueue(targetPlayer.id);
+  }
+
+  async function handleRepeatAllUnsold() {
+    const unsoldList = effectivePlayers.filter((p) => effectiveStatus(p) === "unsold");
+    if (unsoldList.length === 0) {
+      toast.info("No unsold players to repeat.");
+      return;
+    }
+
+    const count = unsoldList.length;
+    setIsRepeatingUnsold(true);
+
+    if (mode === "live") {
+      const toastId = toast.loading(`Repeating all ${count} unsold players...`);
+      try {
+        await auctionClient.repeatUnsoldPlayers(auction.id);
+        await refetchPlayers();
+        toast.success(`All ${count} unsold players returned to the auction pool!`, { id: toastId });
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to repeat unsold players in database.", { id: toastId });
+        setIsRepeatingUnsold(false);
+        return;
+      }
+    } else {
+      // In trial mode, clear all unsold overrides
+      setTrialOverrides((prev) => {
+        const next = { ...prev };
+        for (const [id, ov] of Object.entries(next)) {
+          if (ov.auctionRoundStatus === "unsold") {
+            delete next[id];
+          }
+        }
+        return next;
+      });
+      toast.success(`All ${count} unsold players returned to the auction pool!`);
+    }
+
+    setIsRepeatingUnsold(false);
+    setViewingStatusList(null);
+
+    // If no player is on the block, place the first repeated player on the block
+    if (!currentPlayer) {
+      const first = unsoldList[0];
+      if (first) {
+        startNewLot(first);
+        reshuffleQueue(first.id);
+      }
+    } else {
+      reshuffleQueue();
+    }
   }
 
   // Sync ordered teams when teams load or change
@@ -532,6 +617,11 @@ function AuctioneerConsole() {
       : pendingPlayers;
 
     if (availablePending.length === 0) {
+      if (unsoldCount > 0) {
+        setViewingStatusList("unsold");
+        toast.info(`All available players auctioned! Showing ${unsoldCount} unsold players to repeat.`);
+        return;
+      }
       toast.info("No more players available.");
       return;
     }
@@ -649,6 +739,8 @@ function AuctioneerConsole() {
     advanceShuffledPlayer(unsoldId, null);
   }
 
+  const unsoldPlayers = players.filter((p) => effectiveStatus(p) === "unsold");
+
   const pendingPriorityPlayers = pendingPlayers.filter(
     (p) => getSpecialPriority(p.name) !== Infinity
   );
@@ -656,7 +748,15 @@ function AuctioneerConsole() {
     ...pendingPriorityPlayers,
     ...pendingPlayers.filter((p) => getSpecialPriority(p.name) === Infinity)
   ];
-  const filteredPickerPlayers = basePickerPlayers.filter((p) => {
+
+  const pickerSourcePlayers =
+    pickerTab === "unsold"
+      ? unsoldPlayers
+      : pickerTab === "all"
+        ? [...basePickerPlayers, ...unsoldPlayers]
+        : basePickerPlayers;
+
+  const filteredPickerPlayers = pickerSourcePlayers.filter((p) => {
     const rawQuery = pickerQuery.trim().toLowerCase();
     if (!rawQuery) return true;
 
@@ -807,8 +907,41 @@ function AuctioneerConsole() {
               mode={mode}
             />
           ) : (
-            <div className="rounded-3xl border-2 border-[#38bdf8]/40 bg-[#162a34]/90 backdrop-blur-xl p-12 text-center text-[#f2e9dc] shadow-2xl flex items-center justify-center h-full">
-              <p className="text-lg font-black text-[#ffffff]">Tap "New Player" at the bottom to begin.</p>
+            <div className="rounded-3xl border-2 border-[#38bdf8]/40 bg-[#162a34]/90 backdrop-blur-xl p-8 sm:p-12 text-center text-[#f2e9dc] shadow-2xl flex flex-col items-center justify-center gap-5 h-full">
+              {pendingPlayers.length === 0 && unsoldCount > 0 ? (
+                <div className="flex flex-col items-center max-w-lg mx-auto">
+                  <div className="size-20 rounded-3xl bg-amber-500/20 border-2 border-amber-500/60 flex items-center justify-center text-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.35)] animate-pulse mb-2">
+                    <RotateCcw className="size-10 stroke-[2.5]" />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Round 1 Completed!
+                  </h3>
+                  <p className="text-sm sm:text-base font-semibold text-[#a1b5d8] mt-2">
+                    All regular players have been auctioned. You have <span className="text-amber-400 font-black">{unsoldCount} Unsold players</span> ready to repeat for Round 2.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+                    <Button
+                      type="button"
+                      disabled={isRepeatingUnsold}
+                      onClick={handleRepeatAllUnsold}
+                      className="rounded-2xl px-6 py-3.5 h-auto font-black text-sm text-white bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 active:scale-95 transition-all border border-white/30 flex items-center gap-2 cursor-pointer"
+                    >
+                      <RotateCcw className="size-4" />
+                      Repeat All Unsold Players ({unsoldCount})
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setViewingStatusList("unsold")}
+                      className="rounded-2xl px-5 py-3.5 h-auto font-bold text-sm text-[#38bdf8] border-2 border-[#38bdf8]/50 bg-[#142630] hover:bg-[#1a3847] hover:text-white transition-all cursor-pointer shadow-md"
+                    >
+                      View Unsold List
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-lg font-black text-[#ffffff]">Tap "New Player" at the bottom to begin.</p>
+              )}
             </div>
           )}
         </div>
@@ -1008,10 +1141,48 @@ function AuctioneerConsole() {
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[88vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-5 sm:p-6">
           <DialogHeader className="shrink-0">
-            <div className="flex items-center justify-between border-b border-[#5c6875]/30 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#5c6875]/30 pb-3 gap-2">
               <DialogTitle className="text-xl sm:text-2xl font-black text-[#fffcf7] tracking-tight">
                 Pick a player <span className="text-base text-[#a1b5d8] font-bold">({filteredPickerPlayers.length})</span>
               </DialogTitle>
+              <div className="flex items-center gap-1 bg-[#142630] p-1 rounded-xl border border-[#38bdf8]/30 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPickerTab("pending")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    pickerTab === "pending"
+                      ? "bg-[#38bdf8] text-[#142630] font-black shadow-sm"
+                      : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  Available ({pendingPlayers.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPickerTab("unsold")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    pickerTab === "unsold"
+                      ? "bg-rose-500 text-white font-black shadow-sm"
+                      : "text-rose-400 hover:text-rose-300"
+                  )}
+                >
+                  Unsold ({unsoldCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPickerTab("all")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    pickerTab === "all"
+                      ? "bg-[#2e343a] text-white font-black shadow-sm"
+                      : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  All ({pendingPlayers.length + unsoldCount})
+                </button>
+              </div>
             </div>
           </DialogHeader>
           <div className="relative mt-2 shrink-0">
@@ -1037,6 +1208,12 @@ function AuctioneerConsole() {
                       key={p.id}
                       type="button"
                       onClick={() => {
+                        const isCurrentlyUnsold = effectiveStatus(p) === "unsold";
+                        if (isCurrentlyUnsold) {
+                          handleRepeatSinglePlayer(p);
+                          return;
+                        }
+
                         const previouslyVisibleId =
                           currentPlayer &&
                           effectiveStatus(currentPlayer) === "pending" &&
@@ -1069,7 +1246,14 @@ function AuctioneerConsole() {
                       <div className="min-w-0 flex-1">
                         <div className="text-xs sm:text-sm font-black text-[#fffcf7] truncate group-hover:text-[#a1b5d8] transition-colors flex items-center justify-between">
                           <span>{p.name}</span>
-                          {sNo && <span className="text-[11px] font-bold text-[#38bdf8] ml-2 shrink-0">(S.No #{sNo})</span>}
+                          <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                            {effectiveStatus(p) === "unsold" && (
+                              <span className="text-[10px] font-black uppercase text-rose-300 bg-rose-950/80 px-2 py-0.5 rounded-full border border-rose-500/50 flex items-center gap-1">
+                                <RotateCcw className="size-2.5" /> Unsold
+                              </span>
+                            )}
+                            {sNo && <span className="text-[11px] font-bold text-[#38bdf8]">(S.No #{sNo})</span>}
+                          </div>
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 truncate">
                           <span className="text-[#ecf0f7]">{p.sportFields?.["role"] || "-"}</span>
@@ -1201,7 +1385,7 @@ function AuctioneerConsole() {
       <Dialog open={!!viewingStatusList} onOpenChange={(open) => { if (!open) setViewingStatusList(null); }}>
         <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
           <DialogHeader className="shrink-0">
-            <div className="flex items-center justify-between border-b border-[#5c6875]/30 pb-3">
+            <div className="flex items-center justify-between border-b border-[#5c6875]/30 pb-3 flex-wrap gap-2">
               <DialogTitle className="text-xl sm:text-2xl font-black capitalize text-[#fffcf7]">
                 {viewingStatusList === "pending" ? "Available" : viewingStatusList} Players ({
                   viewingStatusList === "pending"
@@ -1211,6 +1395,17 @@ function AuctioneerConsole() {
                       : unsoldCount
                 })
               </DialogTitle>
+              {viewingStatusList === "unsold" && unsoldCount > 0 && (
+                <Button
+                  type="button"
+                  disabled={isRepeatingUnsold}
+                  onClick={handleRepeatAllUnsold}
+                  className="rounded-xl px-4 h-9 font-black text-xs text-white bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)] flex items-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer"
+                >
+                  <RotateCcw className="size-3.5" />
+                  Repeat All Unsold ({unsoldCount})
+                </Button>
+              )}
             </div>
           </DialogHeader>
           
@@ -1328,9 +1523,20 @@ function AuctioneerConsole() {
                         Available
                       </span>
                     ) : (
-                      <span className="text-sm font-bold text-red-400 bg-[#45191f]/70 px-3.5 py-1 rounded-full border border-[#8b2635] shrink-0">
-                        Unsold
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs font-bold text-red-400 bg-[#45191f]/70 px-3 py-1 rounded-full border border-[#8b2635]">
+                          Unsold
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRepeatSinglePlayer(p)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#38bdf8]/20 to-[#0284c7]/20 border border-[#38bdf8] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#142630] font-black text-xs transition-all cursor-pointer shadow-[0_0_12px_rgba(56,189,248,0.3)] active:scale-95"
+                          title="Bring back to auction block"
+                        >
+                          <RotateCcw className="size-3.5" />
+                          Repeat
+                        </button>
+                      </div>
                     )}
                   </div>
                 );
