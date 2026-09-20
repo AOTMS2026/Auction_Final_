@@ -1,12 +1,12 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, Pencil, Check, Users } from "lucide-react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, Pencil, Check, Users, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FallbackImage } from "@/components/ui/fallback-image";
 import { CurrentPlayerCard } from "@/components/auction/CurrentPlayerCard";
 import { TeamBidCard } from "@/components/auction/TeamBidCard";
@@ -486,6 +486,27 @@ function AuctioneerConsole() {
       setCurrentPlayerId(null);
       setSelectedTeamId(null);
       setReplacedPlayerId(null);
+
+      // Check remaining unsold players (including the one just processed)
+      const isJustUnsold = !soldTeamId;
+      const remainingUnsold = players.filter((p) => {
+        if (p.id === currentId) {
+          return isJustUnsold;
+        }
+        return (trialOverrides[p.id]?.auctionRoundStatus ?? p.auctionRoundStatus) === "unsold";
+      });
+
+      if (remainingUnsold.length > 0) {
+        setViewingStatusList("unsold");
+        toast.info(
+          `No more players available. Showing ${remainingUnsold.length} unsold player${
+            remainingUnsold.length > 1 ? "s" : ""
+          } to repeat again!`,
+          { duration: 5000 }
+        );
+      } else {
+        toast.info("No more players available. All players have been auctioned!", { duration: 5000 });
+      }
       return;
     }
 
@@ -619,10 +640,15 @@ function AuctioneerConsole() {
     if (availablePending.length === 0) {
       if (unsoldCount > 0) {
         setViewingStatusList("unsold");
-        toast.info(`All available players auctioned! Showing ${unsoldCount} unsold players to repeat.`);
+        toast.info(
+          `No more players available. Showing ${unsoldCount} unsold player${
+            unsoldCount > 1 ? "s" : ""
+          } to repeat again!`,
+          { duration: 5000 }
+        );
         return;
       }
-      toast.info("No more players available.");
+      toast.info("No more players available. All players have been auctioned!", { duration: 5000 });
       return;
     }
     if (selectionMode === "random") {
@@ -909,15 +935,18 @@ function AuctioneerConsole() {
           ) : (
             <div className="rounded-3xl border-2 border-[#38bdf8]/40 bg-[#162a34]/90 backdrop-blur-xl p-8 sm:p-12 text-center text-[#f2e9dc] shadow-2xl flex flex-col items-center justify-center gap-5 h-full">
               {pendingPlayers.length === 0 && unsoldCount > 0 ? (
-                <div className="flex flex-col items-center max-w-lg mx-auto">
+                <div className="flex flex-col items-center max-w-lg mx-auto animate-fade-in">
                   <div className="size-20 rounded-3xl bg-amber-500/20 border-2 border-amber-500/60 flex items-center justify-center text-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.35)] animate-pulse mb-2">
                     <RotateCcw className="size-10 stroke-[2.5]" />
                   </div>
+                  <span className="px-3.5 py-1 rounded-full border border-amber-500/60 bg-amber-950/70 text-amber-300 text-xs font-black uppercase tracking-wider mb-2">
+                    No More Players Available
+                  </span>
                   <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    Round 1 Completed!
+                    Repeat Unsold Players
                   </h3>
-                  <p className="text-sm sm:text-base font-semibold text-[#a1b5d8] mt-2">
-                    All regular players have been auctioned. You have <span className="text-amber-400 font-black">{unsoldCount} Unsold players</span> ready to repeat for Round 2.
+                  <p className="text-sm sm:text-base font-semibold text-[#a1b5d8] mt-2 leading-relaxed">
+                    All regular players have been auctioned. You have <span className="text-amber-400 font-black">{unsoldCount} Unsold player{unsoldCount > 1 ? "s" : ""}</span> ready to repeat again for the next round.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
                     <Button
@@ -933,9 +962,37 @@ function AuctioneerConsole() {
                       type="button"
                       variant="outline"
                       onClick={() => setViewingStatusList("unsold")}
-                      className="rounded-2xl px-5 py-3.5 h-auto font-bold text-sm text-[#38bdf8] border-2 border-[#38bdf8]/50 bg-[#142630] hover:bg-[#1a3847] hover:text-white transition-all cursor-pointer shadow-md"
+                      className="rounded-2xl px-5 py-3.5 h-auto font-bold text-sm text-[#38bdf8] border-2 border-[#38bdf8]/50 bg-[#142630] hover:bg-[#1a3847] hover:text-white transition-all cursor-pointer shadow-md flex items-center gap-2"
                     >
-                      View Unsold List
+                      <Users className="size-4" />
+                      View Unsold List ({unsoldCount})
+                    </Button>
+                  </div>
+                </div>
+              ) : pendingPlayers.length === 0 && soldCount > 0 ? (
+                <div className="flex flex-col items-center max-w-lg mx-auto animate-fade-in">
+                  <div className="size-20 rounded-3xl bg-emerald-500/20 border-2 border-emerald-500/60 flex items-center justify-center text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.35)] mb-3">
+                    <CheckCircle className="size-10 stroke-[2.5]" />
+                  </div>
+                  <span className="px-3.5 py-1 rounded-full border border-emerald-500/60 bg-emerald-950/70 text-emerald-300 text-xs font-black uppercase tracking-wider mb-2">
+                    Auction Completed
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    All Players Sold!
+                  </h3>
+                  <p className="text-sm sm:text-base font-semibold text-[#a1b5d8] mt-2">
+                    No more players available. All {soldCount} players have been successfully auctioned.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        exportAuctionPDF(auction, effectivePlayers, orderedTeams.length > 0 ? orderedTeams : teams);
+                        toast.success("Auction PDF Report downloaded!");
+                      }}
+                      className="rounded-2xl px-6 py-3.5 h-auto font-black text-sm text-white bg-[#162a34] border-2 border-[#38bdf8]/60 hover:bg-[#38bdf8] hover:text-[#142630] flex items-center gap-2 cursor-pointer shadow-md transition-all"
+                    >
+                      <FileText className="size-4" /> Download PDF Report
                     </Button>
                   </div>
                 </div>
@@ -1038,7 +1095,12 @@ function AuctioneerConsole() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectionMode("manual")}
+                  onClick={() => {
+                    setSelectionMode("manual");
+                    if (pendingPlayers.length === 0 && unsoldCount > 0) {
+                      setPickerTab("unsold");
+                    }
+                  }}
                   className={cn(
                     "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
                     selectionMode === "manual"
@@ -1197,7 +1259,13 @@ function AuctioneerConsole() {
           <div className="flex-1 overflow-y-auto mt-2 pr-1 min-h-[300px] max-h-[65vh]">
             {filteredPickerPlayers.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[250px]">
-                <p className="text-sm sm:text-base text-[#abb4bd] font-bold">No pending players found.</p>
+                <p className="text-sm sm:text-base text-[#abb4bd] font-bold">
+                  {pickerTab === "unsold"
+                    ? "No unsold players found."
+                    : pickerTab === "pending"
+                      ? "No available players found."
+                      : "No players found."}
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -1386,15 +1454,37 @@ function AuctioneerConsole() {
         <DialogContent className="sm:max-w-2xl h-[600px] max-h-[85vh] flex flex-col rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6">
           <DialogHeader className="shrink-0">
             <div className="flex items-center justify-between border-b border-[#5c6875]/30 pb-3 flex-wrap gap-2">
-              <DialogTitle className="text-xl sm:text-2xl font-black capitalize text-[#fffcf7]">
-                {viewingStatusList === "pending" ? "Available" : viewingStatusList} Players ({
-                  viewingStatusList === "pending"
-                    ? pendingPlayers.length
+              <div>
+                <DialogTitle className="text-xl sm:text-2xl font-black capitalize text-[#fffcf7] flex items-center gap-2">
+                  {viewingStatusList === "unsold" && pendingPlayers.length === 0 ? (
+                    <>
+                      <span>Unsold Players List</span>
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        No More Players Available
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {viewingStatusList === "pending" ? "Available" : viewingStatusList} Players ({
+                        viewingStatusList === "pending"
+                          ? pendingPlayers.length
+                          : viewingStatusList === "sold"
+                            ? soldCount
+                            : unsoldCount
+                      })
+                    </>
+                  )}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#a1b5d8] font-semibold mt-1">
+                  {viewingStatusList === "unsold"
+                    ? pendingPlayers.length === 0
+                      ? "All regular players have been auctioned. Repeat unsold players to continue the auction round."
+                      : "Unsold players pool. You can repeat individual players or repeat all at once."
                     : viewingStatusList === "sold"
-                      ? soldCount
-                      : unsoldCount
-                })
-              </DialogTitle>
+                      ? "List of all players sold in this auction. You can edit prices or change teams."
+                      : "Players currently waiting on the auction queue."}
+                </DialogDescription>
+              </div>
               {viewingStatusList === "unsold" && unsoldCount > 0 && (
                 <Button
                   type="button"
@@ -1531,10 +1621,10 @@ function AuctioneerConsole() {
                           type="button"
                           onClick={() => handleRepeatSinglePlayer(p)}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#38bdf8]/20 to-[#0284c7]/20 border border-[#38bdf8] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#142630] font-black text-xs transition-all cursor-pointer shadow-[0_0_12px_rgba(56,189,248,0.3)] active:scale-95"
-                          title="Bring back to auction block"
+                          title="Repeat this player and put on auction block"
                         >
                           <RotateCcw className="size-3.5" />
-                          Repeat
+                          Repeat & Auction
                         </button>
                       </div>
                     )}

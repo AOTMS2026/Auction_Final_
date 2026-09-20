@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import * as XLSX from "xlsx";
+import { cn } from "@/lib/utils";
 
 import stadiumImg from "@/assets/stadium-band.jpg";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -91,6 +92,24 @@ function ManageAuctionPage() {
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
   const [previewPlayerId, setPreviewPlayerId] = useState<string | null>(null);
   const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
+  const [playerStatusFilter, setPlayerStatusFilter] = useState<"all" | "pending" | "sold" | "unsold">("all");
+
+  const unsoldPlayersCount = players.filter((p) => p.auctionRoundStatus === "unsold").length;
+  const soldPlayersCount = players.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold").length;
+  const pendingPlayersCount = players.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold").length;
+
+  const filteredPlayersList = useMemo(() => {
+    if (playerStatusFilter === "unsold") {
+      return players.filter((p) => p.auctionRoundStatus === "unsold");
+    }
+    if (playerStatusFilter === "sold") {
+      return players.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold");
+    }
+    if (playerStatusFilter === "pending") {
+      return players.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold");
+    }
+    return players;
+  }, [players, playerStatusFilter]);
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -697,53 +716,146 @@ function ManageAuctionPage() {
 
         {activeTab === "PLAYERS" && (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {players.filter((p) => p.auctionRoundStatus === "unsold").length > 0 && (
+            {pendingPlayersCount === 0 && unsoldPlayersCount > 0 && (
+              <div className="rounded-2xl border-2 border-amber-500/60 bg-amber-950/40 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_25px_rgba(245,158,11,0.25)] animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-amber-500/20 border border-amber-500/60 flex items-center justify-center text-amber-400 shrink-0">
+                    <RotateCcw className="size-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-black text-white">No More Players Available</h4>
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        Round 1 Done
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#a1b5d8] mt-0.5">
+                      All regular players have been auctioned. You have <span className="text-amber-400 font-bold">{unsoldPlayersCount} unsold player{unsoldPlayersCount > 1 ? "s" : ""}</span> ready to repeat again for the next round.
+                    </p>
+                  </div>
+                </div>
                 <Button
                   onClick={async () => {
-                    const count = players.filter((p) => p.auctionRoundStatus === "unsold").length;
-                    if (window.confirm(`Repeat all ${count} unsold players and make them available again?`)) {
+                    if (window.confirm(`Repeat all ${unsoldPlayersCount} unsold players and make them available again?`)) {
                       try {
                         await auctionClient.repeatUnsoldPlayers(auction.id);
                         await queryClient.invalidateQueries({ queryKey: ["players", auction.id] });
-                        toast.success(`Repeated all ${count} unsold players!`);
+                        toast.success(`Repeated all ${unsoldPlayersCount} unsold players!`);
                       } catch (err: any) {
                         toast.error(err?.message || "Failed to repeat unsold players.");
                       }
                     }
                   }}
-                  variant="outline"
-                  className="gap-2 rounded-full border-2 border-amber-500/60 bg-amber-950/70 text-amber-300 hover:bg-amber-600 hover:text-white font-extrabold text-xs transition-all shadow-sm cursor-pointer"
+                  className="rounded-xl px-4 py-2 h-auto font-black text-xs text-white bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)] shrink-0 border border-white/30 cursor-pointer"
                 >
-                  <RotateCcw className="size-4 text-amber-400" /> Repeat All Unsold ({players.filter((p) => p.auctionRoundStatus === "unsold").length})
+                  <RotateCcw className="size-3.5 mr-1.5" />
+                  Repeat All Unsold ({unsoldPlayersCount})
                 </Button>
-              )}
-              <Button
-                onClick={handleDownloadPlayersExcel}
-                variant="outline"
-                className="gap-2 rounded-full border-2 border-emerald-500/60 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-600 hover:text-white font-extrabold text-xs transition-all shadow-sm"
-              >
-                <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
-              </Button>
-              <Button
-                onClick={handleSharePlayerForm}
-                variant="outline"
-                className="gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a34] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs transition-all shadow-sm"
-              >
-                <Share2 className="size-4" /> Share Registration Link
-              </Button>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#5c6875]/30 pb-3">
+              <div className="flex items-center gap-1.5 bg-[#171a1d] p-1 rounded-xl border border-[#5c6875]/40 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("all")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "all" ? "bg-[#38bdf8] text-[#142630] font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  All ({players.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("pending")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "pending" ? "bg-[#4365a0] text-white font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  Available ({pendingPlayersCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("sold")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "sold" ? "bg-[#23341d] text-[#c2d8b9] font-black border border-[#47673a] shadow-sm" : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  Sold ({soldPlayersCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("unsold")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "unsold" ? "bg-rose-500 text-white font-black shadow-sm" : "text-rose-400 hover:text-rose-300"
+                  )}
+                >
+                  Unsold ({unsoldPlayersCount})
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {unsoldPlayersCount > 0 && (
+                  <Button
+                    onClick={async () => {
+                      if (window.confirm(`Repeat all ${unsoldPlayersCount} unsold players and make them available again?`)) {
+                        try {
+                          await auctionClient.repeatUnsoldPlayers(auction.id);
+                          await queryClient.invalidateQueries({ queryKey: ["players", auction.id] });
+                          toast.success(`Repeated all ${unsoldPlayersCount} unsold players!`);
+                        } catch (err: any) {
+                          toast.error(err?.message || "Failed to repeat unsold players.");
+                        }
+                      }
+                    }}
+                    variant="outline"
+                    className="gap-2 rounded-full border-2 border-amber-500/60 bg-amber-950/70 text-amber-300 hover:bg-amber-600 hover:text-white font-extrabold text-xs transition-all shadow-sm cursor-pointer"
+                  >
+                    <RotateCcw className="size-4 text-amber-400" /> Repeat All Unsold ({unsoldPlayersCount})
+                  </Button>
+                )}
+                <Button
+                  onClick={handleDownloadPlayersExcel}
+                  variant="outline"
+                  className="gap-2 rounded-full border-2 border-emerald-500/60 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-600 hover:text-white font-extrabold text-xs transition-all shadow-sm"
+                >
+                  <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
+                </Button>
+                <Button
+                  onClick={handleSharePlayerForm}
+                  variant="outline"
+                  className="gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a34] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs transition-all shadow-sm"
+                >
+                  <Share2 className="size-4" /> Share Registration Link
+                </Button>
+              </div>
             </div>
+
             {playersPending ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Skeleton key={i} className="h-20 w-full rounded-2xl bg-[#2e343a]/50 border border-[#5c6875]/20" />
               ))
-            ) : players.length === 0 ? (
+            ) : filteredPlayersList.length === 0 ? (
               <div className="py-16 text-center rounded-3xl border-2 border-dashed border-[#5c6875]/40 bg-[#2e343a]/30 p-8">
-                <p className="text-[#abb4bd] font-medium">No players added yet.</p>
-                <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
+                <p className="text-[#abb4bd] font-medium">
+                  {playerStatusFilter === "unsold"
+                    ? "No unsold players found."
+                    : playerStatusFilter === "pending"
+                      ? "No available players found."
+                      : playerStatusFilter === "sold"
+                        ? "No sold players found."
+                        : "No players added yet."}
+                </p>
+                {playerStatusFilter === "all" && (
+                  <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
+                )}
               </div>
             ) : (
-              players.map((player) => {
+              filteredPlayersList.map((player) => {
                 const soldTeam = teams?.find((t) => t.id === player.teamId);
                 return (
                   <div
