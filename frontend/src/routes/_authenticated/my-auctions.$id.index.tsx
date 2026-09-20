@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import * as XLSX from "xlsx";
@@ -36,6 +36,7 @@ import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { TeamFormModal } from "@/components/auction/TeamFormModal";
 import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
 import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
+import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
 import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeDialog";
 import { Countdown } from "@/components/auction/Countdown";
 import { AboutTab } from "@/components/auction/AboutTab";
@@ -89,6 +90,7 @@ function ManageAuctionPage() {
   const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
   const [previewPlayerId, setPreviewPlayerId] = useState<string | null>(null);
+  const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -808,10 +810,13 @@ function ManageAuctionPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
-                        <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a]">
+                        <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer">
                           <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit player
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive hover:bg-destructive/15" onSelect={() => setPlayerToDelete(player.id)}>
+                        <DropdownMenuItem onSelect={() => setChangeTeamPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer">
+                          <Shield className="mr-2 size-4 text-[#38bdf8]" /> Change Team
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive hover:bg-destructive/15 cursor-pointer" onSelect={() => setPlayerToDelete(player.id)}>
                           <Trash className="mr-2 size-4" /> Delete player
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -831,6 +836,18 @@ function ManageAuctionPage() {
                 open={!!editPlayerId}
                 onOpenChange={(open) => {
                   if (!open) setEditPlayerId(null);
+                }}
+              />
+            )}
+            {changeTeamPlayer && (
+              <ChangePlayerTeamModal
+                auction={auction}
+                player={changeTeamPlayer}
+                teams={teams}
+                players={players}
+                open={!!changeTeamPlayer}
+                onOpenChange={(open) => {
+                  if (!open) setChangeTeamPlayer(null);
                 }}
               />
             )}

@@ -262,20 +262,38 @@ router.patch(
       }
     }
 
-    // Perform validations before modifying the player object if we are assigning a team or if soldPrice/auctionRoundStatus is changing.
-    const targetTeamId = req.body.teamId !== undefined ? req.body.teamId : player.teamId;
-    const newStatus = req.body.auctionRoundStatus !== undefined ? req.body.auctionRoundStatus : player.auctionRoundStatus;
+    // Handle teamId and auctionRoundStatus updates
+    let targetTeamId = player.teamId;
+    if (req.body.teamId !== undefined) {
+      if (req.body.teamId === null || req.body.teamId === "" || req.body.teamId === "none") {
+        targetTeamId = null;
+      } else {
+        targetTeamId = req.body.teamId;
+      }
+    }
 
-    if (newStatus === "unsold" || newStatus === "pending") {
+    let targetStatus = player.auctionRoundStatus || "pending";
+    if (req.body.auctionRoundStatus !== undefined) {
+      targetStatus = req.body.auctionRoundStatus;
+    } else if (req.body.teamId !== undefined) {
+      targetStatus = targetTeamId ? "sold" : "pending";
+    }
+
+    if (!targetTeamId || targetStatus === "unsold" || targetStatus === "pending") {
       player.teamId = null;
       player.soldPrice = null;
-      player.auctionRoundStatus = newStatus;
-    } else if (targetTeamId) {
+      player.auctionRoundStatus = targetStatus === "unsold" ? "unsold" : "pending";
+    } else {
       const currentTeamId = player.teamId ? player.teamId.toString() : null;
-      const nextTeamId = targetTeamId ? targetTeamId.toString() : null;
+      const nextTeamId = targetTeamId.toString();
 
-      // 1. Enforce roster count check if team changes
-      if (nextTeamId && nextTeamId !== currentTeamId) {
+      const team = await Team.findOne({ _id: nextTeamId, auctionId: player.auctionId }).catch(() => null);
+      if (!team) {
+        return res.status(400).json({ error: "Team not found in this auction." });
+      }
+
+      // 1. Enforce roster count check if team changes or status changes to sold
+      if (nextTeamId !== currentTeamId || player.auctionRoundStatus !== "sold") {
         const rosterCount = await Player.countDocuments({
           teamId: nextTeamId,
           _id: { $ne: player._id },
@@ -288,51 +306,54 @@ router.patch(
         }
       }
 
-      // 2. Validate sale budget constraints if a price is specified or updated
-      const newPrice = req.body.soldPrice !== undefined ? req.body.soldPrice : player.soldPrice;
-
-      if (newStatus === "sold" && newPrice !== null && newPrice !== undefined) {
-        if (newPrice < auction.minimumBid) {
-          return res
-            .status(400)
-            .json({ error: `Sale price (🪙 ${newPrice.toLocaleString()}) cannot be below the configured minimum bid (🪙 ${auction.minimumBid.toLocaleString()}).` });
-        }
-
-        const otherPlayers = await Player.find({
-          teamId: targetTeamId,
-          _id: { $ne: player._id },
-          auctionRoundStatus: "sold",
-        }).select("soldPrice");
-        let usedPoints = 0;
-        for (const op of otherPlayers) {
-          if (op.soldPrice) usedPoints += op.soldPrice;
-        }
-
-        const remainingPurse = auction.pointsPerTeam - usedPoints;
-        const rosterCount = otherPlayers.length;
-        const playersRemaining = auction.playersPerTeam - rosterCount;
-
-        const configuredMaximumBid = auction.maxBid ?? 30000;
-        const reserveForOtherPlayers = playersRemaining > 1 ? (playersRemaining - 1) * auction.minimumBid : 0;
-        const affordableBid = remainingPurse - reserveForOtherPlayers;
-        const actualMaximumBid = Math.max(0, Math.min(configuredMaximumBid, affordableBid));
-
-        if (newPrice > remainingPurse) {
-          return res
-            .status(400)
-            .json({ error: `Insufficient funds: Team only has 🪙 ${remainingPurse.toLocaleString()} remaining, but bid is 🪙 ${newPrice.toLocaleString()}.` });
-        }
-
-        if (newPrice > actualMaximumBid) {
-          return res
-            .status(400)
-            .json({ error: `Bid of 🪙 ${newPrice.toLocaleString()} exceeds the team's maximum allowed bid of 🪙 ${actualMaximumBid.toLocaleString()} (reserving 🪙 ${reserveForOtherPlayers.toLocaleString()} for ${playersRemaining - 1} remaining spots).` });
-        }
+      // 2. Validate sale budget constraints
+      let newPrice = req.body.soldPrice !== undefined ? req.body.soldPrice : player.soldPrice;
+      if (newPrice === null || newPrice === undefined || isNaN(Number(newPrice))) {
+        newPrice = player.baseValue || auction.minimumBid;
+      } else {
+        newPrice = Number(newPrice);
       }
-    }
 
-    if (req.body.teamId !== undefined && newStatus !== "unsold" && newStatus !== "pending") {
-      player.teamId = req.body.teamId === null ? null : req.body.teamId;
+      if (newPrice < auction.minimumBid) {
+        return res
+          .status(400)
+          .json({ error: `Sale price (🪙 ${newPrice.toLocaleString()}) cannot be below the configured minimum bid (🪙 ${auction.minimumBid.toLocaleString()}).` });
+      }
+
+      const otherPlayers = await Player.find({
+        teamId: nextTeamId,
+        _id: { $ne: player._id },
+        auctionRoundStatus: "sold",
+      }).select("soldPrice");
+      let usedPoints = 0;
+      for (const op of otherPlayers) {
+        if (op.soldPrice) usedPoints += op.soldPrice;
+      }
+
+      const remainingPurse = auction.pointsPerTeam - usedPoints;
+      const rosterCount = otherPlayers.length;
+      const playersRemaining = auction.playersPerTeam - rosterCount;
+
+      const configuredMaximumBid = auction.maxBid ?? 30000;
+      const reserveForOtherPlayers = playersRemaining > 1 ? (playersRemaining - 1) * auction.minimumBid : 0;
+      const affordableBid = remainingPurse - reserveForOtherPlayers;
+      const actualMaximumBid = Math.max(0, Math.min(configuredMaximumBid, affordableBid));
+
+      if (newPrice > remainingPurse) {
+        return res
+          .status(400)
+          .json({ error: `Insufficient funds: Team only has 🪙 ${remainingPurse.toLocaleString()} remaining, but bid is 🪙 ${newPrice.toLocaleString()}.` });
+      }
+
+      if (newPrice > actualMaximumBid) {
+        return res
+          .status(400)
+          .json({ error: `Bid of 🪙 ${newPrice.toLocaleString()} exceeds the team's maximum allowed bid of 🪙 ${actualMaximumBid.toLocaleString()} (reserving 🪙 ${reserveForOtherPlayers.toLocaleString()} for ${playersRemaining - 1} remaining spots).` });
+      }
+
+      player.teamId = team._id;
+      player.soldPrice = newPrice;
+      player.auctionRoundStatus = "sold";
     }
 
     await player.save();

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, Pencil, Check } from "lucide-react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, Pencil, Check, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { CurrentPlayerCard } from "@/components/auction/CurrentPlayerCard";
 import { TeamBidCard } from "@/components/auction/TeamBidCard";
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
+import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
 import { authClient } from "@/lib/auth-client";
@@ -80,6 +81,7 @@ function AuctioneerConsole() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [editingSoldPlayerId, setEditingSoldPlayerId] = useState<string | null>(null);
   const [editingSoldAmount, setEditingSoldAmount] = useState<string>("");
+  const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
 
   async function handleSaveSoldPrice(playerId: string, playerName: string) {
     const val = parseFloat(editingSoldAmount);
@@ -1178,6 +1180,14 @@ function AuctioneerConsole() {
                         >
                           <Pencil className="size-4" />
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setChangeTeamPlayer(p)}
+                          className="text-[#38bdf8] hover:text-white p-2 hover:bg-[#2e343a] rounded-xl transition-all border border-[#5c6875]/40 hover:border-[#38bdf8] cursor-pointer"
+                          title="Change team"
+                        >
+                          <Users className="size-4" />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -1302,6 +1312,14 @@ function AuctioneerConsole() {
                             >
                               <Pencil className="size-4" />
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setChangeTeamPlayer(p)}
+                              className="text-[#38bdf8] hover:text-white p-2 hover:bg-[#2e343a] rounded-xl transition-all border border-[#5c6875]/40 hover:border-[#38bdf8] cursor-pointer"
+                              title="Change team"
+                            >
+                              <Users className="size-4" />
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1321,6 +1339,22 @@ function AuctioneerConsole() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {changeTeamPlayer && (
+        <ChangePlayerTeamModal
+          auction={auction}
+          player={changeTeamPlayer}
+          teams={teams}
+          players={effectivePlayers}
+          open={!!changeTeamPlayer}
+          onOpenChange={(open) => {
+            if (!open) setChangeTeamPlayer(null);
+          }}
+          onSuccess={() => {
+            refetchPlayers();
+          }}
+        />
+      )}
     </>
   );
 }

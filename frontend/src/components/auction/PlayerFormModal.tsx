@@ -442,7 +442,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
 
     const updateExtras = {
       teamId: teamId === "none" ? null : teamId,
-      soldPrice: soldPrice ? parseFloat(soldPrice) : null,
+      soldPrice: (teamId && teamId !== "none" && soldPrice) ? parseFloat(soldPrice) : (teamId === "none" ? null : (soldPrice ? parseFloat(soldPrice) : null)),
+      auctionRoundStatus: teamId === "none" ? "pending" : "sold",
     };
 
     try {
@@ -1159,7 +1160,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           </div>
         )}
 
-          {player && !hideManualTeam && (
+          {player && (
             <div className="rounded-2xl border border-[#5c6875]/30 bg-[#2e343a]/40 p-5 space-y-4 text-[#fffcf7]">
               <h3 className="font-bold text-base text-[#fffcf7]">Manual Team & Price Assignment</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
