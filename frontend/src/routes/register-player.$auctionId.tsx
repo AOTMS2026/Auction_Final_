@@ -25,6 +25,7 @@ import { SPORT_CONFIGS } from "@/lib/validations/player";
 import stadiumImg from "@/assets/stadium-band.jpg";
 import bniLogoImg from "@/assets/bni-logo.png";
 import anotherImg from "@/assets/another.jpeg";
+import bniCenterImg from "@/assets/image.png";
 
 export const Route = createFileRoute("/register-player/$auctionId")({
   loader: async ({ params, context }) => {
@@ -436,7 +437,13 @@ function PlayerRegistrationPage() {
                 className="h-24 sm:h-28 w-auto rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-contain bg-black p-2"
               />
             )}
-            {auction.coverImage ? (
+            {isBniAuction ? (
+              <img
+                src={bniCenterImg}
+                alt="BNI Poster"
+                className="h-24 sm:h-28 w-auto rounded-2xl border-2 border-[#38bdf8]/60 shadow-xl object-contain bg-white p-1 shrink-0"
+              />
+            ) : auction.coverImage ? (
               <img
                 src={auction.coverImage}
                 alt={auction.name}
