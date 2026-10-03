@@ -565,39 +565,9 @@ function AuctioneerConsole() {
   });
 
   const teamStatsMap = useMemo(() => {
-    const teamSoldPlayersMap = new Map<string, Player[]>();
-    for (const p of effectivePlayers) {
-      if (p.teamId && (p.auctionRoundStatus === "sold" || ((p.soldPrice ?? 0) > 0))) {
-        const list = teamSoldPlayersMap.get(p.teamId) || [];
-        list.push(p);
-        teamSoldPlayersMap.set(p.teamId, list);
-      }
-    }
-
     const map = new Map<string, ReturnType<typeof computeTeamStats>>();
     for (const team of teams) {
-      const teamPlayers = teamSoldPlayersMap.get(team.id) || [];
-      let usedPoints = 0;
-      for (const p of teamPlayers) {
-        if (p.soldPrice) usedPoints += p.soldPrice;
-      }
-      const totalPoints = auction.pointsPerTeam;
-      const availablePoints = Math.max(0, totalPoints - usedPoints);
-      const totalPlayers = teamPlayers.length;
-      const reservedPlayers = Math.max(0, auction.playersPerTeam - totalPlayers);
-      const maxBidPoints =
-        reservedPlayers > 0
-          ? Math.min(auction.maxBid ?? 30000, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
-          : 0;
-
-      map.set(team.id, {
-        usedPoints,
-        totalPoints,
-        availablePoints,
-        totalPlayers,
-        reservedPlayers,
-        maxBidPoints: maxBidPoints > 0 ? maxBidPoints : 0,
-      });
+      map.set(team.id, computeTeamStats(team, effectivePlayers, auction));
     }
     return map;
   }, [teams, effectivePlayers, auction]);
