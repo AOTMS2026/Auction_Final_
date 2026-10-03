@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm install && npm run build",
+  "buildCommand": "npx --yes cross-env DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS=1 npm install --legacy-peer-deps && npm run build",
   "outputDirectory": ".output/public",
   "env": {
     "DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS": "1"
