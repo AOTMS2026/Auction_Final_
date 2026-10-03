@@ -134,7 +134,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = useRouterState({ select: (s: any) => s.location.pathname });
 
   // Hide footer tab bar on all My Auction, auction rooms, registration, and redirect pages
   const isMyAuctionOrRedirect =
