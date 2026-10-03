@@ -63,10 +63,14 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     // Prevent SSR page crashes when backend server is unreachable during server rendering
     if (typeof window === "undefined") {
       console.warn(`[SSR API Warning] Path: ${path} | ${error?.message || error}`);
-      if (path.includes("/auctions")) return { auctions: [] } as unknown as T;
-      if (path.includes("/players")) return { players: [] } as unknown as T;
-      if (path.includes("/teams")) return { teams: [] } as unknown as T;
-      return {} as T;
+      return {
+        auction: null,
+        auctions: [],
+        player: null,
+        players: [],
+        team: null,
+        teams: [],
+      } as unknown as T;
     }
     throw error;
   }
