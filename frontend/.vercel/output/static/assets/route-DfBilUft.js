@@ -1,0 +1,1 @@
+import{s as e}from"./useStore-DNRg_vBA.js";import{bt as t}from"./index-BYG0TYQy.js";var n=e(),r=()=>(0,n.jsx)(t,{});export{r as component};
