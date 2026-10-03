@@ -617,7 +617,8 @@ function AuctioneerConsole() {
 
   function startNewLot(player: Player, soldTeamId?: string | null) {
     setCurrentPlayerId(player.id);
-    setCurrentBid(auction.minimumBid);
+    const initialBid = player.baseValue && player.baseValue > 0 ? player.baseValue : (auction.minimumBid || 5000);
+    setCurrentBid(initialBid);
 
     const referenceTeamId = soldTeamId !== undefined ? soldTeamId : lastSoldTeamId;
     if (referenceTeamId && teams.length > 0) {
@@ -688,7 +689,9 @@ function AuctioneerConsole() {
   }
 
   function handleBid(direction: 1 | -1) {
-    setCurrentBid((prev) => Math.max(auction.minimumBid, prev + direction * auction.bidIncrement));
+    const minBid = (currentPlayer?.baseValue && currentPlayer.baseValue > 0) ? currentPlayer.baseValue : (auction.minimumBid || 5000);
+    const increment = auction.bidIncrement || 500;
+    setCurrentBid((prev) => Math.max(minBid, prev + direction * increment));
   }
 
   async function handleSold() {
