@@ -2,8 +2,6 @@
   "name": "auction-app-monorepo",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "build:frontend": "cd frontend && npm install && npm run build",
-    "build:backend": "cd Backend && npm install"
+    "build": "npm install && npm run build"
   }
 }
