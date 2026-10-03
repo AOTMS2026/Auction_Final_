@@ -573,9 +573,9 @@ function AuctionDetailPage() {
                         (p.customData && !p.customData.includes("BNI") && !p.customData.includes("Family")),
                     );
                   const hasCategory = players.some((p) => p.category && p.category.trim() !== "");
-                  const hasGender = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.gender && p.gender.trim() !== "");
-                  const hasCity = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.city && p.city.trim() !== "");
-                  const hasPlayerLevel = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.playerLevel && p.playerLevel.trim() !== "");
+                  const hasGender = auction.id === "6a8edaddd7ed74151dbafab3" || players.some((p) => Boolean(p.gender && p.gender.trim() !== ""));
+                  const hasCity = !isHunterzVolleyball && players.some((p) => p.city && p.city.trim() !== "");
+                  const hasPlayerLevel = !isHunterzVolleyball && players.some((p) => p.playerLevel && p.playerLevel.trim() !== "");
                   const hasJerseySize = !isHunterzVolleyball && players.some((p) => p.jerseySize && p.jerseySize.trim() !== "");
                   const hasJerseyName = !isHunterzVolleyball && (isBniAuction || players.some((p) => p.jerseyName && p.jerseyName.trim() !== ""));
                   const hasTrouserSize = !isHunterzVolleyball && players.some((p) => p.trouserSize && p.trouserSize.trim() !== "");
@@ -651,7 +651,14 @@ function AuctionDetailPage() {
                     }
 
                     if (hasGender) {
-                      row["Gender"] = p.gender || "-";
+                      const g = (p.gender || "").trim().toLowerCase();
+                      const formattedGender =
+                        g === "m" || g === "male"
+                          ? "Male"
+                          : g === "f" || g === "female" || g === "w" || g === "woman" || g === "women"
+                          ? "Female"
+                          : p.gender ? (p.gender.charAt(0).toUpperCase() + p.gender.slice(1)) : "-";
+                      row["Gender"] = formattedGender;
                     }
 
                     if (hasCity) {

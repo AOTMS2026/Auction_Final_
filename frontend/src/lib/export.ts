@@ -16,6 +16,7 @@ export function exportPlayersAndTeams(players: Player[], teams: Team[], auctionN
     "Base Value": p.baseValue,
     "Sold Price": p.soldPrice || "",
     "Team": p.teamId ? (teamMap.get(p.teamId) || "Unknown Team") : "Unsold",
+    "Gender": p.gender || "-",
     "Jersey Size": p.jerseySize,
     "Jersey Name": p.jerseyName,
     "Trouser Size": p.trouserSize,
