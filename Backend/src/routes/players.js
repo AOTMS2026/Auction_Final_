@@ -334,7 +334,7 @@ router.patch(
       const rosterCount = otherPlayers.length;
       const playersRemaining = auction.playersPerTeam - rosterCount;
 
-      const reserveForOtherPlayers = playersRemaining * auction.minimumBid;
+      const reserveForOtherPlayers = playersRemaining > 1 ? (playersRemaining - 1) * auction.minimumBid : 0;
       const affordableBid = remainingPurse - reserveForOtherPlayers;
       const actualMaximumBid = Math.max(0, affordableBid);
 

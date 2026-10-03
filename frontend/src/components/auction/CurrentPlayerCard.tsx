@@ -139,9 +139,16 @@ export function CurrentPlayerCard({
             <span className="rounded-xl bg-orange-950/80 border-2 border-orange-500/60 text-orange-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-[0_0_15px_rgba(249,115,22,0.3)]">
               Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}
             </span>
-            {/* City Name Badge (Green Box) */}
+            {/* Chapter Name Badge (Green Box) */}
             <span className="rounded-xl bg-emerald-950/80 border-2 border-emerald-500/60 text-emerald-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
-              City: {player.city ? (player.city.charAt(0).toUpperCase() + player.city.slice(1)) : "-"}
+              Chapter: {(() => {
+                let ch = (player.sportFields?.["chapter"] || player.sportFields?.["Chapter"] || "") as string;
+                if (!ch && player.customData) {
+                  const match = player.customData.match(/Chapter:\s*([^,|]+)/i) || player.customData.match(/Chapter\s*-\s*([^,|]+)/i);
+                  if (match?.[1]) ch = match[1].trim();
+                }
+                return ch || (player.city ? (player.city.charAt(0).toUpperCase() + player.city.slice(1)) : "-");
+              })()}
             </span>
             {/* Additional Spec Badges (Filtered for duplicates) */}
             {config.specs

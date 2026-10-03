@@ -28,10 +28,10 @@ export function computeTeamStats(team: Team, players: Player[], auction: Auction
 
   const minBid = Number(auction.minimumBid) || 0;
 
-  // Exact formula requested: Maximum Bid = Available Purse - (Remaining Players * Minimum Bid)
+  // Max Bid = Available Purse - (Remaining Players Needed After This One * Minimum Bid)
   const maxBidPoints =
     reservedPlayers > 0
-      ? Math.max(0, availablePoints - reservedPlayers * minBid)
+      ? Math.max(0, availablePoints - Math.max(0, reservedPlayers - 1) * minBid)
       : 0;
 
   return {
