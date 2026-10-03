@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -199,23 +199,38 @@ function AuctionDetailPage() {
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
   const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
   const [playerStatusFilter, setPlayerStatusFilter] = useState<"all" | "pending" | "sold" | "unsold">("all");
+  const [playerSearchQuery, setPlayerSearchQuery] = useState("");
 
   const unsoldPlayersCount = players.filter((p) => p.auctionRoundStatus === "unsold").length;
   const soldPlayersCount = players.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold").length;
   const pendingPlayersCount = players.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold").length;
 
   const filteredPlayersList = useMemo(() => {
+    let list = players;
+
     if (playerStatusFilter === "unsold") {
-      return players.filter((p) => p.auctionRoundStatus === "unsold");
+      list = list.filter((p) => p.auctionRoundStatus === "unsold");
+    } else if (playerStatusFilter === "sold") {
+      list = list.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold");
+    } else if (playerStatusFilter === "pending") {
+      list = list.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold");
     }
-    if (playerStatusFilter === "sold") {
-      return players.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold");
+
+    if (playerSearchQuery.trim()) {
+      const q = playerSearchQuery.trim().toLowerCase().replace(/^#/, "");
+      list = list.filter((p) => {
+        const globalIndex = players.findIndex((x) => x.id === p.id) + 1;
+        const sNoStr = String(globalIndex);
+        const nameMatch = p.name?.toLowerCase().includes(q);
+        const sNoMatch = sNoStr === q || sNoStr.startsWith(q);
+        const phoneMatch = p.phone?.includes(q);
+        const lotMatch = p.lotNumber ? String(p.lotNumber) === q : false;
+        return nameMatch || sNoMatch || phoneMatch || lotMatch;
+      });
     }
-    if (playerStatusFilter === "pending") {
-      return players.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold");
-    }
-    return players;
-  }, [players, playerStatusFilter]);
+
+    return list;
+  }, [players, playerStatusFilter, playerSearchQuery]);
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -583,8 +598,8 @@ function AuctionDetailPage() {
                   const hasUtr = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.utrNumber && p.utrNumber.trim() !== "");
 
                   // BNI and Membership custom form checks
-                  const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI") || p.customData?.includes("Family"));
-                  const hasChapter = isBniAuction || players.some((p) => p.customData?.includes("Chapter:"));
+                  const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI Member") || p.customData?.includes("Family Member"));
+                  const hasChapter = auction.id === "6a8edaddd7ed74151dbafab3" || isBniAuction || players.some((p) => p.customData?.includes("Chapter:") || p.sportFields?.["chapter"] || p.sportFields?.["Chapter"]);
                   const hasBniName = players.some((p) => p.customData?.includes("BNI Name:"));
                   const hasRel = players.some((p) => p.customData?.includes("Rel:"));
                   const hasBblSeasons = isBniAuction || players.some((p) => p.customData?.includes("BBL Seasons:"));
@@ -701,8 +716,12 @@ function AuctionDetailPage() {
                       row["Membership Type"] = memType;
                     }
                     if (hasChapter) {
-                      const match = p.customData?.match(/Chapter:\s*([^,|]+)/i);
-                      row["Chapter Name"] = match?.[1] ? match[1].trim() : "-";
+                      let ch = (p.sportFields?.["chapter"] || p.sportFields?.["Chapter"] || "") as string;
+                      if (!ch && p.customData) {
+                        const match = p.customData.match(/Chapter:\s*([^,|]+)/i) || p.customData.match(/Chapter\s*-\s*([^,|]+)/i);
+                        if (match?.[1]) ch = match[1].trim();
+                      }
+                      row["Chapter Name"] = ch || "-";
                     }
                     if (hasBniName) {
                       const match = p.customData?.match(/BNI Name:\s*([^,|]+)/i);
@@ -817,7 +836,29 @@ function AuctionDetailPage() {
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#5c6875]/30 pb-3">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 border-b border-[#5c6875]/30 pb-3">
+              {/* Search Bar Input */}
+              <div className="relative flex-1 min-w-[220px]">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#38bdf8]" />
+                <Input
+                  type="text"
+                  placeholder="Search player by name or S.No (#33)..."
+                  value={playerSearchQuery}
+                  onChange={(e) => setPlayerSearchQuery(e.target.value)}
+                  className="pl-10 pr-9 h-10 rounded-xl bg-[#171a1d] border-[#5c6875]/50 text-white placeholder:text-[#abb4bd] focus:border-[#38bdf8] focus:ring-1 focus:ring-[#38bdf8] text-xs sm:text-sm"
+                />
+                {playerSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPlayerSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#abb4bd] hover:text-white p-1"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
+
               <div className="flex items-center gap-1.5 bg-[#171a1d] p-1 rounded-xl border border-[#5c6875]/40 shrink-0">
                 <button
                   type="button"
@@ -902,7 +943,9 @@ function AuctionDetailPage() {
             ) : filteredPlayersList.length === 0 ? (
               <div className="py-16 text-center rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/50 p-10">
                 <p className="text-[#abb4bd] font-medium">
-                  {playerStatusFilter === "unsold"
+                  {playerSearchQuery
+                    ? `No players matching "${playerSearchQuery}" found.`
+                    : playerStatusFilter === "unsold"
                     ? "No unsold players found."
                     : playerStatusFilter === "pending"
                       ? "No available players found."
@@ -910,13 +953,15 @@ function AuctionDetailPage() {
                         ? "No sold players found."
                         : "No players registered yet."}
                 </p>
-                {playerStatusFilter === "all" && (
+                {playerStatusFilter === "all" && !playerSearchQuery && (
                   <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
                 )}
               </div>
             ) : (
               filteredPlayersList.map((player) => {
                 const soldTeam = teams?.find((t) => t.id === player.teamId);
+                const globalSNo = players.findIndex((x) => x.id === player.id) + 1;
+
                 return (
                   <div
                     key={player.id}
@@ -943,9 +988,14 @@ function AuctionDetailPage() {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-2 flex-wrap">
-                              <h3 className="font-black text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
-                                {player.name}
-                              </h3>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="shrink-0 px-2 py-0.5 rounded-lg bg-[#38bdf8]/20 border border-[#38bdf8]/50 text-[#38bdf8] font-mono font-black text-xs">
+                                  #{globalSNo}
+                                </span>
+                                <h3 className="font-black text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
+                                  {player.name}
+                                </h3>
+                              </div>
                               {soldTeam ? (
                                 <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
                                   <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />

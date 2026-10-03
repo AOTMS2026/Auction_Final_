@@ -58,6 +58,8 @@ export type Player = {
   paymentImage?: string | null;
   sportFields: Record<string, any>;
   auctionRoundStatus: "pending" | "sold" | "unsold";
+  sNo?: number;
+  lotNumber?: number;
   createdAt: string;
   updatedAt: string;
 };

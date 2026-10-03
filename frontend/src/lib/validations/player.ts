@@ -20,6 +20,8 @@ export const basePlayerSchema = z.object({
   paymentImage: z.string().nullable().optional(),
   teamId: z.string().nullable().optional(),
   soldPrice: z.coerce.number().min(0).nullable().optional(),
+  sNo: z.coerce.number().optional(),
+  lotNumber: z.coerce.number().optional(),
 });
 
 // Sport-specific config
