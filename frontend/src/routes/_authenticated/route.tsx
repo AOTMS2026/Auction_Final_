@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated")({
     // see their token.
     if (typeof window === "undefined") return {};
     const user = await authClient.getCurrentUser();
-    if (!user) throw redirect({ to: "/auth", search: { next: location.href } });
+    if (!user) throw redirect({ to: "/auth", search: { next: location.pathname } });
     return { user };
   },
   component: () => <Outlet />,
