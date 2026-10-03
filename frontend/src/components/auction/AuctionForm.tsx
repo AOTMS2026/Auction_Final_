@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, ImagePlus, Loader2 } from "lucide-react";
@@ -50,6 +51,20 @@ export function AuctionForm({
   });
 
   const coverImage = form.watch("coverImage");
+  const pointsPerTeam = form.watch("pointsPerTeam");
+  const playersPerTeam = form.watch("playersPerTeam");
+  const minimumBid = form.watch("minimumBid");
+
+  // Auto-calculate maximum allowed bid based on Purse, Squad size, and Minimum Bid
+  useEffect(() => {
+    const pts = Number(pointsPerTeam) || 0;
+    const players = Number(playersPerTeam) || 1;
+    const minBid = Number(minimumBid) || 0;
+    if (pts > 0 && players > 0) {
+      const calculatedMaxBid = Math.max(minBid, pts - Math.max(0, players - 1) * minBid);
+      form.setValue("maxBid", calculatedMaxBid, { shouldValidate: true });
+    }
+  }, [pointsPerTeam, playersPerTeam, minimumBid, form]);
 
   async function handleCoverImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

@@ -14,6 +14,10 @@ function asyncHandler(fn) {
 }
 
 function toPublicAuction(doc) {
+  const calculatedMaxBid = (doc.pointsPerTeam && doc.playersPerTeam && doc.minimumBid !== undefined)
+    ? Math.max(doc.minimumBid, doc.pointsPerTeam - (doc.playersPerTeam - 1) * doc.minimumBid)
+    : 300000;
+
   return {
     id: doc._id.toString(),
     sportType: doc.sportType,
@@ -23,7 +27,7 @@ function toPublicAuction(doc) {
     playersPerTeam: doc.playersPerTeam,
     pointsPerTeam: doc.pointsPerTeam,
     minimumBid: doc.minimumBid,
-    maxBid: doc.maxBid ?? 30000,
+    maxBid: doc.maxBid ?? calculatedMaxBid,
     bidIncrement: doc.bidIncrement,
     visibility: doc.visibility,
     status: doc.status,
