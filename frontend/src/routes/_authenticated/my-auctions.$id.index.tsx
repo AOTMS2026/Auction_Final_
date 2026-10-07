@@ -43,6 +43,7 @@ import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeD
 import { Countdown } from "@/components/auction/Countdown";
 import { AboutTab } from "@/components/auction/AboutTab";
 import { exportAuctionPDF } from "@/lib/pdf-export";
+import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
 
 export const Route = createFileRoute("/_authenticated/my-auctions/$id/")({
   loader: async ({ params, context }) => {
@@ -176,40 +177,17 @@ function ManageAuctionPage() {
     toast.success("Auction PDF Report downloaded!");
   }
 
+  function handleExportExcel() {
+    exportCompleteAuctionExcel(auction, players || [], teams || []);
+    toast.success("Auction Results Excel sheet downloaded successfully!");
+  }
+
   function handleDownloadTeamsExcel() {
     if (!teams || teams.length === 0) {
       toast.error("No teams found to export.");
       return;
     }
-
-    const teamsDetailsRows = teams.map((t, index) => ({
-      "S.No": index + 1,
-      "Team Name": t.name,
-      "Team Code": t.shortName,
-      "Owner Name": t.ownerName || "",
-      "Owner Phone": t.ownerPhone || "",
-      "Color Theme": t.colorTheme || "",
-    }));
-
-    const teamsSheet = XLSX.utils.json_to_sheet(teamsDetailsRows);
-    const colWidths = Object.keys(teamsDetailsRows[0] || {}).map((key) => {
-      let maxLen = key.length;
-      teamsDetailsRows.forEach((row) => {
-        const val = (row as any)[key];
-        if (val !== undefined && val !== null) {
-          const len = String(val).length;
-          if (len > maxLen) maxLen = len;
-        }
-      });
-      return { wch: Math.min(Math.max(maxLen + 4, 12), 40) };
-    });
-    teamsSheet["!cols"] = colWidths;
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams");
-
-    const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
-    XLSX.writeFile(workbook, `${cleanTitle}_Teams.xlsx`);
+    exportTeamsExcel(auction, teams, players || []);
     toast.success("Teams Excel sheet downloaded successfully!");
   }
 
@@ -218,239 +196,7 @@ function ManageAuctionPage() {
       toast.error("No registered players found to export.");
       return;
     }
-
-    const isBniAuction =
-      auction.id === "6a8edaddd7ed74151dbafab3" ||
-      auction.name?.toLowerCase().includes("bni") ||
-      auction.name?.toLowerCase().includes("bbl");
-
-    const isHunterzVolleyball =
-      auction.id === "6a8a705aef1f9e0978b3031c" ||
-      auction.name?.toLowerCase().includes("hunterz");
-
-    const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
-
-    // 1. Detect which fields actually have data in this particular auction
-    const hasAge = players.some((p) => p.age != null && String(p.age).trim() !== "");
-    const hasRole = players.some(
-      (p) =>
-        (p.sportFields?.["role"] && String(p.sportFields["role"]).trim() !== "" && p.sportFields["role"] !== "-") ||
-        (p.sportFields?.["Position"] && String(p.sportFields["Position"]).trim() !== "" && p.sportFields["Position"] !== "-"),
-    );
-    const hasDominatedHand =
-      !isBniAuction &&
-      players.some(
-        (p) =>
-          (p.sportFields?.["Dominated Hand"] && String(p.sportFields["Dominated Hand"]).trim() !== "" && p.sportFields["Dominated Hand"] !== "-") ||
-          p.customData?.startsWith("Dominated Hand:") ||
-          (p.customData && !p.customData.includes("BNI") && !p.customData.includes("Family")),
-      );
-    const hasCategory = players.some((p) => p.category && p.category.trim() !== "");
-    const hasGender = auction.id === "6a8edaddd7ed74151dbafab3" || players.some((p) => Boolean(p.gender && p.gender.trim() !== ""));
-    const hasCity = !isHunterzVolleyball && players.some((p) => p.city && p.city.trim() !== "");
-    const hasPlayerLevel = !isHunterzVolleyball && players.some((p) => p.playerLevel && p.playerLevel.trim() !== "");
-    const hasJerseySize = !isHunterzVolleyball && players.some((p) => p.jerseySize && p.jerseySize.trim() !== "");
-    const hasJerseyName = !isHunterzVolleyball && (isBniAuction || players.some((p) => p.jerseyName && p.jerseyName.trim() !== ""));
-    const hasTrouserSize = !isHunterzVolleyball && players.some((p) => p.trouserSize && p.trouserSize.trim() !== "");
-    const hasPaymentMode = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.paymentMode && p.paymentMode.trim() !== "");
-    const hasUtr = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.utrNumber && p.utrNumber.trim() !== "");
-
-    // BNI and Membership custom form checks
-    const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI Member") || p.customData?.includes("Family Member"));
-    const hasChapter = auction.id === "6a8edaddd7ed74151dbafab3" || isBniAuction || players.some((p) => p.customData?.includes("Chapter:") || p.sportFields?.["chapter"] || p.sportFields?.["Chapter"]);
-    const hasBniName = players.some((p) => p.customData?.includes("BNI Name:"));
-    const hasRel = players.some((p) => p.customData?.includes("Rel:"));
-    const hasBblSeasons = isBniAuction || players.some((p) => p.customData?.includes("BBL Seasons:"));
-    const hasOtherCustom =
-      !isBniAuction &&
-      !isHunterzVolleyball &&
-      players.some(
-        (p) =>
-          p.customData &&
-          !p.customData.startsWith("Dominated Hand:") &&
-          !p.customData.includes("BNI") &&
-          !p.customData.includes("Family"),
-      );
-
-    // Collect sport-specific fields that actually have non-empty values
-    const activeSportKeys: string[] = [];
-    players.forEach((p) => {
-      if (p.sportFields && typeof p.sportFields === "object") {
-        Object.keys(p.sportFields).forEach((k) => {
-          if (
-            k !== "originalPhoto" &&
-            k !== "role" &&
-            k !== "Position" &&
-            k !== "Dominated Hand" &&
-            p.sportFields[k] !== undefined &&
-            p.sportFields[k] !== null &&
-            String(p.sportFields[k]).trim() !== "" &&
-            String(p.sportFields[k]) !== "-" &&
-            !activeSportKeys.includes(k)
-          ) {
-            activeSportKeys.push(k);
-          }
-        });
-      }
-    });
-
-    const hasAnySold = players.some((p) => p.teamId || p.soldPrice != null);
-    const hasTeams = teams && teams.length > 0;
-
-    const excelRows = players.map((p, index) => {
-      const row: Record<string, any> = {
-        "S.No": index + 1,
-        "Player Name": p.name || "",
-        "Phone Number": p.phone || "",
-      };
-
-      if (hasAge) {
-        row["Age"] = p.age ?? "-";
-      }
-
-      if (hasRole) {
-        row["Playing Position / Role"] = p.sportFields?.["role"] || p.sportFields?.["Position"] || "-";
-      }
-
-      if (hasDominatedHand) {
-        const domHand =
-          p.sportFields?.["Dominated Hand"] ||
-          (p.customData?.startsWith("Dominated Hand: ")
-            ? p.customData.replace("Dominated Hand: ", "")
-            : (!p.customData?.includes("BNI") && !p.customData?.includes("Family")
-                ? (p.customData || "-")
-                : "-"));
-        row["Dominated Hand"] = domHand;
-      }
-
-      if (hasGender) {
-        const g = (p.gender || "").trim().toLowerCase();
-        const formattedGender =
-          g === "m" || g === "male"
-            ? "Male"
-            : g === "f" || g === "female" || g === "w" || g === "woman" || g === "women"
-            ? "Female"
-            : p.gender ? (p.gender.charAt(0).toUpperCase() + p.gender.slice(1)) : "-";
-        row["Gender"] = formattedGender;
-      }
-
-      if (hasCity) {
-        row["City"] = p.city || "-";
-      }
-
-      if (hasPlayerLevel) {
-        row["Player Level"] = p.playerLevel || "-";
-      }
-
-      // Any active dynamic sport fields (e.g. Batting Style, Bowling Style, Spike Height)
-      activeSportKeys.forEach((key) => {
-        row[key] = p.sportFields?.[key] ?? "-";
-      });
-
-      // Grade / Category assigned after or during registration
-      row["Grade / Category"] = p.category || "-";
-
-      if (hasJerseySize) {
-        row["Jersey Size"] = p.jerseySize || "-";
-      }
-
-      if (hasJerseyName) {
-        row["Jersey Name"] = p.jerseyName || "-";
-      }
-
-      if (hasTrouserSize) {
-        if (isBniAuction) {
-          row["Jersey Number"] = p.trouserSize || "-";
-        } else {
-          row["Trouser Size"] = p.trouserSize || "-";
-        }
-      }
-
-      // Membership details
-      if (hasBniMembership) {
-        let memType = "-";
-        if (p.customData?.includes("BNI Member")) memType = "BNI Member";
-        else if (p.customData?.includes("Family Member")) memType = "Family Member";
-        row["Membership Type"] = memType;
-      }
-      if (hasChapter) {
-        let ch = (p.sportFields?.["chapter"] || p.sportFields?.["Chapter"] || "") as string;
-        if (!ch && p.customData) {
-          const match = p.customData.match(/Chapter:\s*([^,|]+)/i) || p.customData.match(/Chapter\s*-\s*([^,|]+)/i);
-          if (match?.[1]) ch = match[1].trim();
-        }
-        row["Chapter Name"] = ch || "-";
-      }
-      if (hasBniName) {
-        const match = p.customData?.match(/BNI Name:\s*([^,|]+)/i);
-        row["BNI Member Name"] = match?.[1] ? match[1].trim() : "-";
-      }
-      if (hasRel) {
-        const match = p.customData?.match(/Rel:\s*([^,|]+)/i);
-        row["Relationship"] = match?.[1] ? match[1].trim() : "-";
-      }
-      if (hasBblSeasons) {
-        const match = p.customData?.match(/BBL Seasons:\s*([^,|]+)/i);
-        row["Seasons Played"] = match?.[1] ? match[1].trim() : "-";
-      }
-      if (hasOtherCustom) {
-        row["Custom Details"] = p.customData || "-";
-      }
-
-      // Payment Details (ONLY for tournaments with payment)
-      if (hasPaymentMode) {
-        row["Payment Mode"] = p.paymentMode || "-";
-      }
-      if (hasUtr) {
-        row["UTR / Ref Number"] = p.utrNumber || "-";
-      }
-
-      // Base Value
-      row["Base Value (Points)"] = p.baseValue ?? 0;
-
-      // Auction outcome (if teams exist or any bidding occurred)
-      if (hasTeams || hasAnySold) {
-        const soldTeamName = p.teamId
-          ? (teamMap.get(p.teamId) || "Sold")
-          : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
-        row["Auction Status"] = p.teamId ? "Sold" : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
-        row["Sold To Team"] = p.teamId ? soldTeamName : "-";
-        row["Sold Price (Points)"] =
-          p.soldPrice !== null && p.soldPrice !== undefined
-            ? p.soldPrice
-            : (p.teamId ? (p.baseValue ?? 0) : "-");
-      }
-
-      if (p.createdAt) {
-        row["Registration Date"] = new Date(p.createdAt).toLocaleDateString("en-IN");
-      }
-
-      return row;
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(excelRows);
-
-    const keys = Object.keys(excelRows[0] || {});
-    const colWidths = keys.map((key) => {
-      let maxLen = key.length;
-      excelRows.forEach((row) => {
-        const val = row[key];
-        if (val !== undefined && val !== null) {
-          const len = String(val).length;
-          if (len > maxLen) maxLen = len;
-        }
-      });
-      return { wch: Math.min(Math.max(maxLen + 3, 10), 40) };
-    });
-    worksheet["!cols"] = colWidths;
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Registered Players");
-
-    const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
-    const filename = `${cleanTitle}_Registered_Players.xlsx`;
-
-    XLSX.writeFile(workbook, filename);
+    exportPlayersExcel(auction, players, teams || []);
     toast.success("Registered players exported to Excel successfully!");
   }
 
@@ -523,9 +269,18 @@ function ManageAuctionPage() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Button
+                onClick={handleExportExcel}
+                variant="outline"
+                className="rounded-full border-2 border-emerald-500/60 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-600 hover:text-white font-extrabold text-xs gap-1.5 transition-all shadow-sm cursor-pointer"
+                title="Download Full Auction Results Excel (Players, Teams & Rosters)"
+              >
+                <FileSpreadsheet className="size-4 text-emerald-400" />
+                Auction Results Excel
+              </Button>
+              <Button
                 onClick={handleExportPDF}
                 variant="outline"
-                className="rounded-full border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs gap-1.5 transition-all shadow-sm"
+                className="rounded-full border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#38bdf8] hover:text-[#ffffff] font-extrabold text-xs gap-1.5 transition-all shadow-sm cursor-pointer"
                 title="Download Teams & Purchased Players PDF Report"
               >
                 <FileText className="size-4 text-[#38bdf8]" />
@@ -533,9 +288,21 @@ function ManageAuctionPage() {
               </Button>
               <Button
                 onClick={handleStartAuction}
-                className="rounded-full px-7 py-2.5 h-auto font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] hover:scale-105 transition-all border border-white/40"
+                className={cn(
+                  "rounded-full px-7 py-2.5 h-auto font-black text-xs text-[#ffffff] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/40 cursor-pointer",
+                  auction.status === "live"
+                    ? "bg-gradient-to-r from-red-600 via-rose-500 to-amber-600 hover:from-rose-500 hover:to-red-600 shadow-[0_0_25px_rgba(239,68,68,0.7)]"
+                    : "bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c]"
+                )}
               >
-                Start Auction
+                {auction.status === "live" ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-white animate-pulse" />
+                    Resume Live Auction
+                  </span>
+                ) : (
+                  "Start Auction"
+                )}
               </Button>
             </div>
           </div>
