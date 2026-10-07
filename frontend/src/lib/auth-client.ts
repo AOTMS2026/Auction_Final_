@@ -1,6 +1,6 @@
 import { request, setToken, getToken, onAuthChange, notifyAuthChange, ApiError } from "@/lib/api-client";
 
-export type AuthUser = { id: string; email: string; name: string | null; avatar: string | null };
+export type AuthUser = { id: string; email: string; name: string | null; role?: "admin" | "user" | string; avatar: string | null };
 
 export const authClient = {
   async signUp(email: string, password: string): Promise<AuthUser> {

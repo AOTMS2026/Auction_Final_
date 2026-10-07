@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/edit")({
     }
 
     const user = await authClient.getCurrentUser();
-    const isAdmin = user?.email === "ameen@gmail.com";
+    const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
     if (!user || (auction.createdBy !== user.id && !isAdmin)) {
       throw redirect({ to: "/my-auctions" });
     }

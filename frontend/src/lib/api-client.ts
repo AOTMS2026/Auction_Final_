@@ -2,7 +2,11 @@ const TOKEN_KEY = "pitchbid:auth-token";
 const AUTH_CHANGE_EVENT = "pitchbid:auth-change";
 
 export function apiBase() {
-  return import.meta.env["VITE_API_URL"] || "https://auction-final-dj51.onrender.com";
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "http://localhost:5000";
+  }
+  return "https://auction-final-dj51.onrender.com";
 }
 
 export function getToken(): string | null {

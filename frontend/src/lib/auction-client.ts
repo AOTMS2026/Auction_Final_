@@ -206,6 +206,10 @@ export const auctionClient = {
     await request<void>(`/api/auctions/${id}`, { method: "DELETE" });
   },
 
+  async delete(id: string): Promise<void> {
+    return auctionClient.remove(id);
+  },
+
   async bookmark(id: string): Promise<void> {
     await request<void>(`/api/auctions/${id}/bookmark`, { method: "POST" });
   },
