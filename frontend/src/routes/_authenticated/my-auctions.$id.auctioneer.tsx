@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, Pencil, Check, Users, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, FileSpreadsheet, Pencil, Check, Users, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auct
 import { authClient } from "@/lib/auth-client";
 import { computeTeamStats } from "@/lib/team-stats";
 import { exportAuctionPDF } from "@/lib/pdf-export";
+import { exportCompleteAuctionExcel } from "@/lib/excel-export";
 import { auctionClient, type Player, type Team } from "@/lib/auction-client";
 import { cn } from "@/lib/utils";
 
@@ -839,6 +840,19 @@ function AuctioneerConsole() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              exportCompleteAuctionExcel(auction, effectivePlayers, orderedTeams.length > 0 ? orderedTeams : teams);
+              toast.success("Auction Results Excel sheet downloaded!");
+            }}
+            className="h-9 px-3.5 rounded-xl border-2 border-emerald-500/60 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-600 hover:text-white flex items-center gap-1.5 text-xs font-black transition-all shadow-sm cursor-pointer"
+            title="Download Full Auction Results Excel (All Players & Teams with Live Status)"
+          >
+            <FileSpreadsheet className="size-4 text-emerald-400" />
+            <span className="hidden sm:inline">Export Excel</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
