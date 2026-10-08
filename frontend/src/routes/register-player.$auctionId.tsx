@@ -56,6 +56,7 @@ function PlayerRegistrationPage() {
   const [phoneError, setPhoneError] = useState("");
   const [position, setPosition] = useState("");
   const [dominatedHand, setDominatedHand] = useState("");
+  const [wicketKeeper, setWicketKeeper] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
@@ -128,7 +129,7 @@ function PlayerRegistrationPage() {
   const availableRoles = Array.from(
     new Set([
       ...config.roles,
-      ...(auction.sportType === "cricket" || !auction.sportType ? ["Batsman", "Bowler", "All-Rounder", "Wicket-Keeper"] : []),
+      ...(auction.sportType === "cricket" || !auction.sportType ? ["Batsman", "Bowler", "All-Rounder"] : []),
       ...(position ? [position] : []),
     ])
   );
@@ -155,7 +156,11 @@ function PlayerRegistrationPage() {
     }
   };
 
-  const handleCropSave = () => {
+  const [isCropping, setIsCropping] = useState(false);
+  const [isLocalSubmitting, setIsLocalSubmitting] = useState(false);
+
+  const handleCropSave = async () => {
+    setIsCropping(true);
     try {
       const canvas = document.createElement("canvas");
       canvas.width = 256;
@@ -199,10 +204,12 @@ function PlayerRegistrationPage() {
       toast.error("Using original photo directly.");
       setPhoto(cropImageSrc);
       setCropImageSrc(null);
+    } finally {
+      setIsCropping(false);
     }
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!photo) {
@@ -236,6 +243,10 @@ function PlayerRegistrationPage() {
       toast.error("Please select right/left hand");
       return;
     }
+    if (!wicketKeeper) {
+      toast.error("Please select Wicket-Keeper (Yes / No)");
+      return;
+    }
     if (!age || isNaN(Number(age)) || Number(age) <= 0) {
       toast.error("Please enter a valid age");
       return;
@@ -266,6 +277,7 @@ function PlayerRegistrationPage() {
       ...sportFields,
       role: position,
       "Dominated Hand": dominatedHand,
+      "Wicket Keeper": wicketKeeper,
     };
 
     const input: PlayerInput = {
@@ -289,7 +301,14 @@ function PlayerRegistrationPage() {
       paymentImage: null,
     };
 
-    registerMutation.mutate(input);
+    setIsLocalSubmitting(true);
+    try {
+      await registerMutation.mutateAsync(input);
+    } catch (err) {
+      // Handled by onError callback in registerMutation
+    } finally {
+      setIsLocalSubmitting(false);
+    }
   };
 
   if (success) {
@@ -492,6 +511,22 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
 
+              {/* WICKET-KEEPER */}
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                  WICKET-KEEPER <span className="text-red-400 font-bold ml-0.5">*</span>
+                </Label>
+                <Select value={wicketKeeper} onValueChange={setWicketKeeper}>
+                  <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
+                    <SelectValue placeholder="Select Wicket-Keeper" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                    <SelectItem value="Yes" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Yes</SelectItem>
+                    <SelectItem value="No" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* AGE */}
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
@@ -594,11 +629,14 @@ function PlayerRegistrationPage() {
             <div className="pt-4">
               <Button
                 type="submit"
-                className="w-full rounded-full py-4 h-auto font-black text-base text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30 cursor-pointer"
-                disabled={registerMutation.isPending}
+                className="w-full rounded-full py-4 h-auto font-black text-base text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30 cursor-pointer disabled:opacity-80 disabled:cursor-not-allowed"
+                disabled={registerMutation.isPending || isLocalSubmitting}
               >
-                {registerMutation.isPending ? (
-                  <><Loader2 className="mr-2 size-5 animate-spin" /> Submitting...</>
+                {registerMutation.isPending || isLocalSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="size-5 animate-spin text-white" />
+                    <span>Submitting Registration...</span>
+                  </span>
                 ) : (
                   "Submit Registration"
                 )}
@@ -672,6 +710,7 @@ function PlayerRegistrationPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setCropImageSrc(null)}
+                disabled={isCropping}
                 className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#ffffff] hover:bg-[#1f3a47] font-bold"
               >
                 Cancel
@@ -679,9 +718,17 @@ function PlayerRegistrationPage() {
               <Button
                 type="button"
                 onClick={handleCropSave}
-                className="rounded-full px-6 py-2.5 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_15px_rgba(249,115,22,0.6)]"
+                disabled={isCropping}
+                className="rounded-full px-6 py-2.5 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_15px_rgba(249,115,22,0.6)] cursor-pointer disabled:opacity-80 disabled:cursor-not-allowed"
               >
-                Save Photo
+                {isCropping ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="size-4 animate-spin text-white" />
+                    <span>Saving Photo...</span>
+                  </span>
+                ) : (
+                  "Save Photo"
+                )}
               </Button>
             </div>
           </div>

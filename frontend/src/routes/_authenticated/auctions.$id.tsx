@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -190,6 +190,10 @@ function AuctionDetailPage() {
   const [previewPlayerId, setPreviewPlayerId] = useState<string | null>(null);
   const [editPlayer, setEditPlayer] = useState<Player | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [isExportingPlayers, setIsExportingPlayers] = useState(false);
+  const [isExportingTeams, setIsExportingTeams] = useState(false);
+  const [isSharingPlayerLink, setIsSharingPlayerLink] = useState(false);
+  const [isRepeatingUnsold, setIsRepeatingUnsold] = useState(false);
 
   // Teams CRUD states
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
@@ -652,19 +656,27 @@ function AuctionDetailPage() {
                   <Button
                     onClick={async () => {
                       if (window.confirm(`Repeat all ${unsoldPlayersCount} unsold players and make them available again?`)) {
+                        setIsRepeatingUnsold(true);
                         try {
                           await auctionClient.repeatUnsoldPlayers(auction.id);
                           await queryClient.invalidateQueries({ queryKey: ["players", auction.id] });
                           toast.success(`Repeated all ${unsoldPlayersCount} unsold players!`);
                         } catch (err: any) {
                           toast.error(err?.message || "Failed to repeat unsold players.");
+                        } finally {
+                          setIsRepeatingUnsold(false);
                         }
                       }
                     }}
+                    disabled={isRepeatingUnsold}
                     variant="outline"
-                    className="gap-2 rounded-full border border-amber-500/50 bg-amber-950/40 text-amber-300 hover:bg-amber-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                    className="gap-2 rounded-full border border-amber-500/50 bg-amber-950/40 text-amber-300 hover:bg-amber-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer disabled:opacity-75"
                   >
-                    <RotateCcw className="size-4 text-amber-400" /> Repeat All Unsold ({unsoldPlayersCount})
+                    {isRepeatingUnsold ? (
+                      <><Loader2 className="size-4 animate-spin text-amber-400" /> Repeating...</>
+                    ) : (
+                      <><RotateCcw className="size-4 text-amber-400" /> Repeat All Unsold ({unsoldPlayersCount})</>
+                    )}
                   </Button>
                 )}
                 <Button
@@ -673,24 +685,41 @@ function AuctionDetailPage() {
                       toast.error("No registered players found to export.");
                       return;
                     }
-                    exportPlayersExcel(auction, players, teams || []);
-                    toast.success("Registered players exported to Excel successfully!");
+                    setIsExportingPlayers(true);
+                    try {
+                      exportPlayersExcel(auction, players, teams || []);
+                      toast.success("Registered players exported to Excel successfully!");
+                    } finally {
+                      setTimeout(() => setIsExportingPlayers(false), 600);
+                    }
                   }}
+                  disabled={isExportingPlayers}
                   variant="outline"
-                  className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                  className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer disabled:opacity-75"
                 >
-                  <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
+                  {isExportingPlayers ? (
+                    <><Loader2 className="size-4 animate-spin text-emerald-400" /> Exporting players...</>
+                  ) : (
+                    <><FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel</>
+                  )}
                 </Button>
                 <Button
                   onClick={() => {
+                    setIsSharingPlayerLink(true);
                     const url = `${window.location.origin}/register-player/${auction.id}`;
                     navigator.clipboard.writeText(url);
                     toast.success("Player registration link copied to clipboard!");
+                    setTimeout(() => setIsSharingPlayerLink(false), 1200);
                   }}
+                  disabled={isSharingPlayerLink}
                   variant="outline"
-                  className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                  className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm cursor-pointer disabled:opacity-75"
                 >
-                  <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
+                  {isSharingPlayerLink ? (
+                    <><Check className="size-4 text-emerald-400 animate-bounce" /> Copied Link!</>
+                  ) : (
+                    <><Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link</>
+                  )}
                 </Button>
               </div>
             </div>

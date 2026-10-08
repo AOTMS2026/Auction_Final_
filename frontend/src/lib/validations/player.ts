@@ -33,7 +33,7 @@ export type SportConfig = {
 
 export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
   cricket: {
-    roles: ["Batsman", "Bowler", "Wicket-Keeper", "All-Rounder"],
+    roles: ["Batsman", "Bowler", "All-Rounder"],
     stats: ["Matches", "Runs", "Wickets"],
     specs: ["Batting Style", "Bowling Style"],
   },

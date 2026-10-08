@@ -58,6 +58,9 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       (player?.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player?.customData || ""))
     )
   );
+  const [wicketKeeper, setWicketKeeper] = useState(
+    player?.sportFields?.["Wicket Keeper"] || player?.sportFields?.["wicketKeeper"] || player?.sportFields?.["Wicket-Keeper"] || ""
+  );
   const [age, setAge] = useState(player?.age?.toString() || "");
   const [gender, setGender] = useState(player?.gender ? (player.gender.trim().charAt(0).toUpperCase() + player.gender.trim().slice(1).toLowerCase()) : "");
   const [city, setCity] = useState(player?.city || "");
@@ -69,15 +72,18 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   // Sport Fields (Preserved on edit)
   const [sportFields, setSportFields] = useState<Record<string, any>>(player?.sportFields || {});
 
-  const { createPlayer, updatePlayer, isCreating, isUpdating } = usePlayers(auctionId);
-  const isSubmitting = isCreating || isUpdating;
+  const [isSaving, setIsSaving] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
+
+  const { players = [], createPlayer, updatePlayer, isCreating, isUpdating } = usePlayers(auctionId);
+  const isSubmitting = isCreating || isUpdating || isSaving;
 
   const config = SPORT_CONFIGS[sportType] || SPORT_CONFIGS["cricket"];
 
   const availableRoles = Array.from(
     new Set([
       ...config.roles,
-      ...(sportType === "cricket" || !sportType ? ["Batsman", "Bowler", "All-Rounder", "Wicket-Keeper"] : []),
+      ...(sportType === "cricket" || !sportType ? ["Batsman", "Bowler", "All-Rounder"] : []),
       ...(position ? [position] : []),
     ])
   );
@@ -91,6 +97,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setPhoneError("");
       setPosition("");
       setDominatedHand("");
+      setWicketKeeper("");
       setAge("");
       setGender("");
       setCity("");
@@ -111,6 +118,9 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           ? player.customData.replace("Dominated Hand: ", "")
           : player.customData || "");
       setDominatedHand(normalizeHand(rawHand));
+      setWicketKeeper(
+        player.sportFields?.["Wicket Keeper"] || player.sportFields?.["wicketKeeper"] || player.sportFields?.["Wicket-Keeper"] || ""
+      );
       setAge(player.age?.toString() || "");
       setGender(
         player.gender
@@ -155,7 +165,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     }
   };
 
-  const handleCropSave = () => {
+  const handleCropSave = async () => {
+    setIsCropping(true);
     try {
       const canvas = document.createElement("canvas");
       canvas.width = 256;
@@ -199,6 +210,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       toast.error("Using original photo directly.");
       setPhoto(cropImageSrc);
       setCropImageSrc(null);
+    } finally {
+      setIsCropping(false);
     }
   };
 
@@ -236,6 +249,10 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       toast.error("Please select right/left hand");
       return;
     }
+    if (!wicketKeeper) {
+      toast.error("Please select Wicket-Keeper (Yes / No)");
+      return;
+    }
     if (!age || isNaN(Number(age)) || Number(age) <= 0) {
       toast.error("Please enter a valid age");
       return;
@@ -271,6 +288,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       ...sportFields,
       role: position,
       "Dominated Hand": dominatedHand,
+      "Wicket Keeper": wicketKeeper,
     };
 
     const input: PlayerInput = {
@@ -294,6 +312,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       paymentImage: null,
     };
 
+    setIsSaving(true);
     try {
       if (player) {
         await updatePlayer({ id: player.id, patch: input });
@@ -309,6 +328,8 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
         setPhoneError("Duplicate phone number not allowed! This number is already registered.");
       }
       toast.error(msg);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -468,6 +489,22 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 </Select>
               </div>
 
+              {/* WICKET-KEEPER */}
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                  WICKET-KEEPER {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                </Label>
+                <Select value={wicketKeeper} onValueChange={setWicketKeeper} disabled={isSubmitting || !!player}>
+                  <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed">
+                    <SelectValue placeholder="Select Wicket-Keeper" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                    <SelectItem value="Yes" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Yes</SelectItem>
+                    <SelectItem value="No" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* AGE */}
               <div className="space-y-2">
                 <Label htmlFor="age" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
@@ -611,10 +648,13 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-full px-7 py-2.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30"
+                className="rounded-full px-7 py-2.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
-                  <><Loader2 className="mr-2 size-4 animate-spin" />Saving...</>
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin text-white" />
+                    <span>{player ? "Saving Grade..." : "Saving Player..."}</span>
+                  </span>
                 ) : player ? (
                   "Save Grade"
                 ) : (
@@ -689,6 +729,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 type="button"
                 variant="outline"
                 onClick={() => setCropImageSrc(null)}
+                disabled={isCropping}
                 className="rounded-full border-2 border-[#38bdf8]/40 bg-[#162a34] text-[#f2e9dc] hover:text-[#ffffff] hover:bg-[#203f4f] transition-all font-bold px-6 py-2 shadow-sm"
               >
                 Cancel
@@ -696,9 +737,17 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
               <Button
                 type="button"
                 onClick={handleCropSave}
-                className="rounded-full px-6 py-2 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)]"
+                disabled={isCropping}
+                className="rounded-full px-6 py-2 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
               >
-                Save Photo
+                {isCropping ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="size-3.5 animate-spin text-white" />
+                    <span>Saving Photo...</span>
+                  </span>
+                ) : (
+                  "Save Photo"
+                )}
               </Button>
             </div>
           </div>

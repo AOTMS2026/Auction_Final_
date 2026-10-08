@@ -34,8 +34,9 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
   const [ownerPhone, setOwnerPhone] = useState(team?.ownerPhone || "");
   const [colorTheme, setColorTheme] = useState(team?.colorTheme || "");
   const [logo, setLogo] = useState<string | null>(team?.logo || null);
+  const [isSaving, setIsSaving] = useState(false);
   const { createTeam, updateTeam, isCreating, isUpdating } = useTeams(auctionId);
-  const isSubmitting = isCreating || isUpdating;
+  const isSubmitting = isCreating || isUpdating || isSaving;
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,6 +63,7 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
       return;
     }
 
+    setIsSaving(true);
     try {
       if (team) {
         await updateTeam({
@@ -99,6 +101,8 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save team");
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -216,13 +220,13 @@ export function TeamFormModal({ auctionId, team, trigger, open: controlledOpen, 
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full px-7 py-2.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30"
+              className="rounded-full px-7 py-2.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Saving...
-                </>
+                <span className="flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin text-white" />
+                  <span>Saving Team...</span>
+                </span>
               ) : (
                 "Save Team"
               )}

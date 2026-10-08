@@ -203,6 +203,8 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
     "Playing Position / Role": "center",
     "Batting Hand": "center",
     "Dominated Hand": "center",
+    "Wicket Keeper": "center",
+    "Wicket-Keeper": "center",
     "Gender": "center",
     "City / Chapter": "left",
     "Player Level": "center",
