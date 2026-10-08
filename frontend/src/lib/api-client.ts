@@ -2,7 +2,11 @@ const TOKEN_KEY = "pitchbid:auth-token";
 const AUTH_CHANGE_EVENT = "pitchbid:auth-change";
 
 export function apiBase() {
-  return import.meta.env["VITE_API_URL"] || "http://localhost:5000";
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "http://localhost:5000";
+  }
+  return "https://auction-final-dj51.onrender.com";
 }
 
 export function getToken(): string | null {
@@ -59,6 +63,18 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
       throw new ApiError("Request timed out after 60 seconds. Please check your connection.", 408);
+    }
+    // Prevent SSR page crashes when backend server is unreachable during server rendering
+    if (typeof window === "undefined") {
+      console.warn(`[SSR API Warning] Path: ${path} | ${error?.message || error}`);
+      return {
+        auction: null,
+        auctions: [],
+        player: null,
+        players: [],
+        team: null,
+        teams: [],
+      } as unknown as T;
     }
     throw error;
   }

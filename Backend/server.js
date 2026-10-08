@@ -14,18 +14,26 @@ const teamsRoutes = require("./src/routes/teams");
 const app = express();
 const server = http.createServer(app);
 
-// CLIENT_ORIGIN may be a comma-separated list (dev ports vary by sandbox).
-// No cookies are used for auth (Bearer JWT only), so reflecting any origin
-// carries no CSRF risk; set CLIENT_ORIGIN to lock this down in production.
 const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
-app.use(cors({ origin: allowedOrigins.length > 0 ? allowedOrigins : true }));
+const isOriginAllowed = (origin, callback) => {
+  if (!origin) return callback(null, true);
+  if (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+    return callback(null, true);
+  }
+  if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+  return callback(null, true);
+};
+
+app.use(cors({ origin: isOriginAllowed, credentials: true }));
 
 const io = new Server(server, {
-  cors: { origin: allowedOrigins.length > 0 ? allowedOrigins : true },
+  cors: { origin: isOriginAllowed, credentials: true },
 });
 app.set("io", io);
 

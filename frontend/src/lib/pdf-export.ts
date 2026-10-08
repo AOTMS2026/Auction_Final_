@@ -22,6 +22,35 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
   const pendingPlayers = players.filter((p) => p.auctionRoundStatus === "pending" && !p.teamId);
   const totalTurnover = soldPlayers.reduce((sum, p) => sum + (p.soldPrice || 0), 0);
 
+  // Check if auction has Chapter data or specific auction 6a8edaddd7ed74151dbafab3
+  const auctionIdStr = String(auction.id || (auction as any)._id || "").toLowerCase();
+  const hasChapterColumn =
+    auctionIdStr.includes("6a8edaddd7ed74151dbafab3") ||
+    auction.name?.toLowerCase().includes("bni") ||
+    auction.name?.toLowerCase().includes("bbl") ||
+    players.some(
+      (p) =>
+        Boolean(p.customData?.toLowerCase().includes("chapter")) ||
+        Boolean(p.sportFields?.["chapter"]) ||
+        Boolean(p.sportFields?.["Chapter"]) ||
+        Boolean(p.city && p.city.trim() !== "")
+    );
+
+  function getChapterName(p: Player): string {
+    let ch = (p.sportFields?.["chapter"] || p.sportFields?.["Chapter"] || "") as string;
+    if (!ch && p.customData) {
+      const match =
+        p.customData.match(/Chapter:\s*([^,|]+)/i) ||
+        p.customData.match(/Chapter\s*-\s*([^,|]+)/i) ||
+        p.customData.match(/Chapter\s*:\s*([^,|]+)/i);
+      if (match?.[1]) ch = match[1].trim();
+    }
+    if (!ch && p.city) {
+      ch = p.city.trim();
+    }
+    return ch || "-";
+  }
+
   // --- HEADER BANNER ---
   doc.setFillColor(23, 26, 29); // Dark background #171a1d
   doc.rect(0, 0, pageWidth, 42, "F");
@@ -134,19 +163,34 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
       startY += 8;
     } else {
       const tableRows = teamSoldPlayers.map((p, idx) => {
-        const isDummy = p.phone && p.phone.startsWith("90000000");
-        const pNum = isDummy ? `#${parseInt(p.phone.slice(8))}` : `#${idx + 1}`;
-        const role = p.sportFields?.["role"] || p.sportFields?.["position"] || "-";
-        const category = p.category || "-";
-        const base = p.baseValue ? `${p.baseValue.toLocaleString()}` : `${auction.minimumBid.toLocaleString()}`;
-        const sold = p.soldPrice ? `${p.soldPrice.toLocaleString()}` : "0";
+        const sNo = players.findIndex((x) => x.id === p.id) + 1;
+        const pNum = sNo > 0 ? `${sNo}` : `${idx + 1}`;
+        const gender = p.gender
+          ? p.gender.trim().toLowerCase().startsWith("m")
+            ? "Male"
+            : p.gender.trim().toLowerCase().startsWith("f") || p.gender.trim().toLowerCase().startsWith("w")
+            ? "Female"
+            : p.gender
+          : "-";
+        const chapter = getChapterName(p);
+        const jersey = p.jerseySize
+          ? `${p.jerseySize}${p.jerseyName ? ` (${p.jerseyName})` : ""}`
+          : p.jerseyName || "-";
+        const mobile = p.phone || "-";
+        const sold = p.soldPrice ? `${p.soldPrice.toLocaleString()} pts` : "0 pts";
 
-        return [pNum, p.name, role, category, base, sold];
+        return hasChapterColumn
+          ? [pNum, p.name, gender, chapter, jersey, mobile, sold]
+          : [pNum, p.name, gender, jersey, mobile, sold];
       });
 
       autoTable(doc, {
         startY: startY,
-        head: [["#", "PLAYER NAME", "ROLE", "GRADE", "BASE PRICE", "FINAL SOLD PRICE"]],
+        head: [
+          hasChapterColumn
+            ? ["S.No", "Name", "Gender", "Chapter", "Jersey", "Mobile No", "Sold Price"]
+            : ["S.No", "Name", "Gender", "Jersey", "Mobile No", "Sold Price"],
+        ],
         body: tableRows,
         margin: { left: margin, right: margin },
         theme: "striped",
@@ -161,14 +205,24 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
           fontSize: 8,
           textColor: [30, 35, 42],
         },
-        columnStyles: {
-          0: { cellWidth: 12, halign: "center" },
-          1: { cellWidth: "auto", fontStyle: "bold" },
-          2: { cellWidth: 35 },
-          3: { cellWidth: 20 },
-          4: { cellWidth: 28, halign: "right" },
-          5: { cellWidth: 35, halign: "right", fontStyle: "bold", textColor: [35, 80, 30] },
-        },
+        columnStyles: hasChapterColumn
+          ? {
+              0: { cellWidth: 12, halign: "center" },
+              1: { cellWidth: "auto", fontStyle: "bold" },
+              2: { cellWidth: 18 },
+              3: { cellWidth: 28, fontStyle: "bold" },
+              4: { cellWidth: 24 },
+              5: { cellWidth: 26 },
+              6: { cellWidth: 26, halign: "right", fontStyle: "bold", textColor: [35, 80, 30] },
+            }
+          : {
+              0: { cellWidth: 15, halign: "center" },
+              1: { cellWidth: "auto", fontStyle: "bold" },
+              2: { cellWidth: 22 },
+              3: { cellWidth: 28 },
+              4: { cellWidth: 32 },
+              5: { cellWidth: 30, halign: "right", fontStyle: "bold", textColor: [35, 80, 30] },
+            },
         alternateRowStyles: {
           fillColor: [248, 250, 252],
         },
@@ -195,22 +249,37 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(139, 38, 53); // Red
-    doc.text(`UNSOLD PLAYERS (${unsoldPlayers.length})`, margin, startY);
+    doc.text(`UNSHORTLISTED / UNSOLD PLAYERS (${unsoldPlayers.length})`, margin, startY);
     startY += 4;
 
     const unsoldRows = unsoldPlayers.map((p, idx) => {
-      const isDummy = p.phone && p.phone.startsWith("90000000");
-      const pNum = isDummy ? `#${parseInt(p.phone.slice(8))}` : `#${idx + 1}`;
-      const role = p.sportFields?.["role"] || p.sportFields?.["position"] || "-";
-      const category = p.category || "-";
-      const base = p.baseValue ? `${p.baseValue.toLocaleString()}` : `${auction.minimumBid.toLocaleString()}`;
+      const sNo = players.findIndex((x) => x.id === p.id) + 1;
+      const pNum = sNo > 0 ? `${sNo}` : `${idx + 1}`;
+      const gender = p.gender
+        ? p.gender.trim().toLowerCase().startsWith("m")
+          ? "Male"
+          : p.gender.trim().toLowerCase().startsWith("f") || p.gender.trim().toLowerCase().startsWith("w")
+          ? "Female"
+          : p.gender
+        : "-";
+      const chapter = getChapterName(p);
+      const jersey = p.jerseySize
+        ? `${p.jerseySize}${p.jerseyName ? ` (${p.jerseyName})` : ""}`
+        : p.jerseyName || "-";
+      const mobile = p.phone || "-";
 
-      return [pNum, p.name, role, category, base, "UNSOLD"];
+      return hasChapterColumn
+        ? [pNum, p.name, gender, chapter, jersey, mobile, "UNSOLD"]
+        : [pNum, p.name, gender, jersey, mobile, "UNSOLD"];
     });
 
     autoTable(doc, {
       startY: startY,
-      head: [["#", "PLAYER NAME", "ROLE", "GRADE", "BASE PRICE", "STATUS"]],
+      head: [
+        hasChapterColumn
+          ? ["S.No", "Name", "Gender", "Chapter", "Jersey", "Mobile No", "Status"]
+          : ["S.No", "Name", "Gender", "Jersey", "Mobile No", "Status"],
+      ],
       body: unsoldRows,
       margin: { left: margin, right: margin },
       theme: "striped",
@@ -224,14 +293,24 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
         fontSize: 8,
         textColor: [30, 35, 42],
       },
-      columnStyles: {
-        0: { cellWidth: 12, halign: "center" },
-        1: { cellWidth: "auto", fontStyle: "bold" },
-        2: { cellWidth: 35 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 30, halign: "right" },
-        5: { cellWidth: 30, halign: "center", fontStyle: "bold", textColor: [180, 40, 50] },
-      },
+      columnStyles: hasChapterColumn
+        ? {
+            0: { cellWidth: 12, halign: "center" },
+            1: { cellWidth: "auto", fontStyle: "bold" },
+            2: { cellWidth: 18 },
+            3: { cellWidth: 28, fontStyle: "bold" },
+            4: { cellWidth: 24 },
+            5: { cellWidth: 26 },
+            6: { cellWidth: 26, halign: "center", fontStyle: "bold", textColor: [180, 40, 50] },
+          }
+        : {
+            0: { cellWidth: 15, halign: "center" },
+            1: { cellWidth: "auto", fontStyle: "bold" },
+            2: { cellWidth: 22 },
+            3: { cellWidth: 28 },
+            4: { cellWidth: 32 },
+            5: { cellWidth: 30, halign: "center", fontStyle: "bold", textColor: [180, 40, 50] },
+          },
       alternateRowStyles: {
         fillColor: [255, 245, 245],
       },

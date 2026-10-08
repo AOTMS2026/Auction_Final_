@@ -22,6 +22,7 @@ export function auctionDetailQueryOptions(id: string) {
   return queryOptions({
     queryKey: auctionKeys.detail(id),
     queryFn: () => auctionClient.getById(id),
+    staleTime: 0,
   });
 }
 
@@ -29,6 +30,7 @@ export function myAuctionsQueryOptions() {
   return queryOptions({
     queryKey: auctionKeys.mine(),
     queryFn: () => auctionClient.listMine(),
+    staleTime: 0,
   });
 }
 
@@ -43,7 +45,7 @@ export function teamsQueryOptions(auctionId: string) {
   return queryOptions({
     queryKey: auctionKeys.teams(auctionId),
     queryFn: () => auctionClient.getTeams(auctionId),
-    staleTime: 30 * 1000, // 30 seconds fresh in client memory
+    staleTime: 0,
     gcTime: 5 * 60 * 1000,
   });
 }

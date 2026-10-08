@@ -10,20 +10,28 @@ export type ComputedTeamStats = {
 };
 
 export function computeTeamStats(team: Team, players: Player[], auction: Auction): ComputedTeamStats {
-  const teamPlayers = players.filter(
-    (p) => p.teamId === team.id && (p.auctionRoundStatus === "sold" || ((p.soldPrice ?? 0) > 0))
-  );
+  const teamIdStr = String(team.id || (team as any)._id || "").trim();
+  const teamPlayers = players.filter((p) => {
+    const pTeamIdStr = p.teamId ? String(p.teamId).trim() : "";
+    const isSold = p.auctionRoundStatus === "sold" || Number(p.soldPrice ?? 0) > 0;
+    return pTeamIdStr !== "" && pTeamIdStr === teamIdStr && isSold;
+  });
+
   let usedPoints = 0;
   for (const p of teamPlayers) {
-    if (p.soldPrice) usedPoints += p.soldPrice;
+    if (p.soldPrice) usedPoints += Number(p.soldPrice);
   }
-  const totalPoints = auction.pointsPerTeam;
+  const totalPoints = Number(auction.pointsPerTeam) || 0;
   const availablePoints = Math.max(0, totalPoints - usedPoints);
   const totalPlayers = teamPlayers.length;
-  const reservedPlayers = Math.max(0, auction.playersPerTeam - totalPlayers);
+  const reservedPlayers = Math.max(0, (Number(auction.playersPerTeam) || 0) - totalPlayers);
+
+  const minBid = Number(auction.minimumBid) || 0;
+
+  // Max Bid = Available Purse - (Remaining Players Needed After This One * Minimum Bid)
   const maxBidPoints =
     reservedPlayers > 0
-      ? Math.min(auction.maxBid ?? 30000, availablePoints - (reservedPlayers - 1) * auction.minimumBid)
+      ? Math.max(0, availablePoints - Math.max(0, reservedPlayers - 1) * minBid)
       : 0;
 
   return {
@@ -32,12 +40,19 @@ export function computeTeamStats(team: Team, players: Player[], auction: Auction
     availablePoints,
     totalPlayers,
     reservedPlayers,
-    maxBidPoints: maxBidPoints > 0 ? maxBidPoints : 0,
+    maxBidPoints,
   };
 }
 
 export function formatPoints(num: number): string {
-  if (num >= 100000) return `${(num / 100000).toFixed(1).replace(/\.0$/, "")} L`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1).replace(/\.0$/, "")} T`;
+  if (!num || isNaN(num) || num <= 0) return "0";
+  if (num >= 100000) {
+    const val = (num / 100000).toFixed(2).replace(/\.?0+$/, "");
+    return `${val}L`;
+  }
+  if (num >= 1000) {
+    const val = (num / 1000).toFixed(2).replace(/\.?0+$/, "");
+    return `${val}K`;
+  }
   return num.toString();
 }

@@ -58,6 +58,8 @@ export type Player = {
   paymentImage?: string | null;
   sportFields: Record<string, any>;
   auctionRoundStatus: "pending" | "sold" | "unsold";
+  sNo?: number;
+  lotNumber?: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -204,6 +206,10 @@ export const auctionClient = {
     await request<void>(`/api/auctions/${id}`, { method: "DELETE" });
   },
 
+  async delete(id: string): Promise<void> {
+    return auctionClient.remove(id);
+  },
+
   async bookmark(id: string): Promise<void> {
     await request<void>(`/api/auctions/${id}/bookmark`, { method: "POST" });
   },
@@ -298,5 +304,11 @@ export const auctionClient = {
   async getPlayerProfile(phone: string): Promise<PlayerProfile> {
     const data = await request<PlayerProfile>(`/api/players/profile/${phone}`);
     return data;
+  },
+
+  async repeatUnsoldPlayers(auctionId: string): Promise<{ message: string; count: number }> {
+    return await request<{ message: string; count: number }>(`/api/auctions/${auctionId}/repeat-unsold`, {
+      method: "POST",
+    });
   },
 };

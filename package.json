@@ -1,0 +1,7 @@
+{
+  "name": "auction-app-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "npm install && npm run build"
+  }
+}

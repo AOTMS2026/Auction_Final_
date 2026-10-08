@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npx --yes cross-env DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS=1 npm install --legacy-peer-deps",
+  "buildCommand": "npx --yes cross-env DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS=1 npm run build",
+  "outputDirectory": ".output/public",
+  "env": {
+    "DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS": "1"
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://auction-final-dj51.onrender.com/api/:path*"
+    }
+  ]
+}

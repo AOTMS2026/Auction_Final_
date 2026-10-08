@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/edit")({
     }
 
     const user = await authClient.getCurrentUser();
-    const isAdmin = user?.email === "ameen@gmail.com";
+    const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
     if (!user || (auction.createdBy !== user.id && !isAdmin)) {
       throw redirect({ to: "/my-auctions" });
     }
@@ -44,7 +44,7 @@ function EditAuctionPage() {
 
   async function handleSubmit(values: AuctionFormValues) {
     try {
-      await auctionClient.update(auction.id, {
+      const updatedAuction = await auctionClient.update(auction.id, {
         sportType: values.sportType,
         name: values.name,
         coverImage: values.coverImage ?? null,
@@ -56,7 +56,11 @@ function EditAuctionPage() {
         bidIncrement: values.bidIncrement,
         visibility: values.visibility,
       });
-      await queryClient.invalidateQueries({ queryKey: auctionKeys.all });
+
+      queryClient.setQueryData(auctionKeys.detail(auction.id), updatedAuction);
+      await queryClient.invalidateQueries({ queryKey: auctionKeys.all, refetchType: "all" });
+      await queryClient.refetchQueries({ queryKey: auctionKeys.detail(auction.id) });
+      await queryClient.refetchQueries({ queryKey: auctionKeys.mine() });
       toast.success("Auction updated.");
       void navigate({ to: "/my-auctions" });
     } catch (error) {

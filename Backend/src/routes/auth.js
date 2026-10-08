@@ -20,6 +20,7 @@ function toPublicUser(user) {
     id: user._id.toString(),
     email: user.email,
     name: user.name ?? null,
+    role: user.role ?? "user",
     avatar: user.avatar ?? null,
   };
 }

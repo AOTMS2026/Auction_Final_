@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ImagePlus, Loader2, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ImagePlus, Loader2, LogOut, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -23,6 +23,13 @@ function ProfilePage() {
   const [name, setName] = useState(user?.name ?? "");
   const [avatar, setAvatar] = useState<string | null>(user?.avatar ?? null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name ?? "");
+      setAvatar(user.avatar ?? null);
+    }
+  }, [user]);
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

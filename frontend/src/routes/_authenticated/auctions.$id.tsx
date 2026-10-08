@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X } from "lucide-react";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { cn } from "@/lib/utils";
 
 import stadiumImg from "@/assets/stadium-band.jpg";
 import { Countdown } from "@/components/auction/Countdown";
@@ -34,13 +36,15 @@ import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { AboutTab } from "@/components/auction/AboutTab";
 import { TeamFormModal } from "@/components/auction/TeamFormModal";
 import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
+import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
 
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { computeTeamStats, formatPoints } from "@/lib/team-stats";
 import { exportAuctionPDF } from "@/lib/pdf-export";
-import type { Player } from "@/lib/auction-client";
+import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
+import { auctionClient, type Player } from "@/lib/auction-client";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
 import { sportTypeLabels, visibilityLabels } from "@/lib/validations/auction";
@@ -174,7 +178,9 @@ function AuctionNotFound() {
 }
 
 function AuctionDetailPage() {
-  const { auction } = Route.useLoaderData();
+  const { auction: initialAuction } = Route.useLoaderData();
+  const { data: auction = initialAuction } = useQuery(auctionDetailQueryOptions(initialAuction.id));
+  const queryClient = useQueryClient();
   useRealtimeUpdates(auction?.id);
   const { players, isPending: playersPending, updatePlayer, deletePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
   const { teams, isPending: teamsPending, deleteTeam } = useTeams(auction.id);
@@ -192,6 +198,40 @@ function AuctionDetailPage() {
   // Players CRUD states
   const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
+  const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
+  const [playerStatusFilter, setPlayerStatusFilter] = useState<"all" | "pending" | "sold" | "unsold">("all");
+  const [playerSearchQuery, setPlayerSearchQuery] = useState("");
+
+  const unsoldPlayersCount = players.filter((p) => p.auctionRoundStatus === "unsold").length;
+  const soldPlayersCount = players.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold").length;
+  const pendingPlayersCount = players.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold").length;
+
+  const filteredPlayersList = useMemo(() => {
+    let list = players;
+
+    if (playerStatusFilter === "unsold") {
+      list = list.filter((p) => p.auctionRoundStatus === "unsold");
+    } else if (playerStatusFilter === "sold") {
+      list = list.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold");
+    } else if (playerStatusFilter === "pending") {
+      list = list.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold");
+    }
+
+    if (playerSearchQuery.trim()) {
+      const q = playerSearchQuery.trim().toLowerCase().replace(/^#/, "");
+      list = list.filter((p) => {
+        const globalIndex = players.findIndex((x) => x.id === p.id) + 1;
+        const sNoStr = String(globalIndex);
+        const nameMatch = p.name?.toLowerCase().includes(q);
+        const sNoMatch = sNoStr === q || sNoStr.startsWith(q);
+        const phoneMatch = p.phone?.includes(q);
+        const lotMatch = p.lotNumber ? String(p.lotNumber) === q : false;
+        return nameMatch || sNoMatch || phoneMatch || lotMatch;
+      });
+    }
+
+    return list;
+  }, [players, playerStatusFilter, playerSearchQuery]);
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -251,8 +291,8 @@ function AuctionDetailPage() {
                 </span>
               }
             />
-            <div className="flex-1 text-[#fffcf7]">
-              <h1 className="text-2xl font-black sm:text-4xl tracking-tight text-[#fffcf7]">{auction.name}</h1>
+            <div className="flex-1 text-[#ffffff]">
+              <h1 className="text-2xl font-black sm:text-4xl lg:text-5xl font-auction tracking-wider [word-spacing:0.18em] text-[#ffffff] uppercase drop-shadow-md">{auction.name}</h1>
               
               <div className="mt-2 space-y-1.5 text-sm sm:text-base">
                 <p className="flex items-center gap-2 text-[#abb4bd]">
@@ -285,6 +325,18 @@ function AuctionDetailPage() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={() => {
+                  exportCompleteAuctionExcel(auction, players || [], teams || []);
+                  toast.success("Auction Results Excel sheet downloaded!");
+                }}
+                variant="outline"
+                className="rounded-full border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 hover:bg-emerald-600 hover:text-white font-bold text-xs gap-1.5 transition-all shadow-sm cursor-pointer"
+                title="Download Full Auction Results Excel (Players, Teams & Rosters)"
+              >
+                <FileSpreadsheet className="size-4 text-emerald-400" />
+                Auction Results Excel
+              </Button>
               <Button
                 onClick={() => {
                   exportAuctionPDF(auction, players || [], teams || []);
@@ -331,36 +383,11 @@ function AuctionDetailPage() {
                     toast.error("No teams found to export.");
                     return;
                   }
-                  const teamsDetailsRows = teams.map((t, index) => ({
-                    "S.No": index + 1,
-                    "Team Name": t.name,
-                    "Team Code": t.shortName,
-                    "Owner Name": t.ownerName || "",
-                    "Owner Phone": t.ownerPhone || "",
-                    "Color Theme": t.colorTheme || "",
-                  }));
-                  const teamsSheet = XLSX.utils.json_to_sheet(teamsDetailsRows);
-                  const colWidths = Object.keys(teamsDetailsRows[0] || {}).map((key) => {
-                    let maxLen = key.length;
-                    teamsDetailsRows.forEach((row) => {
-                      const val = (row as any)[key];
-                      if (val !== undefined && val !== null) {
-                        const len = String(val).length;
-                        if (len > maxLen) maxLen = len;
-                      }
-                    });
-                    return { wch: Math.min(Math.max(maxLen + 4, 12), 40) };
-                  });
-                  teamsSheet["!cols"] = colWidths;
-
-                  const workbook = XLSX.utils.book_new();
-                  XLSX.utils.book_append_sheet(workbook, teamsSheet, "Teams");
-                  const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
-                  XLSX.writeFile(workbook, `${cleanTitle}_Teams.xlsx`);
+                  exportTeamsExcel(auction, teams, players || []);
                   toast.success("Teams Excel sheet downloaded successfully!");
                 }}
                 variant="outline"
-                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
               >
                 <FileSpreadsheet className="size-4 text-emerald-400" /> Export teams Excel
               </Button>
@@ -521,255 +548,180 @@ function AuctionDetailPage() {
                     toast.error("No registered players found to export.");
                     return;
                   }
-
-                  const isBniAuction =
-                    auction.id === "6a8edaddd7ed74151dbafab3" ||
-                    auction.name?.toLowerCase().includes("bni") ||
-                    auction.name?.toLowerCase().includes("bbl");
-
-                  const isHunterzVolleyball =
-                    auction.id === "6a8a705aef1f9e0978b3031c" ||
-                    auction.name?.toLowerCase().includes("hunterz");
-
-                  const teamMap = new Map((teams || []).map((t) => [t.id, t.name]));
-
-                  // 1. Detect which fields actually have data in this particular auction
-                  const hasAge = players.some((p) => p.age != null && String(p.age).trim() !== "");
-                  const hasRole = players.some(
-                    (p) =>
-                      (p.sportFields?.["role"] && String(p.sportFields["role"]).trim() !== "" && p.sportFields["role"] !== "-") ||
-                      (p.sportFields?.["Position"] && String(p.sportFields["Position"]).trim() !== "" && p.sportFields["Position"] !== "-"),
-                  );
-                  const hasDominatedHand =
-                    !isBniAuction &&
-                    players.some(
-                      (p) =>
-                        (p.sportFields?.["Dominated Hand"] && String(p.sportFields["Dominated Hand"]).trim() !== "" && p.sportFields["Dominated Hand"] !== "-") ||
-                        p.customData?.startsWith("Dominated Hand:") ||
-                        (p.customData && !p.customData.includes("BNI") && !p.customData.includes("Family")),
-                    );
-                  const hasCategory = players.some((p) => p.category && p.category.trim() !== "");
-                  const hasGender = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.gender && p.gender.trim() !== "");
-                  const hasCity = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.city && p.city.trim() !== "");
-                  const hasPlayerLevel = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.playerLevel && p.playerLevel.trim() !== "");
-                  const hasJerseySize = !isHunterzVolleyball && players.some((p) => p.jerseySize && p.jerseySize.trim() !== "");
-                  const hasJerseyName = !isHunterzVolleyball && (isBniAuction || players.some((p) => p.jerseyName && p.jerseyName.trim() !== ""));
-                  const hasTrouserSize = !isHunterzVolleyball && players.some((p) => p.trouserSize && p.trouserSize.trim() !== "");
-                  const hasPaymentMode = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.paymentMode && p.paymentMode.trim() !== "");
-                  const hasUtr = !isBniAuction && !isHunterzVolleyball && players.some((p) => p.utrNumber && p.utrNumber.trim() !== "");
-
-                  // BNI and Membership custom form checks
-                  const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI") || p.customData?.includes("Family"));
-                  const hasChapter = isBniAuction || players.some((p) => p.customData?.includes("Chapter:"));
-                  const hasBniName = players.some((p) => p.customData?.includes("BNI Name:"));
-                  const hasRel = players.some((p) => p.customData?.includes("Rel:"));
-                  const hasBblSeasons = isBniAuction || players.some((p) => p.customData?.includes("BBL Seasons:"));
-                  const hasOtherCustom =
-                    !isBniAuction &&
-                    !isHunterzVolleyball &&
-                    players.some(
-                      (p) =>
-                        p.customData &&
-                        !p.customData.startsWith("Dominated Hand:") &&
-                        !p.customData.includes("BNI") &&
-                        !p.customData.includes("Family"),
-                    );
-
-                  // Collect sport-specific fields that actually have non-empty values
-                  const activeSportKeys: string[] = [];
-                  players.forEach((p) => {
-                    if (p.sportFields && typeof p.sportFields === "object") {
-                      Object.keys(p.sportFields).forEach((k) => {
-                        if (
-                          k !== "originalPhoto" &&
-                          k !== "role" &&
-                          k !== "Position" &&
-                          k !== "Dominated Hand" &&
-                          p.sportFields[k] !== undefined &&
-                          p.sportFields[k] !== null &&
-                          String(p.sportFields[k]).trim() !== "" &&
-                          String(p.sportFields[k]) !== "-" &&
-                          !activeSportKeys.includes(k)
-                        ) {
-                          activeSportKeys.push(k);
-                        }
-                      });
-                    }
-                  });
-
-                  const hasAnySold = players.some((p) => p.teamId || p.soldPrice != null);
-                  const hasTeams = teams && teams.length > 0;
-
-                  const excelRows = players.map((p, index) => {
-                    const row: Record<string, any> = {
-                      "S.No": index + 1,
-                      "Player Name": p.name || "",
-                      "Phone Number": p.phone || "",
-                    };
-
-                    if (hasAge) {
-                      row["Age"] = p.age ?? "-";
-                    }
-
-                    if (hasRole) {
-                      row["Playing Position / Role"] = p.sportFields?.["role"] || p.sportFields?.["Position"] || "-";
-                    }
-
-                    if (hasDominatedHand) {
-                      const domHand =
-                        p.sportFields?.["Dominated Hand"] ||
-                        (p.customData?.startsWith("Dominated Hand: ")
-                          ? p.customData.replace("Dominated Hand: ", "")
-                          : (!p.customData?.includes("BNI") && !p.customData?.includes("Family")
-                              ? (p.customData || "-")
-                              : "-"));
-                      row["Dominated Hand"] = domHand;
-                    }
-
-                    if (hasGender) {
-                      row["Gender"] = p.gender || "-";
-                    }
-
-                    if (hasCity) {
-                      row["City"] = p.city || "-";
-                    }
-
-                    if (hasPlayerLevel) {
-                      row["Player Level"] = p.playerLevel || "-";
-                    }
-
-                    // Any active dynamic sport fields (e.g. Batting Style, Bowling Style, Spike Height)
-                    activeSportKeys.forEach((key) => {
-                      row[key] = p.sportFields?.[key] ?? "-";
-                    });
-
-                    // Grade / Category assigned after or during registration
-                    row["Grade / Category"] = p.category || "-";
-
-                    if (hasJerseySize) {
-                      row["Jersey Size"] = p.jerseySize || "-";
-                    }
-
-                    if (hasJerseyName) {
-                      row["Jersey Name"] = p.jerseyName || "-";
-                    }
-
-                    if (hasTrouserSize) {
-                      if (isBniAuction) {
-                        row["Jersey Number"] = p.trouserSize || "-";
-                      } else {
-                        row["Trouser Size"] = p.trouserSize || "-";
-                      }
-                    }
-
-                    // Membership details
-                    if (hasBniMembership) {
-                      let memType = "-";
-                      if (p.customData?.includes("BNI Member")) memType = "BNI Member";
-                      else if (p.customData?.includes("Family Member")) memType = "Family Member";
-                      row["Membership Type"] = memType;
-                    }
-                    if (hasChapter) {
-                      const match = p.customData?.match(/Chapter:\s*([^,|]+)/i);
-                      row["Chapter Name"] = match ? match[1].trim() : "-";
-                    }
-                    if (hasBniName) {
-                      const match = p.customData?.match(/BNI Name:\s*([^,|]+)/i);
-                      row["BNI Member Name"] = match ? match[1].trim() : "-";
-                    }
-                    if (hasRel) {
-                      const match = p.customData?.match(/Rel:\s*([^,|]+)/i);
-                      row["Relationship"] = match ? match[1].trim() : "-";
-                    }
-                    if (hasBblSeasons) {
-                      const match = p.customData?.match(/BBL Seasons:\s*([^,|]+)/i);
-                      row["Seasons Played"] = match ? match[1].trim() : "-";
-                    }
-                    if (hasOtherCustom) {
-                      row["Custom Details"] = p.customData || "-";
-                    }
-
-                    // Payment Details (ONLY for tournaments with payment)
-                    if (hasPaymentMode) {
-                      row["Payment Mode"] = p.paymentMode || "-";
-                    }
-                    if (hasUtr) {
-                      row["UTR / Ref Number"] = p.utrNumber || "-";
-                    }
-
-                    // Base Value
-                    row["Base Value (Points)"] = p.baseValue ?? 0;
-
-                    // Auction outcome (if teams exist or any bidding occurred)
-                    if (hasTeams || hasAnySold) {
-                      const soldTeamName = p.teamId
-                        ? (teamMap.get(p.teamId) || "Sold")
-                        : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
-                      row["Auction Status"] = p.teamId ? "Sold" : (p.auctionRoundStatus === "unsold" ? "Unsold" : "Pending");
-                      row["Sold To Team"] = p.teamId ? soldTeamName : "-";
-                      row["Sold Price (Points)"] =
-                        p.soldPrice !== null && p.soldPrice !== undefined
-                          ? p.soldPrice
-                          : (p.teamId ? (p.baseValue ?? 0) : "-");
-                    }
-
-                    if (p.createdAt) {
-                      row["Registration Date"] = new Date(p.createdAt).toLocaleDateString("en-IN");
-                    }
-
-                    return row;
-                  });
-
-                  const worksheet = XLSX.utils.json_to_sheet(excelRows);
-                  const keys = Object.keys(excelRows[0] || {});
-                  const colWidths = keys.map((key) => {
-                    let maxLen = key.length;
-                    excelRows.forEach((row) => {
-                      const val = row[key];
-                      if (val !== undefined && val !== null) {
-                        const len = String(val).length;
-                        if (len > maxLen) maxLen = len;
-                      }
-                    });
-                    return { wch: Math.min(Math.max(maxLen + 3, 10), 40) };
-                  });
-                  worksheet["!cols"] = colWidths;
-
-                  const workbook = XLSX.utils.book_new();
-                  XLSX.utils.book_append_sheet(workbook, worksheet, "Registered Players");
-                  const cleanTitle = (auction.name || "Tournament").replace(/[^a-zA-Z0-9_-]/g, "_");
-                  XLSX.writeFile(workbook, `${cleanTitle}_Registered_Players.xlsx`);
-                  toast.success("Players Excel sheet downloaded successfully!");
+                  exportPlayersExcel(auction, players, teams || []);
+                  toast.success("Registered players exported to Excel successfully!");
                 }}
                 variant="outline"
-                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm"
+                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
               >
                 <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
               </Button>
-              <Button
-                onClick={() => {
-                  const url = `${window.location.origin}/register-player/${auction.id}`;
-                  navigator.clipboard.writeText(url);
-                  toast.success("Player registration link copied to clipboard!");
-                }}
-                variant="outline"
-                className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
-              >
-                <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
-              </Button>
             </div>
+
+            {pendingPlayersCount === 0 && unsoldPlayersCount > 0 && (
+              <div className="rounded-2xl border-2 border-amber-500/60 bg-amber-950/40 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_25px_rgba(245,158,11,0.25)] animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-amber-500/20 border border-amber-500/60 flex items-center justify-center text-amber-400 shrink-0">
+                    <RotateCcw className="size-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-black text-white">No More Players Available</h4>
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        Round 1 Done
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#a1b5d8] mt-0.5">
+                      All regular players have been auctioned. You have <span className="text-amber-400 font-bold">{unsoldPlayersCount} unsold player{unsoldPlayersCount > 1 ? "s" : ""}</span> ready to repeat again for the next round.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={async () => {
+                    if (window.confirm(`Repeat all ${unsoldPlayersCount} unsold players and make them available again?`)) {
+                      try {
+                        await auctionClient.repeatUnsoldPlayers(auction.id);
+                        await queryClient.invalidateQueries({ queryKey: ["players", auction.id] });
+                        toast.success(`Repeated all ${unsoldPlayersCount} unsold players!`);
+                      } catch (err: any) {
+                        toast.error(err?.message || "Failed to repeat unsold players.");
+                      }
+                    }
+                  }}
+                  className="rounded-xl px-4 py-2 h-auto font-black text-xs text-white bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)] shrink-0 border border-white/30 cursor-pointer"
+                >
+                  <RotateCcw className="size-3.5 mr-1.5" />
+                  Repeat All Unsold ({unsoldPlayersCount})
+                </Button>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 border-b border-[#5c6875]/30 pb-3">
+              {/* Search Bar Input */}
+              <div className="relative flex-1 min-w-[220px]">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#38bdf8]" />
+                <Input
+                  type="text"
+                  placeholder="Search player by name or S.No (#33)..."
+                  value={playerSearchQuery}
+                  onChange={(e) => setPlayerSearchQuery(e.target.value)}
+                  className="pl-10 pr-9 h-10 rounded-xl bg-[#171a1d] border-[#5c6875]/50 text-white placeholder:text-[#abb4bd] focus:border-[#38bdf8] focus:ring-1 focus:ring-[#38bdf8] text-xs sm:text-sm"
+                />
+                {playerSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPlayerSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#abb4bd] hover:text-white p-1"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-[#171a1d] p-1 rounded-xl border border-[#5c6875]/40 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("all")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "all" ? "bg-[#38bdf8] text-[#142630] font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  All ({players.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("pending")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "pending" ? "bg-[#4365a0] text-white font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  Available ({pendingPlayersCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("sold")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "sold" ? "bg-[#23341d] text-[#c2d8b9] font-black border border-[#47673a] shadow-sm" : "text-[#abb4bd] hover:text-white"
+                  )}
+                >
+                  Sold ({soldPlayersCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayerStatusFilter("unsold")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    playerStatusFilter === "unsold" ? "bg-rose-500 text-white font-black shadow-sm" : "text-rose-400 hover:text-rose-300"
+                  )}
+                >
+                  Unsold ({unsoldPlayersCount})
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {unsoldPlayersCount > 0 && (
+                  <Button
+                    onClick={async () => {
+                      if (window.confirm(`Repeat all ${unsoldPlayersCount} unsold players and make them available again?`)) {
+                        try {
+                          await auctionClient.repeatUnsoldPlayers(auction.id);
+                          await queryClient.invalidateQueries({ queryKey: ["players", auction.id] });
+                          toast.success(`Repeated all ${unsoldPlayersCount} unsold players!`);
+                        } catch (err: any) {
+                          toast.error(err?.message || "Failed to repeat unsold players.");
+                        }
+                      }
+                    }}
+                    variant="outline"
+                    className="gap-2 rounded-full border border-amber-500/50 bg-amber-950/40 text-amber-300 hover:bg-amber-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                  >
+                    <RotateCcw className="size-4 text-amber-400" /> Repeat All Unsold ({unsoldPlayersCount})
+                  </Button>
+                )}
+                <Button
+                  onClick={() => {
+                    const url = `${window.location.origin}/register-player/${auction.id}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success("Player registration link copied to clipboard!");
+                  }}
+                  variant="outline"
+                  className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
+                >
+                  <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
+                </Button>
+              </div>
+            </div>
+
             {playersPending ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Skeleton key={i} className="h-24 w-full rounded-3xl bg-[#2e343a]/60" />
               ))
-            ) : players.length === 0 ? (
+            ) : filteredPlayersList.length === 0 ? (
               <div className="py-16 text-center rounded-3xl border border-[#5c6875]/30 bg-[#2e343a]/50 p-10">
-                <p className="text-[#abb4bd] font-medium">No players registered yet.</p>
-                <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
+                <p className="text-[#abb4bd] font-medium">
+                  {playerSearchQuery
+                    ? `No players matching "${playerSearchQuery}" found.`
+                    : playerStatusFilter === "unsold"
+                    ? "No unsold players found."
+                    : playerStatusFilter === "pending"
+                      ? "No available players found."
+                      : playerStatusFilter === "sold"
+                        ? "No sold players found."
+                        : "No players registered yet."}
+                </p>
+                {playerStatusFilter === "all" && !playerSearchQuery && (
+                  <p className="text-xs text-[#a1b5d8] mt-1.5">Click the + (plus) button below to register players.</p>
+                )}
               </div>
             ) : (
-              players.map((player) => {
+              filteredPlayersList.map((player) => {
                 const soldTeam = teams?.find((t) => t.id === player.teamId);
+                const globalSNo = players.findIndex((x) => x.id === player.id) + 1;
+
                 return (
                   <div
                     key={player.id}
@@ -796,9 +748,14 @@ function AuctionDetailPage() {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-2 flex-wrap">
-                              <h3 className="font-black text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
-                                {player.name}
-                              </h3>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="shrink-0 px-2 py-0.5 rounded-lg bg-[#38bdf8]/20 border border-[#38bdf8]/50 text-[#38bdf8] font-mono font-black text-xs">
+                                  #{globalSNo}
+                                </span>
+                                <h3 className="font-black text-lg sm:text-xl text-[#fffcf7] group-hover:text-[#a1b5d8] transition-colors truncate">
+                                  {player.name}
+                                </h3>
+                              </div>
                               {soldTeam ? (
                                 <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
                                   <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -808,6 +765,11 @@ function AuctionDetailPage() {
                               ) : player.teamId ? (
                                 <span className="px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-extrabold">
                                   SOLD ({player.soldPrice ? formatPoints(player.soldPrice) : ""} pts)
+                                </span>
+                              ) : player.auctionRoundStatus === "unsold" ? (
+                                <span className="px-3 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
+                                  <span className="size-1.5 rounded-full bg-rose-400" />
+                                  <span>UNSOLD</span>
                                 </span>
                               ) : null}
                             </div>
@@ -843,6 +805,27 @@ function AuctionDetailPage() {
                         <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer">
                           <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit player
                         </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setChangeTeamPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer">
+                          <Shield className="mr-2 size-4 text-[#38bdf8]" /> Change Team
+                        </DropdownMenuItem>
+                        {player.auctionRoundStatus === "unsold" && (
+                          <DropdownMenuItem
+                            onSelect={async () => {
+                              try {
+                                await updatePlayer({
+                                  id: player.id,
+                                  patch: { auctionRoundStatus: "pending", teamId: null, soldPrice: null },
+                                });
+                                toast.success(`${player.name} is now available!`);
+                              } catch {
+                                toast.error("Failed to repeat player.");
+                              }
+                            }}
+                            className="hover:bg-[#2e343a] cursor-pointer text-amber-300"
+                          >
+                            <RotateCcw className="mr-2 size-4 text-amber-400" /> Repeat / Mark Available
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem className="text-destructive hover:bg-destructive/15 cursor-pointer" onSelect={() => setPlayerToDelete(player.id)}>
                           <Trash className="mr-2 size-4" /> Delete player
                         </DropdownMenuItem>
@@ -862,6 +845,18 @@ function AuctionDetailPage() {
                 open={!!editPlayerId}
                 onOpenChange={(open) => {
                   if (!open) setEditPlayerId(null);
+                }}
+              />
+            )}
+            {changeTeamPlayer && (
+              <ChangePlayerTeamModal
+                auction={auction}
+                player={changeTeamPlayer}
+                teams={teams}
+                players={players}
+                open={!!changeTeamPlayer}
+                onOpenChange={(open) => {
+                  if (!open) setChangeTeamPlayer(null);
                 }}
               />
             )}
