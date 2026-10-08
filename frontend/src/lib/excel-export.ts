@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx-js-style";
+import * as XLSX from "xlsx";
 import type { Auction, Player, Team } from "./auction-client";
 import { computeTeamStats } from "./team-stats";
 
@@ -201,6 +201,7 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
     "Phone Number": "center",
     "Age": "center",
     "Playing Position / Role": "center",
+    "Batting Hand": "center",
     "Dominated Hand": "center",
     "Gender": "center",
     "City / Chapter": "left",
@@ -247,7 +248,7 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
     }
 
     if (hasDominatedHand) {
-      row["Dominated Hand"] =
+      row["Batting Hand"] =
         p.sportFields?.["Dominated Hand"] ||
         (p.customData?.startsWith("Dominated Hand: ")
           ? p.customData.replace("Dominated Hand: ", "")
@@ -297,11 +298,7 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
     }
 
     if (hasTrouserSize) {
-      if (isBniAuction) {
-        row["Jersey Number"] = p.trouserSize || "-";
-      } else {
-        row["Trouser Size"] = p.trouserSize || "-";
-      }
+      row["Jersey Number"] = p.trouserSize || "-";
     }
 
     if (hasBniMembership) {
