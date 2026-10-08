@@ -541,23 +541,6 @@ function AuctionDetailPage() {
 
         {activeTab === "PLAYERS" && (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <Button
-                onClick={() => {
-                  if (!players || players.length === 0) {
-                    toast.error("No registered players found to export.");
-                    return;
-                  }
-                  exportPlayersExcel(auction, players, teams || []);
-                  toast.success("Registered players exported to Excel successfully!");
-                }}
-                variant="outline"
-                className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
-              >
-                <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
-              </Button>
-            </div>
-
             {pendingPlayersCount === 0 && unsoldPlayersCount > 0 && (
               <div className="rounded-2xl border-2 border-amber-500/60 bg-amber-950/40 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_25px_rgba(245,158,11,0.25)] animate-fade-in">
                 <div className="flex items-center gap-3">
@@ -596,73 +579,75 @@ function AuctionDetailPage() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 border-b border-[#5c6875]/30 pb-3">
-              {/* Search Bar Input */}
-              <div className="relative flex-1 min-w-[220px]">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#38bdf8]" />
-                <Input
-                  type="text"
-                  placeholder="Search player by name or S.No (#33)..."
-                  value={playerSearchQuery}
-                  onChange={(e) => setPlayerSearchQuery(e.target.value)}
-                  className="pl-10 pr-9 h-10 rounded-xl bg-[#171a1d] border-[#5c6875]/50 text-white placeholder:text-[#abb4bd] focus:border-[#38bdf8] focus:ring-1 focus:ring-[#38bdf8] text-xs sm:text-sm"
-                />
-                {playerSearchQuery && (
+            <div className="flex flex-col gap-3 border-b border-[#5c6875]/30 pb-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                {/* Search Bar Input */}
+                <div className="relative flex-1 min-w-[220px]">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#38bdf8]" />
+                  <Input
+                    type="text"
+                    placeholder="Search player by name or S.No (#33)..."
+                    value={playerSearchQuery}
+                    onChange={(e) => setPlayerSearchQuery(e.target.value)}
+                    className="pl-10 pr-9 h-10 rounded-xl bg-[#171a1d] border-[#5c6875]/50 text-white placeholder:text-[#abb4bd] focus:border-[#38bdf8] focus:ring-1 focus:ring-[#38bdf8] text-xs sm:text-sm"
+                  />
+                  {playerSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setPlayerSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#abb4bd] hover:text-white p-1"
+                      aria-label="Clear search"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-[#171a1d] p-1 rounded-xl border border-[#5c6875]/40 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setPlayerSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#abb4bd] hover:text-white p-1"
-                    aria-label="Clear search"
+                    onClick={() => setPlayerStatusFilter("all")}
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      playerStatusFilter === "all" ? "bg-[#38bdf8] text-[#142630] font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
+                    )}
                   >
-                    <X className="size-4" />
+                    All ({players.length})
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => setPlayerStatusFilter("pending")}
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      playerStatusFilter === "pending" ? "bg-[#4365a0] text-white font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
+                    )}
+                  >
+                    Available ({pendingPlayersCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlayerStatusFilter("sold")}
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      playerStatusFilter === "sold" ? "bg-[#23341d] text-[#c2d8b9] font-black border border-[#47673a] shadow-sm" : "text-[#abb4bd] hover:text-white"
+                    )}
+                  >
+                    Sold ({soldPlayersCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlayerStatusFilter("unsold")}
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      playerStatusFilter === "unsold" ? "bg-rose-500 text-white font-black shadow-sm" : "text-rose-400 hover:text-rose-300"
+                    )}
+                  >
+                    Unsold ({unsoldPlayersCount})
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5 bg-[#171a1d] p-1 rounded-xl border border-[#5c6875]/40 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setPlayerStatusFilter("all")}
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                    playerStatusFilter === "all" ? "bg-[#38bdf8] text-[#142630] font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
-                  )}
-                >
-                  All ({players.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPlayerStatusFilter("pending")}
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                    playerStatusFilter === "pending" ? "bg-[#4365a0] text-white font-black shadow-sm" : "text-[#abb4bd] hover:text-white"
-                  )}
-                >
-                  Available ({pendingPlayersCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPlayerStatusFilter("sold")}
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                    playerStatusFilter === "sold" ? "bg-[#23341d] text-[#c2d8b9] font-black border border-[#47673a] shadow-sm" : "text-[#abb4bd] hover:text-white"
-                  )}
-                >
-                  Sold ({soldPlayersCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPlayerStatusFilter("unsold")}
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                    playerStatusFilter === "unsold" ? "bg-rose-500 text-white font-black shadow-sm" : "text-rose-400 hover:text-rose-300"
-                  )}
-                >
-                  Unsold ({unsoldPlayersCount})
-                </button>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 {unsoldPlayersCount > 0 && (
                   <Button
                     onClick={async () => {
@@ -684,12 +669,26 @@ function AuctionDetailPage() {
                 )}
                 <Button
                   onClick={() => {
+                    if (!players || players.length === 0) {
+                      toast.error("No registered players found to export.");
+                      return;
+                    }
+                    exportPlayersExcel(auction, players, teams || []);
+                    toast.success("Registered players exported to Excel successfully!");
+                  }}
+                  variant="outline"
+                  className="gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                >
+                  <FileSpreadsheet className="size-4 text-emerald-400" /> Export players Excel
+                </Button>
+                <Button
+                  onClick={() => {
                     const url = `${window.location.origin}/register-player/${auction.id}`;
                     navigator.clipboard.writeText(url);
                     toast.success("Player registration link copied to clipboard!");
                   }}
                   variant="outline"
-                  className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm"
+                  className="gap-2 rounded-full border border-[#a1b5d8]/40 bg-[#162235]/70 text-[#a1b5d8] hover:bg-[#a1b5d8]/20 hover:text-[#fffcf7] font-semibold text-xs transition-all shadow-sm cursor-pointer"
                 >
                   <Share2 className="size-4 text-[#a1b5d8]" /> Share Registration Link
                 </Button>
