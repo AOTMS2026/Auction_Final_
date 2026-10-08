@@ -84,29 +84,34 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-2.5">
           {/* Logo & Founder Profile Section */}
           <div className="flex items-center gap-3 sm:gap-4.5">
-            {/* Logo with Curved Edge & Glow Border */}
+            {/* Logo with Curved Edge & White Background */}
             <Link to="/" className="flex items-center gap-3 hover:opacity-95 transition-all group py-0.5">
-              <div className="relative p-1 sm:p-1.5 rounded-2xl bg-[#162e38]/95 backdrop-blur-md border-2 border-[#38bdf8]/80 shadow-[0_0_25px_rgba(56,189,248,0.5)] group-hover:border-[#f97316] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.7)] transition-all overflow-hidden flex items-center justify-center">
+              <div className="relative px-2 py-1 sm:px-3 sm:py-1 rounded-2xl bg-white border-2 border-[#38bdf8]/80 shadow-[0_0_25px_rgba(56,189,248,0.5)] group-hover:border-[#f97316] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.7)] transition-all overflow-hidden flex items-center justify-center">
                 <img
                   src="/AOTMS__logo.png"
                   alt="AOTMS Logo"
-                  className="h-10 sm:h-13 w-auto object-contain rounded-xl"
+                  className="h-9 sm:h-12 w-auto object-contain rounded-xl"
                 />
               </div>
             </Link>
 
             {/* Founder Profile - Circular Photo with Name Underneath */}
             <div className="flex flex-col items-center justify-center select-none shrink-0">
-              <div className="relative size-10 sm:size-12 rounded-full p-[2px] bg-gradient-to-tr from-[#ea580c] via-[#38bdf8] to-[#f97316] shadow-[0_0_15px_rgba(56,189,248,0.45)] hover:shadow-[0_0_20px_rgba(249,115,22,0.7)] hover:scale-105 transition-all duration-200 overflow-hidden">
+              <div className="relative size-12 sm:size-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#ea580c] via-[#38bdf8] to-[#f97316] shadow-[0_0_18px_rgba(56,189,248,0.5)] hover:shadow-[0_0_24px_rgba(249,115,22,0.8)] hover:scale-105 transition-all duration-200 overflow-hidden flex items-center justify-center">
                 <img
-                  src="/Ameen.jpeg"
+                  src="/Ameen_hq.png"
                   alt="Founder Ameen Sayyed"
-                  className="size-full rounded-full object-cover object-[center_15%]"
+                  className="size-full rounded-full object-cover"
                 />
               </div>
-              <span className="text-[9px] sm:text-[10.5px] font-black text-[#ffffff] tracking-tight whitespace-nowrap mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                Founder Ameen Sayyed
-              </span>
+              <div className="flex flex-col items-center leading-none mt-1 text-center">
+                <span className="text-[8.5px] sm:text-[9.5px] font-bold uppercase tracking-wider text-[#38bdf8] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                  Founder
+                </span>
+                <span className="text-[10px] sm:text-[11.5px] font-black text-[#ffffff] tracking-tight whitespace-nowrap mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                  Ameen Sayyed
+                </span>
+              </div>
             </div>
           </div>
 
