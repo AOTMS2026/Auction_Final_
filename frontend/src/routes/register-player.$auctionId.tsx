@@ -310,10 +310,6 @@ function PlayerRegistrationPage() {
       }
     }
 
-    if (!isBniAuction && !isHunterzVolleyball && !paymentImage) {
-      toast.error("Please upload the payment screenshot");
-      return;
-    }
 
     let customDataStr = "";
     const updatedSportFields = { ...sportFields };
@@ -809,7 +805,7 @@ function PlayerRegistrationPage() {
 
                 <div className="space-y-2 pt-1">
                   <Label htmlFor="paymentImage" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                    Payment Screenshot <span className="text-red-400 font-bold ml-0.5">*</span>
+                    Payment Screenshot
                   </Label>
                   {paymentImage ? (
                     <div className="relative w-full max-w-sm group">
@@ -831,10 +827,10 @@ function PlayerRegistrationPage() {
                         className="flex flex-col items-center justify-center w-full h-32 rounded-2xl border-2 border-dashed border-[#38bdf8]/50 bg-[#142630]/70 hover:bg-[#142630] hover:border-[#38bdf8] transition-colors cursor-pointer"
                       >
                         <UploadCloud className="size-8 text-[#38bdf8] mb-1.5" />
-                        <span className="text-sm font-black text-[#ffffff]">Click to upload screenshot</span>
+                        <span className="text-sm font-black text-[#ffffff]">Click to upload screenshot (Optional)</span>
                         <span className="text-xs text-[#f2e9dc]/70 mt-0.5">JPEG, PNG up to 10MB</span>
                       </Label>
-                      <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} required />
+                      <Input id="paymentImage" type="file" accept="image/*" className="hidden" onChange={handlePaymentImageChange} disabled={registerMutation.isPending} />
                     </div>
                   )}
                 </div>
