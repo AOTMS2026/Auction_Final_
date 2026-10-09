@@ -32,18 +32,8 @@ const anchors = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const [hideMiniNav, setHideMiniNav] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setHideMiniNav(window.scrollY > 25);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   async function signOut() {
     authClient.signOut();
@@ -51,14 +41,9 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 shadow-[0_6px_35px_rgba(15,35,45,0.7)] transition-all duration-300">
-      {/* Top Banner (Mini Navbar) with smooth auto-hide on scroll down */}
-      <div
-        className={cn(
-          "bg-gradient-to-r from-[#172e38] via-[#20424f] to-[#172e38] text-[#f2e9dc] text-xs border-b border-[#38bdf8]/40 transition-all duration-300 ease-in-out overflow-hidden",
-          hideMiniNav ? "max-h-0 opacity-0 py-0 border-transparent pointer-events-none" : "max-h-12 opacity-100 py-1.5"
-        )}
-      >
+    <>
+      {/* Top Banner (Mini Navbar) */}
+      <div className="bg-gradient-to-r from-[#172e38] via-[#20424f] to-[#172e38] text-[#f2e9dc] text-xs border-b border-[#38bdf8]/40 py-1.5 select-none relative z-40">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4">
           <p className="truncate font-semibold tracking-wide text-[#f2e9dc]">
             World #1 cricket auction platform for local &amp; league player auctions
@@ -73,9 +58,9 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {/* Main Navbar Ribbon matching Luminous Blue-Slate & Bright Linen Theme */}
-      <div
-        className="relative border-b border-[#38bdf8]/35 backdrop-blur-xl"
+      {/* Main Navbar Ribbon - Fixed Height Sticky Header */}
+      <header
+        className="sticky top-0 z-50 border-b border-[#38bdf8]/35 backdrop-blur-xl shadow-[0_6px_35px_rgba(15,35,45,0.7)]"
         style={{
           background:
             "linear-gradient(135deg, rgba(20,40,48,0.98) 0%, rgba(30,58,70,0.97) 40%, rgba(50,106,122,0.97) 80%, rgba(38,82,98,0.98) 100%)",
@@ -239,8 +224,8 @@ export function SiteHeader() {
             )}
           </nav>
         )}
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
