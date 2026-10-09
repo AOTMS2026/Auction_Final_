@@ -1,6 +1,6 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X, Loader2 } from "lucide-react";
+import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X, Loader2, Play } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ import { AboutTab } from "@/components/auction/AboutTab";
 import { TeamFormModal } from "@/components/auction/TeamFormModal";
 import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
 import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
+import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeDialog";
 
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
@@ -46,7 +47,7 @@ import { exportAuctionPDF } from "@/lib/pdf-export";
 import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
 import { auctionClient, type Player } from "@/lib/auction-client";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
+import { auctionDetailQueryOptions, teamsQueryOptions, auctionKeys } from "@/lib/queries/auctions";
 import { sportTypeLabels, visibilityLabels } from "@/lib/validations/auction";
 
 export const Route = createFileRoute("/_authenticated/auctions/$id")({
@@ -178,6 +179,7 @@ function AuctionNotFound() {
 }
 
 function AuctionDetailPage() {
+  const navigate = useNavigate();
   const { auction: initialAuction } = Route.useLoaderData();
   const { data: auction = initialAuction } = useQuery(auctionDetailQueryOptions(initialAuction.id));
   const queryClient = useQueryClient();
@@ -194,6 +196,8 @@ function AuctionDetailPage() {
   const [isExportingTeams, setIsExportingTeams] = useState(false);
   const [isSharingPlayerLink, setIsSharingPlayerLink] = useState(false);
   const [isRepeatingUnsold, setIsRepeatingUnsold] = useState(false);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [readinessModalOpen, setReadinessModalOpen] = useState(false);
 
   // Teams CRUD states
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
@@ -264,6 +268,30 @@ function AuctionDetailPage() {
     }
   };
 
+  function handleStartAuction() {
+    if (!teams || teams.length === 0 || !players || players.length === 0) {
+      setReadinessModalOpen(true);
+      return;
+    }
+    setModeDialogOpen(true);
+  }
+
+  async function handleConfirmMode(mode: "trial" | "live") {
+    setModeDialogOpen(false);
+    if (mode === "live") {
+      try {
+        await auctionClient.update(auction.id, { status: "live" });
+        await queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auction.id) });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to start live auction.");
+        return;
+      }
+      void navigate({ to: "/my-auctions/$id/auctioneer", params: { id: auction.id }, search: { mode: "live" } });
+    } else {
+      void navigate({ to: "/my-auctions/$id/auctioneer", params: { id: auction.id }, search: { mode: "trial" } });
+    }
+  }
+
   return (
     <div
       className="min-h-screen text-[#fffcf7] selection:bg-[#a1b5d8] selection:text-[#162235] flex flex-col"
@@ -329,6 +357,34 @@ function AuctionDetailPage() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-full border border-[#38bdf8]/50 bg-[#142630] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-[#ffffff] font-bold text-xs gap-1.5 transition-all shadow-sm"
+              >
+                <Link to="/my-auctions/$id" params={{ id: auction.id }}>
+                  <Pencil className="size-3.5" />
+                  Organizer Dashboard
+                </Link>
+              </Button>
+              <Button
+                onClick={handleStartAuction}
+                className={cn(
+                  "rounded-full px-7 py-2.5 h-auto font-black text-xs text-[#ffffff] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/40 cursor-pointer",
+                  auction.status === "live"
+                    ? "bg-gradient-to-r from-red-600 via-rose-500 to-amber-600 hover:from-rose-500 hover:to-red-600 shadow-[0_0_25px_rgba(239,68,68,0.7)]"
+                    : "bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c]"
+                )}
+              >
+                {auction.status === "live" ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-white animate-pulse" />
+                    Resume Live Auction
+                  </span>
+                ) : (
+                  "Start Auction"
+                )}
+              </Button>
               <Button
                 onClick={() => {
                   exportCompleteAuctionExcel(auction, players || [], teams || []);
@@ -1096,6 +1152,25 @@ function AuctionDetailPage() {
           <AboutTab auction={auction} teams={teams} players={players} />
         )}
       </main>
+
+      {/* Readiness Gate Dialog */}
+      <AlertDialog open={readinessModalOpen} onOpenChange={setReadinessModalOpen}>
+        <AlertDialogContent className="rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Auction not ready</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#abb4bd]">
+              Please add at least one Team and one Player before starting the auction.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="rounded-full bg-gradient-to-r from-[#6c8cc2] to-[#a1b5d8] text-[#162235] font-bold">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <ChooseAuctionModeDialog open={modeDialogOpen} onOpenChange={setModeDialogOpen} onConfirm={handleConfirmMode} />
 
       {/* Delete Team Dialog */}
       <AlertDialog open={!!teamToDelete} onOpenChange={(o) => !o && setTeamToDelete(null)}>

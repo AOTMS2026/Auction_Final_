@@ -33,6 +33,46 @@ async function connectDB() {
   });
 
   await seedAdminUser();
+  await seedPanthersLeagueUser();
+}
+
+async function seedPanthersLeagueUser() {
+  try {
+    const User = require("./models/User");
+    const Auction = require("./models/Auction");
+    const bcrypt = require("bcryptjs");
+    const panthersEmail = "panthersbleague@gmail.com";
+    const passwordHash = await bcrypt.hash("Panthersbleague@123", 10);
+
+    let user = await User.findOne({ email: panthersEmail });
+    if (!user) {
+      user = await User.create({
+        email: panthersEmail,
+        passwordHash,
+        name: "Panthers B league",
+        role: "user",
+      });
+      console.log("[db] Created Panthers B League user: panthersbleague@gmail.com");
+    } else {
+      user.name = "Panthers B league";
+      const isPassValid = await bcrypt.compare("Panthersbleague@123", user.passwordHash);
+      if (!isPassValid) {
+        user.passwordHash = passwordHash;
+        await user.save();
+        console.log("[db] Updated password for user: panthersbleague@gmail.com");
+      }
+    }
+
+    // Ensure Panthers B league auction belongs to this user if not already set
+    const auction = await Auction.findOne({ name: /Panthers B league/i });
+    if (auction && (!auction.createdBy || auction.createdBy.toString() !== user._id.toString())) {
+      auction.createdBy = user._id;
+      await auction.save();
+      console.log("[db] Linked Panthers B league auction to user:", panthersEmail);
+    }
+  } catch (err) {
+    console.error("[db] Panthers user seeding failed:", err.message);
+  }
 }
 
 async function seedAdminUser() {
