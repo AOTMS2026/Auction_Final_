@@ -155,7 +155,8 @@ const cricketPricingPlans: PricingPlan[] = [
 ];
 
 function Index() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
   const { data: auctions, isPending, isError, refetch } = useQuery({
     ...auctionListQueryOptions(),
     refetchInterval: 60_000,
@@ -223,7 +224,7 @@ function Index() {
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          {isAuthenticated ? (
+          {isAdmin ? (
             <>
               <Link
                 to="/my-auctions/new"
@@ -239,22 +240,27 @@ function Index() {
                 View My Auctions
               </Link>
             </>
+          ) : isAuthenticated ? (
+            <Link
+              to="/my-auctions"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0284c7] via-[#38bdf8] to-[#0284c7] hover:from-[#38bdf8] hover:to-[#0284c7] px-8 py-3.5 text-center font-black text-sm text-[#ffffff] shadow-[0_4px_28px_rgba(56,189,248,0.5)] transition-all hover:scale-105 border border-[#ffffff]/35"
+            >
+              Go to My Auctions
+            </Link>
           ) : (
             <>
-              <Link
-                to="/auth"
-                search={{ next: "/my-auctions/new" }}
+              <a
+                href="#upcoming"
                 className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] px-8 py-3.5 text-center font-black text-sm text-[#ffffff] shadow-[0_4px_28px_rgba(249,115,22,0.6)] transition-all hover:scale-105 border border-[#ffffff]/35"
               >
-                <PlusCircle className="size-4.5" />
-                Create Auction
-              </Link>
+                Explore Upcoming Auctions
+              </a>
               <Link
                 to="/auth"
                 search={{ next: "/my-auctions" }}
                 className="inline-flex items-center gap-2 rounded-full border-2 border-[#38bdf8]/50 bg-[#162a32]/95 hover:bg-[#204554] px-8 py-3.5 text-center font-extrabold text-sm text-[#ffffff] hover:border-[#ffffff] shadow-sm transition-all hover:scale-105"
               >
-                View My Auctions
+                Sign In
               </Link>
             </>
           )}

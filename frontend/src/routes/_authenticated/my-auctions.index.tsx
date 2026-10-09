@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useMyAuctions } from "@/lib/app-store";
+import { useAuth } from "@/hooks/useAuth";
 import { SPORT_TYPES, VISIBILITIES, sportTypeLabels, visibilityLabels } from "@/lib/validations/auction";
 import type { SportType, Visibility } from "@/lib/auction-client";
 
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/_authenticated/my-auctions/")({
 });
 
 function MyAuctionsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
   const { items, isPending, isError, refetch, remove } = useMyAuctions();
   const [sportFilter, setSportFilter] = useState<SportType | "all">("all");
   const [visibilityFilter, setVisibilityFilter] = useState<Visibility | "all">("all");
@@ -72,14 +75,16 @@ function MyAuctionsPage() {
             </p>
           </div>
 
-          <Button
-            asChild
-            className="rounded-full px-7 py-3 h-auto font-black font-auction text-sm tracking-wide [word-spacing:0.14em] text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] hover:scale-105 transition-all duration-300 border border-white/40"
-          >
-            <Link to="/my-auctions/new">
-              <Plus className="mr-1.5 size-4 stroke-[3]" /> Create Auction
-            </Link>
-          </Button>
+          {isAdmin && (
+            <Button
+              asChild
+              className="rounded-full px-7 py-3 h-auto font-black font-auction text-sm tracking-wide [word-spacing:0.14em] text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:shadow-[0_0_35px_rgba(249,115,22,0.9)] hover:scale-105 transition-all duration-300 border border-white/40"
+            >
+              <Link to="/my-auctions/new">
+                <Plus className="mr-1.5 size-4 stroke-[3]" /> Create Auction
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Filter Controls with Bright Teal Styling */}
@@ -147,7 +152,7 @@ function MyAuctionsPage() {
               <p className="text-[#f2e9dc] font-bold">
                 {items.length === 0 ? "You haven't created any tournaments yet." : "No auctions match these filters."}
               </p>
-              {items.length === 0 && (
+              {items.length === 0 && isAdmin && (
                 <Button
                   asChild
                   className="mt-5 rounded-full px-7 py-3 font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30"

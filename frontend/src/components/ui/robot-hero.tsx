@@ -4,6 +4,7 @@ import { ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { Link } from "@tanstack/react-router";
 import { Play, PlusCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 class HeartCurve extends THREE.Curve<THREE.Vector3> {
   constructor() {
@@ -719,6 +720,8 @@ export function RobotHero({
   startAuctionHref = "#today",
   newAuctionTo = "/my-auctions/new",
 }: RobotHeroProps = {}) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
   const containerRef = useRef<HTMLElement>(null);
   const [isClient, setIsClient] = useState(false);
   const [isInView, setIsInView] = useState(true);
@@ -788,16 +791,18 @@ export function RobotHero({
             <span>Start Auction</span>
           </a>
 
-          {/* New Auction Button */}
-          <Link
-            to={newAuctionTo}
-            className="group relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm text-[#ffffff] bg-[#162c36]/95 hover:bg-[#1e4454] border-2 border-[#38bdf8]/70 hover:border-[#ffffff] shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:shadow-[0_0_35px_rgba(56,189,248,0.65)] hover:scale-105 transition-all duration-300 backdrop-blur-md"
-          >
-            <span className="flex items-center justify-center size-6 rounded-full bg-[#38bdf8]/25 text-[#f97316] group-hover:bg-[#ffffff]/25 group-hover:text-[#ffffff] transition-colors">
-              <PlusCircle className="size-4" />
-            </span>
-            <span>New Auction</span>
-          </Link>
+          {/* New Auction Button (Admin only) */}
+          {isAdmin && (
+            <Link
+              to={newAuctionTo}
+              className="group relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm text-[#ffffff] bg-[#162c36]/95 hover:bg-[#1e4454] border-2 border-[#38bdf8]/70 hover:border-[#ffffff] shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:shadow-[0_0_35px_rgba(56,189,248,0.65)] hover:scale-105 transition-all duration-300 backdrop-blur-md"
+            >
+              <span className="flex items-center justify-center size-6 rounded-full bg-[#38bdf8]/25 text-[#f97316] group-hover:bg-[#ffffff]/25 group-hover:text-[#ffffff] transition-colors">
+                <PlusCircle className="size-4" />
+              </span>
+              <span>New Auction</span>
+            </Link>
+          )}
         </div>
       </div>
 

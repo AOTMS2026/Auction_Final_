@@ -60,6 +60,10 @@ router.post(
   "/",
   requireAuth,
   asyncHandler(async (req, res) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ error: "Only administrators can create new auctions." });
+    }
+
     const { errors } = validateAuctionInput(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ error: errors[0] });

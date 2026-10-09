@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
@@ -6,10 +6,20 @@ import { Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { AuctionForm } from "@/components/auction/AuctionForm";
 import { auctionClient } from "@/lib/auction-client";
+import { authClient } from "@/lib/auth-client";
 import { auctionKeys } from "@/lib/queries/auctions";
 import type { AuctionFormValues } from "@/lib/validations/auction";
 
 export const Route = createFileRoute("/_authenticated/my-auctions/new")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return {};
+    const user = await authClient.getCurrentUser();
+    const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
+    if (!isAdmin) {
+      throw redirect({ to: "/my-auctions" });
+    }
+    return {};
+  },
   component: NewAuctionPage,
 });
 
