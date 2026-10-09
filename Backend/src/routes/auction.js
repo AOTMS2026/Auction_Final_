@@ -101,22 +101,18 @@ router.get(
       }
     } else {
       if (!req.isAdmin) {
-        query.$or = req.userId ? [{ visibility: "public" }, { createdBy: req.userId }] : [{ visibility: "public" }];
+        if (req.userId) {
+          query.createdBy = req.userId;
+        } else {
+          query.visibility = "public";
+        }
       }
     }
 
     if (typeof req.query.sportType === "string") query.sportType = req.query.sportType;
     if (typeof req.query.visibility === "string") query.visibility = req.query.visibility;
 
-    let auctions = await Auction.find(query).sort({ startsAt: 1 }).lean();
-
-    // Fallback: If 0 auctions found for user filter, fetch all existing auctions in MongoDB
-    if (auctions.length === 0) {
-      const fallbackQuery = {};
-      if (typeof req.query.sportType === "string") fallbackQuery.sportType = req.query.sportType;
-      if (typeof req.query.visibility === "string") fallbackQuery.visibility = req.query.visibility;
-      auctions = await Auction.find(fallbackQuery).sort({ startsAt: 1 }).lean();
-    }
+    const auctions = await Auction.find(query).sort({ startsAt: 1 }).lean();
 
     res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.json({ auctions: auctions.map(toPublicAuction) });

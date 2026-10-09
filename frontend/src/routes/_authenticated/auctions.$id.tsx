@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, Gavel, ShieldCheck, Users, Wallet, Pencil, Copy, UserCheck, Share2, ExternalLink, UserPlus, Check, Trophy, Award, Sparkles, FileText, FileSpreadsheet, MoreVertical, Trash, Plus, Shield, RotateCcw, Search, X, Loader2, Play } from "lucide-react";
 import { format } from "date-fns";
@@ -46,22 +46,30 @@ import { computeTeamStats, formatPoints } from "@/lib/team-stats";
 import { exportAuctionPDF } from "@/lib/pdf-export";
 import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
 import { auctionClient, type Player } from "@/lib/auction-client";
+import { authClient } from "@/lib/auth-client";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { auctionDetailQueryOptions, teamsQueryOptions, auctionKeys } from "@/lib/queries/auctions";
 import { sportTypeLabels, visibilityLabels } from "@/lib/validations/auction";
 
 export const Route = createFileRoute("/_authenticated/auctions/$id")({
   loader: async ({ params, context }) => {
+    let auction;
     try {
-      const auction = await context.queryClient.ensureQueryData(auctionDetailQueryOptions(params.id));
-      void Promise.all([
-        context.queryClient.prefetchQuery(teamsQueryOptions(params.id)),
-        context.queryClient.prefetchQuery(playersQueryOptions(params.id)),
-      ]);
-      return { auction };
+      auction = await context.queryClient.ensureQueryData(auctionDetailQueryOptions(params.id));
     } catch {
       throw notFound();
     }
+
+    const user = await authClient.getCurrentUser();
+    if (user && auction.createdBy === user.id) {
+      throw redirect({ to: "/my-auctions/$id", params: { id: params.id } });
+    }
+
+    void Promise.all([
+      context.queryClient.prefetchQuery(teamsQueryOptions(params.id)),
+      context.queryClient.prefetchQuery(playersQueryOptions(params.id)),
+    ]);
+    return { auction };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
