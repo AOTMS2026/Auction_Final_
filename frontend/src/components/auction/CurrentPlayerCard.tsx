@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronUp, Landmark, Pencil, Undo2, X } from "lucide-react";
+import { Award, Check, ChevronDown, ChevronUp, Landmark, Pencil, Undo2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { FallbackImage } from "@/components/ui/fallback-image";
@@ -15,6 +15,7 @@ export function CurrentPlayerCard({
   minBid,
   onBidChange,
   onClear,
+  onEditGrade,
   mode,
 }: {
   player: Player;
@@ -25,6 +26,7 @@ export function CurrentPlayerCard({
   minBid?: number;
   onBidChange: (value: number) => void;
   onClear: () => void;
+  onEditGrade?: (player: Player) => void;
   mode: "trial" | "live";
 }) {
   const [editingBid, setEditingBid] = useState(false);
@@ -132,9 +134,22 @@ export function CurrentPlayerCard({
               {player.sportFields?.["role"] || "-"}
             </span>
             {/* Category / Grade Badge */}
-            <span className="rounded-xl bg-[#142630] border-2 border-[#38bdf8]/60 text-[#38bdf8] px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
-              Grade {player.category || "-"}
-            </span>
+            {onEditGrade ? (
+              <button
+                type="button"
+                onClick={() => onEditGrade(player)}
+                className="rounded-xl bg-[#142630] border-2 border-[#38bdf8]/60 text-[#38bdf8] hover:bg-[#38bdf8]/20 hover:text-[#ffffff] px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md flex items-center gap-1.5 cursor-pointer group/grade transition-all"
+                title="Click to assign or change Grade (A+, A, B+, B, C)"
+              >
+                <Award className="size-4 sm:size-5 text-[#38bdf8] group-hover/grade:scale-110 transition-transform" />
+                <span>Grade {player.category || "-"}</span>
+                <Pencil className="size-3 sm:size-3.5 text-[#38bdf8]/60 group-hover/grade:text-white transition-colors ml-0.5" />
+              </button>
+            ) : (
+              <span className="rounded-xl bg-[#142630] border-2 border-[#38bdf8]/60 text-[#38bdf8] px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
+                Grade {player.category || "-"}
+              </span>
+            )}
             {/* Level Badge (Orange Box) */}
             <span className="rounded-xl bg-orange-950/80 border-2 border-orange-500/60 text-orange-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-[0_0_15px_rgba(249,115,22,0.3)]">
               Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}

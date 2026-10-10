@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, FileSpreadsheet, Pencil, Check, Users, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, RefreshCw, RotateCcw, Search, Shuffle, SquareMousePointer, Plus, Minus, Gavel, X, FileText, FileSpreadsheet, Pencil, Check, Users, CheckCircle, AlertCircle, Award } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { TeamBidCard } from "@/components/auction/TeamBidCard";
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
+import { EditGradeModal } from "@/components/auction/EditGradeModal";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
 import { authClient } from "@/lib/auth-client";
@@ -83,7 +84,9 @@ function AuctioneerConsole() {
   const [editingSoldPlayerId, setEditingSoldPlayerId] = useState<string | null>(null);
   const [editingSoldAmount, setEditingSoldAmount] = useState<string>("");
   const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
+  const [gradeModalPlayer, setGradeModalPlayer] = useState<Player | null>(null);
   const [pickerTab, setPickerTab] = useState<"pending" | "unsold" | "all">("pending");
+  const [pickerGradeFilter, setPickerGradeFilter] = useState<string>("ALL");
   const [isRepeatingUnsold, setIsRepeatingUnsold] = useState(false);
 
   async function handleSaveSoldPrice(playerId: string, playerName: string) {
@@ -755,7 +758,15 @@ function AuctioneerConsole() {
         ? [...basePickerPlayers, ...unsoldPlayers]
         : basePickerPlayers;
 
-  const filteredPickerPlayers = pickerSourcePlayers.filter((p) => {
+  const gradeFilteredPickerPlayers = pickerSourcePlayers.filter((p) => {
+    if (pickerGradeFilter === "ALL") return true;
+    if (pickerGradeFilter === "NONE") {
+      return !p.category || p.category.trim() === "" || p.category === "-";
+    }
+    return (p.category || "").trim().toUpperCase() === pickerGradeFilter;
+  });
+
+  const filteredPickerPlayers = gradeFilteredPickerPlayers.filter((p) => {
     const rawQuery = pickerQuery.trim().toLowerCase();
     if (!rawQuery) return true;
 
@@ -916,6 +927,7 @@ function AuctioneerConsole() {
                 setCurrentBid(auction.minimumBid);
                 setSelectedTeamId(null);
               }}
+              onEditGrade={(player) => setGradeModalPlayer(player)}
               mode={mode}
             />
           ) : (
@@ -1232,6 +1244,36 @@ function AuctioneerConsole() {
                 </button>
               </div>
             </div>
+
+            {/* Grade Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mt-2.5 text-xs select-none border-t border-[#5c6875]/30 pt-2">
+              <span className="text-[10px] font-black uppercase text-[#38bdf8] mr-1 shrink-0 flex items-center gap-1">
+                <Award className="size-3" /> Grade:
+              </span>
+              {[
+                { key: "ALL", label: "All" },
+                { key: "A+", label: "A+" },
+                { key: "A", label: "A" },
+                { key: "B+", label: "B+" },
+                { key: "B", label: "B" },
+                { key: "C", label: "C" },
+                { key: "NONE", label: "No Grade" },
+              ].map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={() => setPickerGradeFilter(chip.key)}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0",
+                    pickerGradeFilter === chip.key
+                      ? "bg-[#38bdf8] text-[#142630] font-black shadow-sm"
+                      : "bg-[#2e343a]/70 text-[#abb4bd] hover:text-white hover:bg-[#2e343a]"
+                  )}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
           </DialogHeader>
           <div className="relative mt-2 shrink-0">
             <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#abb4bd]" />
@@ -1309,16 +1351,29 @@ function AuctioneerConsole() {
                             {sNo && <span className="text-[11px] font-bold text-[#38bdf8]">(S.No #{sNo})</span>}
                           </div>
                         </div>
-                        <div className="text-[10px] sm:text-[11px] text-[#abb4bd] font-semibold mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 truncate">
-                          <span className="text-[#ecf0f7]">{p.sportFields?.["role"] || "-"}</span>
-                          <span className="text-[#5c6875]">•</span>
-                          <span className="text-[#c2d8b9]">Grade {p.category || "-"}</span>
-                          {p.customData && (
-                            <>
-                              <span className="text-[#5c6875]">•</span>
-                              <span>{p.customData.replace("Dominated Hand: ", "")}</span>
-                            </>
-                          )}
+                        <div className="flex items-center justify-between gap-1.5 mt-0.5">
+                          <div className="text-[10px] sm:text-[11px] text-[#abb4bd] font-semibold flex flex-wrap items-center gap-x-1.5 gap-y-0.5 truncate">
+                            <span className="text-[#ecf0f7]">{p.sportFields?.["role"] || "-"}</span>
+                            {p.customData && (
+                              <>
+                                <span className="text-[#5c6875]">•</span>
+                                <span>{p.customData.replace("Dominated Hand: ", "")}</span>
+                              </>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setGradeModalPlayer(p);
+                            }}
+                            className="px-2 py-0.5 rounded-lg bg-[#142630] border border-[#38bdf8]/50 text-[#38bdf8] hover:bg-[#38bdf8]/20 hover:text-white transition-all text-[10px] font-black uppercase flex items-center gap-1 cursor-pointer shrink-0"
+                            title="Edit player grade (A+, A, B+, B, C)"
+                          >
+                            <Award className="size-2.5 text-[#38bdf8]" />
+                            <span>Grade {p.category || "-"}</span>
+                            <Pencil className="size-2.5 text-[#38bdf8]/70 ml-0.5" />
+                          </button>
                         </div>
                       </div>
                     </button>
@@ -1634,6 +1689,25 @@ function AuctioneerConsole() {
           }}
           onSuccess={() => {
             refetchPlayers();
+          }}
+        />
+      )}
+
+      {gradeModalPlayer && (
+        <EditGradeModal
+          player={gradeModalPlayer}
+          open={!!gradeModalPlayer}
+          onOpenChange={(open) => {
+            if (!open) setGradeModalPlayer(null);
+          }}
+          onSave={async (newGrade) => {
+            if (gradeModalPlayer) {
+              await updatePlayer({
+                id: gradeModalPlayer.id,
+                patch: { category: newGrade },
+              });
+              refetchPlayers();
+            }
           }}
         />
       )}

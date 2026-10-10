@@ -36,6 +36,7 @@ import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { AboutTab } from "@/components/auction/AboutTab";
 import { TeamFormModal } from "@/components/auction/TeamFormModal";
 import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
+import { EditGradeModal } from "@/components/auction/EditGradeModal";
 import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
 import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeDialog";
 
@@ -870,7 +871,18 @@ function AuctionDetailPage() {
                                 {player.sportFields?.["role"] || "-"}
                               </span>
                               <span className="text-[#5c6875]">·</span>
-                              <span className="text-[#e3e6e9] font-bold">Grade {player.category || "-"}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditPlayer(player);
+                                }}
+                                className="px-2.5 py-0.5 rounded-full bg-[#142630] border border-[#38bdf8]/60 text-[#38bdf8] hover:bg-[#38bdf8]/20 hover:text-[#ffffff] transition-all text-xs font-black uppercase flex items-center gap-1 cursor-pointer shadow-sm group/btn"
+                                title="Click to assign or change Grade (A+, A, B+, B, C)"
+                              >
+                                <Award className="size-3 text-[#38bdf8] group-hover/btn:scale-110 transition-transform" />
+                                <span>Grade {player.category || "-"}</span>
+                              </button>
                               {(() => {
                                 const dh = player.sportFields?.["Dominated Hand"] || (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData?.includes("BNI") || player.customData?.includes("Family") ? null : player.customData));
                                 if (!dh || dh === "-") return null;
@@ -894,6 +906,9 @@ function AuctionDetailPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+                        <DropdownMenuItem onSelect={() => setEditPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer text-[#38bdf8]">
+                          <Award className="mr-2 size-4 text-[#38bdf8]" /> Assign / Edit Grade
+                        </DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer">
                           <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit player
                         </DropdownMenuItem>
@@ -1256,235 +1271,5 @@ function AuctionDetailPage() {
         isSaving={playersUpdating}
       />
     </div>
-  );
-}
-
-interface EditGradeModalProps {
-  player: Player | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: (newGrade: string) => Promise<void>;
-  isSaving: boolean;
-}
-
-function EditGradeModal({ player, open, onOpenChange, onSave, isSaving }: EditGradeModalProps) {
-  const [grade, setGrade] = useState("");
-
-  useEffect(() => {
-    if (player) {
-      setGrade(player.category || "");
-    }
-  }, [player]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSave(grade);
-    onOpenChange(false);
-  };
-
-  // Helper variables for BNI
-  const isBniAuction = player?.auctionId === "6a8edaddd7ed74151dbafab3";
-  
-  // Custom Data / Membership
-  const initialIsBni = player?.customData?.startsWith("BNI Member");
-  const initialIsFamily = player?.customData?.startsWith("Family Member");
-  const memberType = initialIsBni ? "bni" : initialIsFamily ? "family" : "";
-  
-  let chapterName = "";
-  let bniName = "";
-  let relationship = "";
-  let bblSeasons = "";
-
-  if (player?.customData) {
-    if (initialIsBni) {
-      const match = player.customData.match(/Chapter: ([^|]*)/);
-      if (match) chapterName = match[1]?.trim() || "";
-      const bblMatch = player.customData.match(/BBL Seasons: ([^|]*)/);
-      if (bblMatch) bblSeasons = bblMatch[1]?.trim() || "";
-    } else if (initialIsFamily) {
-      const match = player.customData.match(/BNI Name: ([^,]*), Chapter: ([^,]*), Rel: ([^|]*)/);
-      if (match) {
-        bniName = match[1]?.trim() || "";
-        chapterName = match[2]?.trim() || "";
-        relationship = match[3]?.trim() || "";
-      }
-      const bblMatch = player.customData.match(/BBL Seasons: ([^|]*)/);
-      if (bblMatch) bblSeasons = bblMatch[1]?.trim() || "";
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] rounded-3xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7] shadow-[0_20px_50px_rgba(23,26,29,0.95)] p-6 sm:p-8">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black text-[#fffcf7]">Edit Player Grade</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 py-4 max-h-[70vh] overflow-y-auto px-1">
-            {/* Photo Preview */}
-            {player?.photo && (
-              <div className="sm:col-span-2 flex flex-col items-center justify-center space-y-2 mb-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Player Photo</Label>
-                <div className="size-28 rounded-2xl overflow-hidden border-2 border-[#a1b5d8]/40 shadow-md">
-                  <img src={player.photo} alt={player.name} className="size-full object-cover object-top" />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Name</Label>
-              <Input id="edit-name" value={player?.name || ""} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-phone" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Phone</Label>
-              <Input id="edit-phone" value={player?.phone || ""} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-age" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Age</Label>
-              <Input id="edit-age" value={player?.age?.toString() || "-"} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-            </div>
-
-            {/* Grade (ENABLED) */}
-            <div className="space-y-2 border border-[#a1b5d8]/40 bg-[#162235]/60 p-3 rounded-2xl">
-              <Label htmlFor="edit-grade" className="text-[#a1b5d8] font-bold text-xs uppercase tracking-wider">Grade (Editable)</Label>
-              <Select value={grade} onValueChange={setGrade}>
-                <SelectTrigger id="edit-grade" className="border-[#a1b5d8]/50 bg-[#171a1d] text-[#fffcf7] rounded-xl focus:ring-[#a1b5d8]">
-                  <SelectValue placeholder="Select Grade" />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
-                  <SelectItem value="A+" className="hover:bg-[#2e343a]">A+</SelectItem>
-                  <SelectItem value="A" className="hover:bg-[#2e343a]">A</SelectItem>
-                  <SelectItem value="B+" className="hover:bg-[#2e343a]">B+</SelectItem>
-                  <SelectItem value="B" className="hover:bg-[#2e343a]">B</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Gender</Label>
-              <Select value={player?.gender || ""} disabled>
-                <SelectTrigger className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80"><SelectValue placeholder="-" /></SelectTrigger>
-                <SelectContent className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-city" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">City</Label>
-              <Input id="edit-city" value={player?.city || "-"} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Player Level</Label>
-              <Select value={player?.playerLevel || ""} disabled>
-                <SelectTrigger className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80"><SelectValue placeholder="-" /></SelectTrigger>
-                <SelectContent className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                  <SelectItem value="Professional">Professional</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-jerseySize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Size</Label>
-              <Input id="edit-jerseySize" value={player?.jerseySize || "-"} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-            </div>
-
-            {isBniAuction && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-jerseyName" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Name</Label>
-                  <Input id="edit-jerseyName" value={player?.jerseyName || "-"} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-trouserSize" className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Jersey Number</Label>
-                  <Input id="edit-trouserSize" value={player?.trouserSize || "-"} disabled className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Number of BBL seasons played</Label>
-                  <Select value={bblSeasons} disabled>
-                    <SelectTrigger className="rounded-xl border-[#5c6875]/30 bg-[#2e343a]/50 text-[#fffcf7] disabled:opacity-80"><SelectValue placeholder="-" /></SelectTrigger>
-                    <SelectContent className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
-                      {Array.from({ length: 9 }).map((_, i) => (
-                        <SelectItem key={i} value={String(i)}>{i}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-            
-            {/* BNI Membership Details */}
-            {isBniAuction && memberType && (
-              <div className="sm:col-span-2 rounded-2xl border border-[#5c6875]/30 p-4 bg-[#2e343a]/40 space-y-3 mt-2 text-[#fffcf7]">
-                <h4 className="font-bold text-sm text-[#fffcf7]">Membership Details</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-[#abb4bd] block text-xs">Member Type</span>
-                    <span className="font-bold capitalize text-[#a1b5d8]">{memberType} Member</span>
-                  </div>
-                  <div>
-                    <span className="text-[#abb4bd] block text-xs">Chapter Name</span>
-                    <span className="font-medium text-[#fffcf7]">{chapterName || "-"}</span>
-                  </div>
-                  {memberType === "family" && (
-                    <>
-                      <div>
-                        <span className="text-[#abb4bd] block text-xs">BNI Name</span>
-                        <span className="font-medium text-[#fffcf7]">{bniName || "-"}</span>
-                      </div>
-                      <div>
-                        <span className="text-[#abb4bd] block text-xs">Relationship</span>
-                        <span className="font-medium capitalize text-[#fffcf7]">{relationship || "-"}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Payment screenshot preview for non-BNI */}
-            {!isBniAuction && player?.paymentImage && (
-              <div className="sm:col-span-2 flex flex-col items-center justify-center space-y-2 mt-4">
-                <Label className="text-xs font-bold uppercase tracking-wider text-[#abb4bd]">Payment Screenshot</Label>
-                <div className="max-w-xs border border-[#5c6875]/40 rounded-2xl overflow-hidden bg-[#171a1d] p-1 shadow-sm">
-                  <img 
-                    src={player.paymentImage} 
-                    alt="Payment screenshot" 
-                    className="w-full h-auto object-contain max-h-48 rounded-xl cursor-pointer hover:opacity-95 transition-opacity"
-                    onClick={() => window.open(player.paymentImage!, "_blank")}
-                    title="Click to view full screenshot" 
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter className="mt-4 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
-              className="rounded-full border border-[#5c6875]/50 bg-[#171a1d]/80 text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] hover:border-[#a1b5d8]/60 transition-all font-bold px-6 shadow-sm"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="rounded-full px-7 py-2.5 font-black text-xs text-[#162235] bg-gradient-to-r from-[#6c8cc2] via-[#a1b5d8] to-[#c2d8b9] hover:from-[#a1b5d8] hover:to-[#c2d8b9] shadow-md"
-            >
-              {isSaving ? "Saving..." : "Save Grade"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }

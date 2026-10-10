@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield, RotateCcw, Search, X, Loader2, Check } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield, RotateCcw, Search, X, Loader2, Check, Award } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import * as XLSX from "xlsx";
@@ -37,6 +37,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { TeamFormModal } from "@/components/auction/TeamFormModal";
 import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
+import { EditGradeModal } from "@/components/auction/EditGradeModal";
 import { PlayerPreviewCard } from "@/components/auction/PlayerPreviewCard";
 import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
 import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeDialog";
@@ -92,6 +93,7 @@ function ManageAuctionPage() {
   const { players, isPending: playersPending, deletePlayer, updatePlayer } = usePlayers(auction.id);
   const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
   const [editPlayerId, setEditPlayerId] = useState<string | null>(null);
+  const [gradeModalPlayer, setGradeModalPlayer] = useState<Player | null>(null);
   const [previewPlayerId, setPreviewPlayerId] = useState<string | null>(null);
   const [changeTeamPlayer, setChangeTeamPlayer] = useState<Player | null>(null);
   const [playerStatusFilter, setPlayerStatusFilter] = useState<"all" | "pending" | "sold" | "unsold">("all");
@@ -785,7 +787,18 @@ function ManageAuctionPage() {
                                 {player.sportFields?.["role"] || "-"}
                               </span>
                               <span className="text-[#abb4bd]">·</span>
-                              <span className="text-[#e3e6e9]">Grade {player.category || "-"}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setGradeModalPlayer(player);
+                                }}
+                                className="px-2.5 py-0.5 rounded-full bg-[#142630] border border-[#38bdf8]/60 text-[#38bdf8] hover:bg-[#38bdf8]/20 hover:text-[#ffffff] transition-all text-xs font-black uppercase flex items-center gap-1 cursor-pointer shadow-sm group/btn"
+                                title="Click to assign or change Grade (A+, A, B+, B, C)"
+                              >
+                                <Award className="size-3 text-[#38bdf8] group-hover/btn:scale-110 transition-transform" />
+                                <span>Grade {player.category || "-"}</span>
+                              </button>
                               <span className="text-[#abb4bd]">·</span>
                               <span className="text-[#a1b5d8]">Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}</span>
                               {player.gender && (
@@ -824,6 +837,9 @@ function ManageAuctionPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-2xl border border-[#5c6875]/40 bg-[#171a1d] text-[#fffcf7]">
+                        <DropdownMenuItem onSelect={() => setGradeModalPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer text-[#38bdf8]">
+                          <Award className="mr-2 size-4 text-[#38bdf8]" /> Assign / Edit Grade
+                        </DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer">
                           <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit player
                         </DropdownMenuItem>
@@ -858,6 +874,24 @@ function ManageAuctionPage() {
               );
             })
           )}
+            {/* Direct Grade editing modal */}
+            {gradeModalPlayer && (
+              <EditGradeModal
+                player={gradeModalPlayer}
+                open={!!gradeModalPlayer}
+                onOpenChange={(open) => {
+                  if (!open) setGradeModalPlayer(null);
+                }}
+                onSave={async (newGrade) => {
+                  if (gradeModalPlayer) {
+                    await updatePlayer({
+                      id: gradeModalPlayer.id,
+                      patch: { category: newGrade },
+                    });
+                  }
+                }}
+              />
+            )}
             {/* Only trigger player modal & API image fetch when editing a specific player */}
             {editPlayerId && (
               <PlayerFormModal

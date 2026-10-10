@@ -123,10 +123,42 @@ function applySheetStyles(
   ws["!cols"] = colWidths;
 }
 
+export const GRADE_ORDER_MAP: Record<string, number> = {
+  "A+": 1,
+  "A": 2,
+  "B+": 3,
+  "B": 4,
+  "C": 5,
+};
+
+export function getPlayerGradeRank(grade?: string | null): number {
+  if (!grade) return 999;
+  const clean = grade.trim().toUpperCase().replace(/\s+/g, "");
+  if (GRADE_ORDER_MAP[clean] !== undefined) {
+    return GRADE_ORDER_MAP[clean];
+  }
+  return 900;
+}
+
+export function sortPlayersByGrade(players: Player[]): Player[] {
+  return [...players].sort((a, b) => {
+    const rankA = getPlayerGradeRank(a.category);
+    const rankB = getPlayerGradeRank(b.category);
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+    if (a.sNo && b.sNo) return a.sNo - b.sNo;
+    return (a.name || "").localeCompare(b.name || "");
+  });
+}
+
 /**
  * Builds rows for players export with detected auction fields.
+ * Players are sorted strictly according to Grade: A+ -> A -> B+ -> B -> C -> No Grade.
  */
 function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
+  const sortedPlayers = sortPlayersByGrade(players);
+
   const isBniAuction =
     auction.id === "6a8edaddd7ed74151dbafab3" ||
     auction.name?.toLowerCase().includes("bni") ||
@@ -229,7 +261,7 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
     "Sold Price (Points)": "#,##0",
   };
 
-  const rows = players.map((p, index) => {
+  const rows = sortedPlayers.map((p, index) => {
     const isSold = Boolean(p.teamId || p.auctionRoundStatus === "sold");
     const isUnsold = p.auctionRoundStatus === "unsold";
     const statusText = isSold ? "Sold" : isUnsold ? "Unsold" : "Pending";
@@ -404,7 +436,7 @@ function buildTeamRosterRows(teams: Team[], players: Player[]) {
   const rows: Record<string, any>[] = [];
 
   teams.forEach((t) => {
-    const teamPlayers = players.filter((p) => p.teamId === t.id);
+    const teamPlayers = sortPlayersByGrade(players.filter((p) => p.teamId === t.id));
     if (teamPlayers.length === 0) {
       rows.push({
         "S.No": globalIndex++,
