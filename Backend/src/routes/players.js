@@ -279,6 +279,8 @@ router.patch(
       targetStatus = targetTeamId ? "sold" : "pending";
     }
 
+    let team = null;
+
     if (!targetTeamId || targetStatus === "unsold" || targetStatus === "pending") {
       player.teamId = null;
       player.soldPrice = null;
@@ -287,7 +289,7 @@ router.patch(
       const currentTeamId = player.teamId ? player.teamId.toString() : null;
       const nextTeamId = targetTeamId.toString();
 
-      const team = await Team.findOne({ _id: nextTeamId, auctionId: player.auctionId }).catch(() => null);
+      team = await Team.findOne({ _id: nextTeamId, auctionId: player.auctionId }).catch(() => null);
       if (!team) {
         return res.status(400).json({ error: "Team not found in this auction." });
       }
