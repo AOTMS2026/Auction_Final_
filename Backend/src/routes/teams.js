@@ -223,7 +223,9 @@ router.get(
     const totalPoints = auction.pointsPerTeam;
     const availablePoints = totalPoints - usedPoints;
     const totalPlayers = players.length;
-    const reservedPlayers = auction.playersPerTeam - totalPlayers;
+    const isTarget = auction._id.toString() === "6ac74cb2a099bf0bff1d2fd4";
+    const effectivePlayersPerTeam = isTarget ? 13 : (auction.playersPerTeam || 13);
+    const reservedPlayers = effectivePlayersPerTeam - totalPlayers;
     const maxBidPoints =
       reservedPlayers > 0
         ? Math.max(
