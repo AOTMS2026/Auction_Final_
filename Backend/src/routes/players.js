@@ -358,6 +358,9 @@ router.patch(
     await player.save();
 
     const publicPlayer = toPublicPlayer(player);
+    if (team) {
+      publicPlayer.teamName = team.name;
+    }
     const io = req.app.get("io");
     if (io) io.to(`auction:${player.auctionId}`).emit("playerUpdated", publicPlayer);
 

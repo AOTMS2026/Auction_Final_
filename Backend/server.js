@@ -39,7 +39,16 @@ app.set("io", io);
 
 io.on("connection", (socket) => {
   socket.on("join-auction", (auctionId) => {
-    if (auctionId) socket.join(`auction:${auctionId}`);
+    if (auctionId) {
+      socket.join(`auction:${auctionId}`);
+      console.log(`[socket] Client ${socket.id} joined auction:${auctionId}`);
+    }
+  });
+
+  socket.on("auction-event", ({ auctionId, event, data }) => {
+    if (auctionId && event) {
+      io.to(`auction:${auctionId}`).emit(event, data);
+    }
   });
 });
 

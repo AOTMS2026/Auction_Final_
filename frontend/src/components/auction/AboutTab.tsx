@@ -40,7 +40,9 @@ export function AboutTab({ auction, teams, players }: AboutTabProps) {
     }
   };
 
-  const auctionUrl = typeof window !== "undefined" ? `${window.location.origin}/auctions/${auction.id}` : "";
+  const publicAuctionUrl = typeof window !== "undefined" ? `${window.location.origin}/auctions/${auction.id}` : "";
+  const liveAuctionUrl = typeof window !== "undefined" ? `${window.location.origin}/my-auctions/${auction.id}/auctioneer?mode=live` : "";
+  const auctionUrl = liveAuctionUrl;
 
   return (
     <div className="space-y-4 text-[#fffcf7]">
@@ -181,7 +183,7 @@ export function AboutTab({ auction, teams, players }: AboutTabProps) {
             <QRCodeSVG value={auctionUrl} size={140} />
           </div>
           <div className="text-[#a1b5d8] font-black text-sm tracking-wider">{auction.id.slice(-6)}</div>
-          <div className="text-[11px] text-[#abb4bd] font-medium mt-0.5">Scan to open live auction room</div>
+          <div className="text-[11px] text-[#38bdf8] font-black mt-1">Scan to open live auction room (No Login Required)</div>
         </div>
       </div>
 

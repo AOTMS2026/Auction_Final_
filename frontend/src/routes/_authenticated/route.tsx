@@ -14,6 +14,10 @@ export const Route = createFileRoute("/_authenticated")({
     // see their token.
     if (typeof window === "undefined") return {};
     const user = await authClient.getCurrentUser();
+    // Allow public access to auctions overview and live auctioneer spectator room without asking login details
+    if (location.pathname.startsWith("/auctions/") || location.pathname.includes("/auctioneer")) {
+      return { user };
+    }
     if (!user) throw redirect({ to: "/auth", search: { next: location.pathname } });
     return { user };
   },

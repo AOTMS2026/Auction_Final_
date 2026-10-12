@@ -17,6 +17,7 @@ import { EditGradeModal } from "@/components/auction/EditGradeModal";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { auctionDetailQueryOptions, teamsQueryOptions } from "@/lib/queries/auctions";
 import { authClient } from "@/lib/auth-client";
+import { LiveTrackingRecordModal } from "@/components/auction/LiveTrackingRecordModal";
 import { computeTeamStats } from "@/lib/team-stats";
 import { exportAuctionPDF } from "@/lib/pdf-export";
 import { exportCompleteAuctionExcel } from "@/lib/excel-export";
@@ -39,9 +40,7 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/auctioneer
 
     const user = await authClient.getCurrentUser();
     const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
-    if (!user || (auction.createdBy !== user.id && !isAdmin && params.id !== "6ac74cb2a099bf0bff1d2fd4")) {
-      throw redirect({ to: "/my-auctions" });
-    }
+    const isAuctioneer = Boolean(user && (auction.createdBy === user.id || isAdmin || params.id === "6ac74cb2a099bf0bff1d2fd4"));
 
     // Preload teams and players concurrently for zero-latency instant rendering
     void Promise.all([
@@ -49,24 +48,41 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/auctioneer
       context.queryClient.prefetchQuery(playersQueryOptions(params.id)),
     ]);
 
-    return { auction };
+    return { auction, isAuctioneer };
   },
   component: AuctioneerConsole,
 });
 
 function AuctioneerConsole() {
-  const { auction } = Route.useLoaderData();
+  const { auction, isAuctioneer } = Route.useLoaderData();
   const { mode: modeParam } = Route.useSearch();
   const mode: "trial" | "live" = modeParam ?? (auction.status === "live" ? "live" : "trial");
-
-  useRealtimeUpdates(auction.id);
-
-  const { teams, isPending: teamsPending } = useTeams(auction.id);
-  const { players, isPending: playersPending, updatePlayer, refetch: refetchPlayers } = usePlayers(auction.id);
 
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [currentBid, setCurrentBid] = useState<number>(auction.minimumBid);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+
+  const { emitAuctionEvent } = useRealtimeUpdates(auction.id, {
+    enableToasts: true,
+    onStageUpdate: (data) => {
+      if (!isAuctioneer) {
+        if (data.currentPlayerId !== undefined) setCurrentPlayerId(data.currentPlayerId);
+        if (data.currentBid !== undefined) setCurrentBid(data.currentBid);
+        if (data.selectedTeamId !== undefined) setSelectedTeamId(data.selectedTeamId);
+      }
+    },
+    onBidUpdate: (data) => {
+      if (!isAuctioneer && data.bid) {
+        setCurrentBid(data.bid);
+      }
+    },
+  });
+
+  const { teams, isPending: teamsPending } = useTeams(auction.id);
+  const { players, isPending: playersPending, updatePlayer, refetch: refetchPlayers } = usePlayers(auction.id);
+
+
   const [selectionMode, setSelectionMode] = useState<"random" | "manual">("random");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerQuery, setPickerQuery] = useState("");
@@ -380,6 +396,13 @@ function AuctioneerConsole() {
   function handleTeamSelect(teamId: string) {
     if (selectedTeamId === teamId) return;
     setSelectedTeamId(teamId);
+    if (isAuctioneer) {
+      emitAuctionEvent("stageUpdate", {
+        currentPlayerId,
+        currentBid,
+        selectedTeamId: teamId,
+      });
+    }
   }
 
   // Auto-select initial random player on start if none is currently selected
@@ -595,12 +618,28 @@ function AuctioneerConsole() {
     setCurrentBid(initialBid);
 
     const referenceTeamId = soldTeamId !== undefined ? soldTeamId : lastSoldTeamId;
-    if (referenceTeamId && teams.length > 0) {
-      setSelectedTeamId(referenceTeamId);
-    } else {
-      setSelectedTeamId(null);
+    const finalTeamId = referenceTeamId && teams.length > 0 ? referenceTeamId : null;
+    setSelectedTeamId(finalTeamId);
+
+    if (isAuctioneer) {
+      emitAuctionEvent("stageUpdate", {
+        currentPlayerId: player.id,
+        currentBid: initialBid,
+        selectedTeamId: finalTeamId,
+      });
     }
   }
+
+  // Spectator fallback: if not auctioneer and no player selected yet, display the first available pending player
+  useEffect(() => {
+    if (!isAuctioneer && !currentPlayerId && players.length > 0) {
+      const pending = players.find((p) => effectiveStatus(p) === "pending");
+      if (pending) {
+        setCurrentPlayerId(pending.id);
+        setCurrentBid(pending.baseValue && pending.baseValue > 0 ? pending.baseValue : auction.minimumBid);
+      }
+    }
+  }, [isAuctioneer, currentPlayerId, players]);
 
   function handleNewPlayer() {
     if (selectionMode === "random" && currentPlayer) {
@@ -664,7 +703,17 @@ function AuctioneerConsole() {
 
   function handleBid(direction: 1 | -1) {
     const minBid = (currentPlayer?.baseValue && currentPlayer.baseValue > 0) ? currentPlayer.baseValue : auction.minimumBid;
-    setCurrentBid((prev) => Math.max(minBid, prev + direction * auction.bidIncrement));
+    const nextBid = Math.max(minBid, currentBid + direction * auction.bidIncrement);
+    setCurrentBid(nextBid);
+
+    if (isAuctioneer) {
+      const selectedTeam = teams.find((t) => t.id === selectedTeamId);
+      emitAuctionEvent("bidUpdate", {
+        bid: nextBid,
+        playerName: currentPlayer?.name,
+        teamName: selectedTeam?.name,
+      });
+    }
   }
 
   async function handleSold() {
@@ -706,6 +755,14 @@ function AuctioneerConsole() {
       });
     }
 
+    if (isAuctioneer) {
+      emitAuctionEvent("playerSold", {
+        player: currentPlayer,
+        teamName: selectedTeam?.name,
+        price: soldPrice,
+      });
+    }
+
     toast.success(`${currentPlayer.name} sold to ${selectedTeam?.name || "Team"} for 🪙 ${soldPrice.toLocaleString()}.`);
     setLastSoldTeamId(teamId);
     setActionHistory((prev) => [...prev, soldId]);
@@ -733,6 +790,12 @@ function AuctioneerConsole() {
           return next;
         });
         toast.error(error instanceof Error ? error.message : "Failed to mark unsold in database.");
+      });
+    }
+
+    if (isAuctioneer) {
+      emitAuctionEvent("playerUnsold", {
+        player: currentPlayer,
       });
     }
 
@@ -838,9 +901,14 @@ function AuctioneerConsole() {
             {auction.name}
           </h1>
 
-          {/* Prominent Mode Badge (Normal Mode vs Live Mode) */}
+          {/* Prominent Mode Badge (Spectator vs Normal vs Live) */}
           <div className="flex items-center">
-            {mode === "trial" ? (
+            {!isAuctioneer ? (
+              <span className="px-2.5 sm:px-3.5 py-1 rounded-full border-2 border-emerald-400 bg-emerald-950 text-emerald-300 text-[11px] sm:text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.5)] flex items-center gap-1.5 animate-pulse whitespace-nowrap">
+                <span className="size-2 rounded-full bg-emerald-400" />
+                👁️ Live Spectator View
+              </span>
+            ) : mode === "trial" ? (
               <span className="px-2.5 sm:px-3.5 py-1 rounded-full border-2 border-[#38bdf8] bg-[#162a34] text-[#38bdf8] text-[11px] sm:text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(56,189,248,0.45)] whitespace-nowrap">
                 🧪 Normal Mode
               </span>
@@ -880,6 +948,21 @@ function AuctioneerConsole() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Live Tracking Record Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTrackingModalOpen(true)}
+            className="h-9 px-3.5 rounded-xl border-2 border-amber-500/60 bg-[#162235] text-amber-300 hover:bg-amber-500 hover:text-[#12222b] flex items-center gap-1.5 text-xs font-black transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] cursor-pointer"
+            title="Open Live Tracking Record (Sold & Unsold Player Log)"
+          >
+            <Gavel className="size-4 text-amber-400" />
+            <span className="hidden sm:inline">Tracking Record</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-[10px] font-black">
+              {soldCount + unsoldCount}
+            </span>
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
@@ -906,34 +989,39 @@ function AuctioneerConsole() {
             <FileText className="size-4" />
             <span className="hidden sm:inline">Export PDF</span>
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => {
-              if (window.confirm("Are you sure you want to undo the latest step?")) {
-                handleUndoLatestStep();
-              }
-            }}
-            className="text-red-400 hover:text-red-300 hover:bg-destructive/20 rounded-xl"
-            aria-label="Undo Latest Step"
-            title="Undo Latest Step"
-          >
-            <RotateCcw className="size-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => {
-              if (window.confirm("Are you sure you want to reset the auction and clear all sold players?")) {
-                handleResetAllPlayers();
-              }
-            }}
-            className="text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] rounded-xl"
-            aria-label="Reset Auction"
-            title="Reset Auction"
-          >
-            <RefreshCw className="size-5" />
-          </Button>
+
+          {isAuctioneer && (
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to undo the latest step?")) {
+                    handleUndoLatestStep();
+                  }
+                }}
+                className="text-red-400 hover:text-red-300 hover:bg-destructive/20 rounded-xl"
+                aria-label="Undo Latest Step"
+                title="Undo Latest Step"
+              >
+                <RotateCcw className="size-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to reset the auction and clear all sold players?")) {
+                    handleResetAllPlayers();
+                  }
+                }}
+                className="text-[#abb4bd] hover:text-[#fffcf7] hover:bg-[#2e343a] rounded-xl"
+                aria-label="Reset Auction"
+                title="Reset Auction"
+              >
+                <RefreshCw className="size-5" />
+              </Button>
+            </>
+          )}
         </div>
       </header>
 
@@ -1097,132 +1185,186 @@ function AuctioneerConsole() {
       {/* Bottom Controls Row */}
       <div className="shrink-0 border-t border-[#38bdf8]/40 bg-[#142630]/98 backdrop-blur-xl p-3 select-none text-[#ffffff]">
         <div className="mx-auto max-w-[1800px] w-full flex items-center justify-between gap-4">
-          
-          {/* New Player Mode & Button */}
-          <div className="flex items-center gap-3 bg-[#162a34] border-2 border-[#38bdf8]/40 p-2 rounded-2xl shrink-0">
-            <div className="flex flex-col items-center gap-1.5 border-r border-[#38bdf8]/30 pr-3">
-              <span className="text-[9px] font-black uppercase tracking-wider text-[#38bdf8] leading-none">New Player Mode</span>
-              <div className="flex gap-1 w-36">
+          {!isAuctioneer ? (
+            /* Live Spectator Arena Bar */
+            <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3 py-1">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500/70 flex items-center justify-center text-emerald-400 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                  <span className="size-3 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-black text-white flex items-center gap-2">
+                    <span>🔴 LIVE SPECTATOR ARENA</span>
+                    <span className="text-[10px] text-emerald-300 font-black bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/50">
+                      Real-time Zero Refresh Sync Active
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#38bdf8] font-bold mt-0.5">
+                    Live bidding, sold & unsold player tracking updating automatically across all screens.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+                <Button
+                  onClick={() => setTrackingModalOpen(true)}
+                  className="h-10 px-5 rounded-xl font-black text-xs text-white bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30 flex items-center gap-2 cursor-pointer"
+                >
+                  <Gavel className="size-4" />
+                  <span>Open Tracking Record ({soldCount + unsoldCount})</span>
+                </Button>
+
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectionMode("random");
-                    reshuffleQueue(currentPlayerId || undefined);
-                  }}
-                  className={cn(
-                    "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
-                    selectionMode === "random"
-                      ? "bg-[#38bdf8] text-[#142630] border-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.5)] font-black"
-                      : "bg-[#142630] text-[#f2e9dc]/70 border-[#38bdf8]/30 hover:bg-[#1a3847] hover:text-[#ffffff]",
-                  )}
-                  title="Random Selection"
+                  onClick={() => setViewingStatusList("sold")}
+                  className="rounded-xl bg-[#23341d] hover:bg-[#2e4526] h-10 px-4 text-[#c2d8b9] border border-[#47673a] text-xs font-black cursor-pointer shadow-sm hover:scale-105 transition-all"
                 >
-                  <Shuffle className="size-3" />
-                  Random
+                  Sold {soldCount}
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectionMode("manual");
-                    if (pendingPlayers.length === 0 && unsoldCount > 0) {
-                      setPickerTab("unsold");
-                    }
-                  }}
-                  className={cn(
-                    "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
-                    selectionMode === "manual"
-                      ? "bg-[#38bdf8] text-[#142630] border-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.5)] font-black"
-                      : "bg-[#142630] text-[#f2e9dc]/70 border-[#38bdf8]/30 hover:bg-[#1a3847] hover:text-[#ffffff]",
-                  )}
-                  title="Manual Selection"
+                  onClick={() => setViewingStatusList("unsold")}
+                  className="rounded-xl bg-[#45191f] hover:bg-[#5a2128] h-10 px-4 text-[#fca5a5] border border-[#8b2635] text-xs font-black cursor-pointer shadow-sm hover:scale-105 transition-all"
                 >
-                  <SquareMousePointer className="size-3" />
-                  Manual
+                  Unsold {unsoldCount}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingStatusList("pending")}
+                  className="rounded-xl bg-[#162235] hover:bg-[#1d2f4a] h-10 px-4 text-[#a1b5d8] border border-[#4365a0] text-xs font-black cursor-pointer shadow-sm hover:scale-105 transition-all"
+                >
+                  Available {pendingPlayers.length}
                 </button>
               </div>
             </div>
-            <Button
-              className={cn(
-                "rounded-xl px-5 h-9 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30 shrink-0",
-                selectionMode === "random" && !!currentPlayer && "opacity-50 cursor-not-allowed"
-              )}
-              disabled={selectionMode === "random" && !!currentPlayer}
-              onClick={handleNewPlayer}
-            >
-              New Player
-            </Button>
-          </div>
+          ) : (
+            <>
+              {/* New Player Mode & Button */}
+              <div className="flex items-center gap-3 bg-[#162a34] border-2 border-[#38bdf8]/40 p-2 rounded-2xl shrink-0">
+                <div className="flex flex-col items-center gap-1.5 border-r border-[#38bdf8]/30 pr-3">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-[#38bdf8] leading-none">New Player Mode</span>
+                  <div className="flex gap-1 w-36">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectionMode("random");
+                        reshuffleQueue(currentPlayerId || undefined);
+                      }}
+                      className={cn(
+                        "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
+                        selectionMode === "random"
+                          ? "bg-[#38bdf8] text-[#142630] border-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.5)] font-black"
+                          : "bg-[#142630] text-[#f2e9dc]/70 border-[#38bdf8]/30 hover:bg-[#1a3847] hover:text-[#ffffff]",
+                      )}
+                      title="Random Selection"
+                    >
+                      <Shuffle className="size-3" />
+                      Random
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectionMode("manual");
+                        if (pendingPlayers.length === 0 && unsoldCount > 0) {
+                          setPickerTab("unsold");
+                        }
+                      }}
+                      className={cn(
+                        "rounded-xl p-1.5 transition-all border flex-1 flex items-center justify-center gap-1 text-[10px] font-black cursor-pointer",
+                        selectionMode === "manual"
+                          ? "bg-[#38bdf8] text-[#142630] border-[#38bdf8] shadow-[0_0_12px_rgba(56,189,248,0.5)] font-black"
+                          : "bg-[#142630] text-[#f2e9dc]/70 border-[#38bdf8]/30 hover:bg-[#1a3847] hover:text-[#ffffff]",
+                      )}
+                      title="Manual Selection"
+                    >
+                      <SquareMousePointer className="size-3" />
+                      Manual
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  className={cn(
+                    "rounded-xl px-5 h-9 font-black text-xs text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.65)] hover:scale-105 transition-all border border-white/30 shrink-0",
+                    selectionMode === "random" && !!currentPlayer && "opacity-50 cursor-not-allowed"
+                  )}
+                  disabled={selectionMode === "random" && !!currentPlayer}
+                  onClick={handleNewPlayer}
+                >
+                  New Player
+                </Button>
+              </div>
 
-          {/* Bid Controls (Horizontal Flex) */}
-          <div className="flex-1 flex items-center gap-3 justify-center max-w-[680px]">
-            <Button 
-              variant="outline" 
-              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] hover:border-[#38bdf8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
-              disabled={!currentPlayer} 
-              onClick={() => handleBid(1)}
-            >
-              <Plus className="size-4 text-[#38bdf8]" /> Bid Up
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] hover:border-[#38bdf8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
-              disabled={!currentPlayer} 
-              onClick={() => handleBid(-1)}
-            >
-              <Minus className="size-4 text-[#38bdf8]" /> Bid Down
-            </Button>
-            
-            <div className="h-6 w-px bg-[#38bdf8]/40 mx-1" />
+              {/* Bid Controls (Horizontal Flex) */}
+              <div className="flex-1 flex items-center gap-3 justify-center max-w-[680px]">
+                <Button 
+                  variant="outline" 
+                  className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] hover:border-[#38bdf8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+                  disabled={!currentPlayer} 
+                  onClick={() => handleBid(1)}
+                >
+                  <Plus className="size-4 text-[#38bdf8]" /> Bid Up
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-10 flex-1 max-w-[160px] text-xs sm:text-sm font-black rounded-xl shadow-md border-2 border-[#38bdf8]/60 bg-[#162a34] text-[#ffffff] hover:bg-[#204554] hover:border-[#38bdf8] flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer" 
+                  disabled={!currentPlayer} 
+                  onClick={() => handleBid(-1)}
+                >
+                  <Minus className="size-4 text-[#38bdf8]" /> Bid Down
+                </Button>
+                
+                <div className="h-6 w-px bg-[#38bdf8]/40 mx-1" />
 
-            <Button
-              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-xl shadow-[0_0_25px_rgba(16,185,129,0.55)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer"
-              disabled={!currentPlayer}
-              onClick={handleSold}
-            >
-              <Gavel className="size-4" /> Sold
-            </Button>
-            <Button 
-              variant="destructive" 
-              className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-rose-600 via-rose-500 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-xl shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer" 
-              disabled={!currentPlayer} 
-              onClick={handleUnsold}
-            >
-              <X className="size-4" /> Unsold
-            </Button>
-          </div>
+                <Button
+                  className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-xl shadow-[0_0_25px_rgba(16,185,129,0.55)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer"
+                  disabled={!currentPlayer}
+                  onClick={handleSold}
+                >
+                  <Gavel className="size-4" /> Sold
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-rose-600 via-rose-500 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-xl shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer" 
+                  disabled={!currentPlayer} 
+                  onClick={handleUnsold}
+                >
+                  <X className="size-4" /> Unsold
+                </Button>
+              </div>
 
-          {/* Statistics (Horizontal Row) */}
-          <div className="flex items-center gap-2.5 border-l border-[#5c6875]/40 pl-4 shrink-0">
-            <div className="flex flex-col gap-1.5 w-48 sm:w-56">
-              <button 
-                type="button"
-                onClick={() => setViewingStatusList("sold")}
-                className="rounded-full bg-[#23341d]/85 hover:bg-[#23341d] h-9 px-4 text-[#c2d8b9] border border-[#47673a] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
-              >
-                Sold {soldCount}
-              </button>
-              <button 
-                type="button"
-                onClick={() => setViewingStatusList("unsold")}
-                className="rounded-full bg-[#45191f]/85 hover:bg-[#45191f] h-9 px-4 text-[#fca5a5] border border-[#8b2635] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
-              >
-                Unsold {unsoldCount}
-              </button>
-            </div>
-            <div className="flex flex-col gap-1.5 w-48 sm:w-56">
-              <button 
-                type="button"
-                onClick={() => setViewingStatusList("pending")}
-                className="rounded-full bg-[#162235]/90 hover:bg-[#162235] h-9 px-4 text-[#a1b5d8] border border-[#4365a0] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
-              >
-                Available {pendingPlayers.length}
-              </button>
-              <span className="rounded-full bg-[#2e343a]/80 h-9 px-4 text-[#fffcf7] border border-[#5c6875]/40 select-none text-xs sm:text-sm font-black text-center flex items-center justify-center shadow-sm">
-                Team {teams.length}
-              </span>
-            </div>
-          </div>
-          
+              {/* Statistics (Horizontal Row) */}
+              <div className="flex items-center gap-2.5 border-l border-[#5c6875]/40 pl-4 shrink-0">
+                <div className="flex flex-col gap-1.5 w-48 sm:w-56">
+                  <button 
+                    type="button"
+                    onClick={() => setViewingStatusList("sold")}
+                    className="rounded-full bg-[#23341d]/85 hover:bg-[#23341d] h-9 px-4 text-[#c2d8b9] border border-[#47673a] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
+                  >
+                    Sold {soldCount}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setViewingStatusList("unsold")}
+                    className="rounded-full bg-[#45191f]/85 hover:bg-[#45191f] h-9 px-4 text-[#fca5a5] border border-[#8b2635] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
+                  >
+                    Unsold {unsoldCount}
+                  </button>
+                </div>
+                <div className="flex flex-col gap-1.5 w-48 sm:w-56">
+                  <button 
+                    type="button"
+                    onClick={() => setViewingStatusList("pending")}
+                    className="rounded-full bg-[#162235]/90 hover:bg-[#162235] h-9 px-4 text-[#a1b5d8] border border-[#4365a0] active:scale-95 transition-all text-xs sm:text-sm font-black cursor-pointer text-center flex items-center justify-center shadow-sm"
+                  >
+                    Available {pendingPlayers.length}
+                  </button>
+                  <span className="rounded-full bg-[#2e343a]/80 h-9 px-4 text-[#fffcf7] border border-[#5c6875]/40 select-none text-xs sm:text-sm font-black text-center flex items-center justify-center shadow-sm">
+                    Team {teams.length}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -1740,6 +1882,15 @@ function AuctioneerConsole() {
           }}
         />
       )}
+
+      <LiveTrackingRecordModal
+        open={trackingModalOpen}
+        onOpenChange={setTrackingModalOpen}
+        players={effectivePlayers}
+        teams={orderedTeams.length > 0 ? orderedTeams : teams}
+        auction={auction}
+        isAuctioneer={isAuctioneer}
+      />
     </>
   );
 }

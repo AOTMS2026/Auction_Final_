@@ -45,6 +45,8 @@ import { Countdown } from "@/components/auction/Countdown";
 import { AboutTab } from "@/components/auction/AboutTab";
 import { exportAuctionPDF } from "@/lib/pdf-export";
 import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
+import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
+import { LiveTrackingRecordModal } from "@/components/auction/LiveTrackingRecordModal";
 
 export const Route = createFileRoute("/_authenticated/my-auctions/$id/")({
   loader: async ({ params, context }) => {
@@ -79,9 +81,11 @@ function ManageAuctionPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("TEAMS");
+  useRealtimeUpdates(auction.id);
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const formatNum = formatPoints;
 
   // Teams logic
@@ -313,6 +317,15 @@ function ManageAuctionPage() {
               >
                 <FileSpreadsheet className="size-4 text-emerald-400" />
                 Auction Results Excel
+              </Button>
+              <Button
+                onClick={() => setTrackingModalOpen(true)}
+                variant="outline"
+                className="rounded-full border border-amber-500/60 bg-amber-950/70 text-amber-300 hover:bg-amber-600 hover:text-white font-extrabold text-xs gap-1.5 transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] cursor-pointer"
+                title="View Live Tracking Record (Sold & Unsold Players Log)"
+              >
+                <Gavel className="size-4 text-amber-400" />
+                Live Tracking Record ({soldPlayersCount + unsoldPlayersCount})
               </Button>
               <Button
                 onClick={handleExportPDF}
@@ -1044,6 +1057,14 @@ function ManageAuctionPage() {
           </Button>
         </div>
       </div>
+
+      <LiveTrackingRecordModal
+        open={trackingModalOpen}
+        onOpenChange={setTrackingModalOpen}
+        players={players || []}
+        teams={teams || []}
+        auction={auction}
+      />
     </div>
   );
 }

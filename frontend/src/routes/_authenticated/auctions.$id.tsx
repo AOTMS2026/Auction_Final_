@@ -39,6 +39,7 @@ import { PlayerFormModal } from "@/components/auction/PlayerFormModal";
 import { EditGradeModal } from "@/components/auction/EditGradeModal";
 import { ChangePlayerTeamModal } from "@/components/auction/ChangePlayerTeamModal";
 import { ChooseAuctionModeDialog } from "@/components/auction/ChooseAuctionModeDialog";
+import { LiveTrackingRecordModal } from "@/components/auction/LiveTrackingRecordModal";
 
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
@@ -207,6 +208,7 @@ function AuctionDetailPage() {
   const [isRepeatingUnsold, setIsRepeatingUnsold] = useState(false);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
 
   // Teams CRUD states
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
@@ -393,6 +395,15 @@ function AuctionDetailPage() {
                 ) : (
                   "Start Auction"
                 )}
+              </Button>
+              <Button
+                onClick={() => setTrackingModalOpen(true)}
+                variant="outline"
+                className="rounded-full border border-amber-500/50 bg-amber-950/70 text-amber-300 hover:bg-amber-600 hover:text-white font-bold text-xs gap-1.5 transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] cursor-pointer"
+                title="View Live Tracking Record (Sold & Unsold Players Log)"
+              >
+                <Gavel className="size-4 text-amber-400" />
+                Live Tracking Record ({soldPlayersCount + unsoldPlayersCount})
               </Button>
               <Button
                 onClick={() => {
@@ -1269,6 +1280,14 @@ function AuctionDetailPage() {
         onOpenChange={(open) => !open && setEditPlayer(null)}
         onSave={handleSaveGrade}
         isSaving={playersUpdating}
+      />
+
+      <LiveTrackingRecordModal
+        open={trackingModalOpen}
+        onOpenChange={setTrackingModalOpen}
+        players={players || []}
+        teams={teams || []}
+        auction={auction}
       />
     </div>
   );
