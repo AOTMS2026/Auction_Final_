@@ -722,11 +722,21 @@ function AuctioneerConsole() {
       toast.error("Select a team first.");
       return;
     }
-    // Guard roster count
+    // Guard roster count & budget constraints
     const selectedTeam = teams.find((t) => t.id === selectedTeamId);
     const selectedTeamStats = teamStatsMap.get(selectedTeamId);
-    if (selectedTeam && selectedTeamStats && selectedTeamStats.reservedPlayers <= 0) {
-      toast.error("Max team reached");
+    if (!selectedTeam) {
+      toast.error("Please select a team first.");
+      return;
+    }
+    if (selectedTeamStats && selectedTeamStats.reservedPlayers <= 0) {
+      toast.error(`Cannot sell! ${selectedTeam.name} roster is already full.`);
+      return;
+    }
+    if (selectedTeamStats && currentBid > selectedTeamStats.maxBidPoints) {
+      toast.error(
+        `Cannot sell! Current bid of 🪙 ${currentBid.toLocaleString()} exceeds ${selectedTeam.name}'s max allowed bid of 🪙 ${selectedTeamStats.maxBidPoints.toLocaleString()} (Purse: 🪙 ${selectedTeamStats.availablePoints.toLocaleString()}).`
+      );
       return;
     }
 
@@ -1132,6 +1142,7 @@ function AuctioneerConsole() {
                   team={team}
                   stats={teamStatsMap.get(team.id) || computeTeamStats(team, effectivePlayers, auction)}
                   selected={selectedTeamId === team.id}
+                  currentBid={currentBid}
                   onSelect={() => handleTeamSelect(team.id)}
                   onViewPlayers={() => setViewingTeamId(team.id)}
                   draggable
@@ -1315,13 +1326,36 @@ function AuctioneerConsole() {
                 
                 <div className="h-6 w-px bg-[#38bdf8]/40 mx-1" />
 
-                <Button
-                  className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-xl shadow-[0_0_25px_rgba(16,185,129,0.55)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer"
-                  disabled={!currentPlayer}
-                  onClick={handleSold}
-                >
-                  <Gavel className="size-4" /> Sold
-                </Button>
+                {(() => {
+                  const currentSelectedTeamStats = selectedTeamId ? teamStatsMap.get(selectedTeamId) : null;
+                  const isBidExceedingMax = Boolean(currentSelectedTeamStats && currentBid > currentSelectedTeamStats.maxBidPoints);
+                  const isSelectedTeamFull = Boolean(currentSelectedTeamStats && currentSelectedTeamStats.reservedPlayers <= 0);
+                  const canSellPlayer = Boolean(currentPlayer && selectedTeamId && !isBidExceedingMax && !isSelectedTeamFull);
+
+                  return (
+                    <Button
+                      className={cn(
+                        "h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black rounded-xl border border-white/30 transition-all flex items-center justify-center gap-1.5 active:scale-95",
+                        !canSellPlayer
+                          ? "bg-slate-700/60 text-slate-400 border-slate-600/40 opacity-50 cursor-not-allowed shadow-none"
+                          : "bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-[0_0_25px_rgba(16,185,129,0.55)] hover:scale-105 cursor-pointer"
+                      )}
+                      disabled={!canSellPlayer}
+                      onClick={handleSold}
+                      title={
+                        isBidExceedingMax
+                          ? `Bid (🪙 ${currentBid.toLocaleString()}) exceeds team max allowed bid of 🪙 ${currentSelectedTeamStats?.maxBidPoints.toLocaleString()}`
+                          : isSelectedTeamFull
+                          ? "Selected team roster is full"
+                          : !selectedTeamId
+                          ? "Select a team first"
+                          : "Sell player to selected team"
+                      }
+                    >
+                      <Gavel className="size-4" /> Sold
+                    </Button>
+                  );
+                })()}
                 <Button 
                   variant="destructive" 
                   className="h-10 flex-1 max-w-[180px] text-xs sm:text-sm font-black bg-gradient-to-r from-rose-600 via-rose-500 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-xl shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:scale-105 flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-white/30 cursor-pointer" 
