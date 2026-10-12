@@ -41,9 +41,19 @@ export function CurrentPlayerCard({
     (v): v is string => typeof v === "string" && v.trim().length > 0,
   );
 
-  const statsLine = config.stats
-    .map((stat) => `${stat[0]}: ${player.sportFields?.[stat] ?? 0}`)
-    .join("  |  ");
+  const isTargetAuction =
+    player.auctionId === "6ac74cb2a099bf0bff1d2fd4" ||
+    (typeof window !== "undefined" && window.location.pathname.includes("6ac74cb2a099bf0bff1d2fd4"));
+
+  const hasNonZeroStats = config.stats.some(
+    (stat) => Number(player.sportFields?.[stat] ?? 0) > 0
+  );
+
+  const statsLine = (!isTargetAuction && hasNonZeroStats)
+    ? config.stats
+        .map((stat) => `${stat[0]}: ${player.sportFields?.[stat] ?? 0}`)
+        .join("  |  ")
+    : null;
 
   const isDummyPhone = player.phone.startsWith("90000000");
   const playerNumber = isDummyPhone ? parseInt(player.phone.slice(8)) : null;
@@ -164,16 +174,23 @@ export function CurrentPlayerCard({
               })()}
             </span>
             {/* Chapter Name Badge (Green Box) */}
-            <span className="rounded-xl bg-emerald-950/80 border-2 border-emerald-500/60 text-emerald-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
-              Chapter: {(() => {
-                let ch = (player.sportFields?.["chapter"] || player.sportFields?.["Chapter"] || "") as string;
-                if (!ch && player.customData) {
-                  const match = player.customData.match(/Chapter:\s*([^,|]+)/i) || player.customData.match(/Chapter\s*-\s*([^,|]+)/i);
-                  if (match?.[1]) ch = match[1].trim();
-                }
-                return ch || (player.city ? (player.city.charAt(0).toUpperCase() + player.city.slice(1)) : "-");
-              })()}
-            </span>
+            {(() => {
+              if (isTargetAuction) return null;
+              let ch = (player.sportFields?.["chapter"] || player.sportFields?.["Chapter"] || "") as string;
+              if (!ch && player.customData) {
+                const match = player.customData.match(/Chapter:\s*([^,|]+)/i) || player.customData.match(/Chapter\s*-\s*([^,|]+)/i);
+                if (match?.[1]) ch = match[1].trim();
+              }
+              if (!ch && player.city) {
+                ch = player.city.trim();
+              }
+              if (!ch || ch === "-") return null;
+              return (
+                <span className="rounded-xl bg-emerald-950/80 border-2 border-emerald-500/60 text-emerald-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
+                  Chapter: {ch.charAt(0).toUpperCase() + ch.slice(1)}
+                </span>
+              );
+            })()}
             {/* Additional Spec Badges (Filtered for duplicates) */}
             {config.specs
               .map((spec) => player.sportFields?.[spec])

@@ -25,16 +25,16 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
   // Check if auction has Chapter data or specific auction 6a8edaddd7ed74151dbafab3
   const auctionIdStr = String(auction.id || (auction as any)._id || "").toLowerCase();
   const hasChapterColumn =
-    auctionIdStr.includes("6a8edaddd7ed74151dbafab3") ||
-    auction.name?.toLowerCase().includes("bni") ||
-    auction.name?.toLowerCase().includes("bbl") ||
-    players.some(
-      (p) =>
-        Boolean(p.customData?.toLowerCase().includes("chapter")) ||
-        Boolean(p.sportFields?.["chapter"]) ||
-        Boolean(p.sportFields?.["Chapter"]) ||
-        Boolean(p.city && p.city.trim() !== "")
-    );
+    !auctionIdStr.includes("6ac74cb2a099bf0bff1d2fd4") &&
+    (auctionIdStr.includes("6a8edaddd7ed74151dbafab3") ||
+      auction.name?.toLowerCase().includes("bni") ||
+      auction.name?.toLowerCase().includes("bbl") ||
+      players.some(
+        (p) =>
+          Boolean(p.customData?.toLowerCase().includes("chapter")) ||
+          Boolean(p.sportFields?.["chapter"]) ||
+          Boolean(p.sportFields?.["Chapter"])
+      ));
 
   function getChapterName(p: Player): string {
     let ch = (p.sportFields?.["chapter"] || p.sportFields?.["Chapter"] || "") as string;

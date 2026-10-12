@@ -198,9 +198,10 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
   // BNI checks
   const hasBniMembership = isBniAuction || players.some((p) => p.customData?.includes("BNI Member") || p.customData?.includes("Family Member"));
   const hasChapter =
-    auction.id === "6a8edaddd7ed74151dbafab3" ||
-    isBniAuction ||
-    players.some((p) => p.customData?.includes("Chapter:") || p.sportFields?.["chapter"] || p.sportFields?.["Chapter"] || p.city);
+    auction.id !== "6ac74cb2a099bf0bff1d2fd4" &&
+    (auction.id === "6a8edaddd7ed74151dbafab3" ||
+      isBniAuction ||
+      players.some((p) => p.customData?.includes("Chapter:") || p.sportFields?.["chapter"] || p.sportFields?.["Chapter"]));
 
   // Active sport keys
   const activeSportKeys: string[] = [];
