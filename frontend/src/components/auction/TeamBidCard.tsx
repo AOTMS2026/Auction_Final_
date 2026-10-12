@@ -82,7 +82,7 @@ export function TeamBidCard({
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-bold text-[#f2e9dc]/70 truncate">
-          <span>Sold: <span className="text-[#ffffff] font-black">{stats.totalPlayers}</span></span>
+          <span>Squad: <span className="text-[#ffffff] font-black">{stats.totalPlayers}/{stats.totalPlayers + stats.reservedPlayers}</span></span>
           <span className="text-[#38bdf8]/40 font-normal">•</span>
           <span>Left: <span className="text-[#f97316] font-black">{stats.reservedPlayers}</span></span>
         </div>

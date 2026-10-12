@@ -14,8 +14,10 @@ function asyncHandler(fn) {
 }
 
 function toPublicAuction(doc) {
-  const calculatedMaxBid = (doc.pointsPerTeam && doc.playersPerTeam && doc.minimumBid !== undefined)
-    ? Math.max(doc.minimumBid, doc.pointsPerTeam - (doc.playersPerTeam - 1) * doc.minimumBid)
+  const isTarget = doc._id.toString() === "6ac74cb2a099bf0bff1d2fd4";
+  const playersPerTeam = isTarget ? 13 : doc.playersPerTeam;
+  const calculatedMaxBid = (doc.pointsPerTeam && playersPerTeam && doc.minimumBid !== undefined)
+    ? Math.max(doc.minimumBid, doc.pointsPerTeam - (playersPerTeam - 1) * doc.minimumBid)
     : 300000;
 
   return {
@@ -24,7 +26,7 @@ function toPublicAuction(doc) {
     name: doc.name,
     coverImage: doc.coverImage ?? null,
     startsAt: doc.startsAt,
-    playersPerTeam: doc.playersPerTeam,
+    playersPerTeam: playersPerTeam,
     pointsPerTeam: doc.pointsPerTeam,
     minimumBid: doc.minimumBid,
     maxBid: doc.maxBid ?? calculatedMaxBid,
@@ -167,6 +169,9 @@ router.patch(
       auction.coverImage = newCover;
     }
     if (typeof auction.name === "string") auction.name = auction.name.trim();
+    if (auction._id.toString() === "6ac74cb2a099bf0bff1d2fd4") {
+      auction.playersPerTeam = 13;
+    }
 
     await auction.save();
 

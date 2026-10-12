@@ -141,6 +141,30 @@ export function AboutTab({ auction, teams, players }: AboutTabProps) {
         </div>
 
         <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#171a1d]/40 border border-[#5c6875]/20">
+          <div className="bg-[#162235] p-2 rounded-xl text-[#38bdf8] shrink-0 border border-[#38bdf8]/30">
+            <Users className="size-4 text-[#38bdf8]" />
+          </div>
+          <div>
+            <div className="text-[10px] text-[#abb4bd] uppercase tracking-wider font-bold">Members / Team</div>
+            <div className="text-sm font-black text-[#38bdf8]">
+              {auction.playersPerTeam || 13} <span className="text-[10px] text-amber-400 font-extrabold">(Mandatory)</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#171a1d]/40 border border-[#5c6875]/20">
+          <div className="bg-[#162235] p-2 rounded-xl text-emerald-300 shrink-0 border border-emerald-400/30">
+            <Award className="size-4 text-emerald-400" />
+          </div>
+          <div>
+            <div className="text-[10px] text-[#abb4bd] uppercase tracking-wider font-bold">Max Bid / Player</div>
+            <div className="text-sm font-black text-emerald-300">
+              🪙 {(auction.maxBid || 40000).toLocaleString("en-IN")}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#171a1d]/40 border border-[#5c6875]/20">
           <div className="bg-[#162235] p-2 rounded-xl text-[#c2d8b9] shrink-0 border border-[#c2d8b9]/30">
             <Settings className="size-4" />
           </div>
