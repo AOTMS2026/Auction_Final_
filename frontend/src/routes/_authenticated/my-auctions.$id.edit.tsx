@@ -113,4 +113,3 @@ function EditAuctionPage() {
   );
 }
 
-export default EditAuctionPage;

@@ -184,4 +184,3 @@ function TeamDetailsPage() {
   );
 }
 
-export default TeamDetailsPage;

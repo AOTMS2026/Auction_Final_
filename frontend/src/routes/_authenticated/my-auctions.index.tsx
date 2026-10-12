@@ -269,4 +269,3 @@ function MyAuctionsPage() {
   );
 }
 
-export default MyAuctionsPage;

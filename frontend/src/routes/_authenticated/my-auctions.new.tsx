@@ -83,4 +83,3 @@ function NewAuctionPage() {
   );
 }
 
-export default NewAuctionPage;
