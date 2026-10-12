@@ -13,11 +13,18 @@ export const Route = createFileRoute("/_authenticated")({
     // always redirect a signed-in user to /auth, since the server can never
     // see their token.
     if (typeof window === "undefined") return {};
-    const user = await authClient.getCurrentUser();
-    // Allow public access to auctions overview and live auctioneer spectator room without asking login details
-    if (location.pathname.startsWith("/auctions/") || location.pathname.includes("/auctioneer")) {
-      return { user };
+
+    // Completely bypass login requirement for any public spectator, live auction, or auctioneer routes
+    if (
+      location.pathname.startsWith("/live") ||
+      location.pathname.includes("live") ||
+      location.pathname.startsWith("/auctions") ||
+      location.pathname.includes("auctioneer")
+    ) {
+      return {};
     }
+
+    const user = await authClient.getCurrentUser();
     if (!user) throw redirect({ to: "/auth", search: { next: location.pathname } });
     return { user };
   },

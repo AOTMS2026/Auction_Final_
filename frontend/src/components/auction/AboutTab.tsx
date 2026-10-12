@@ -40,8 +40,8 @@ export function AboutTab({ auction, teams, players }: AboutTabProps) {
     }
   };
 
-  const publicAuctionUrl = typeof window !== "undefined" ? `${window.location.origin}/auctions/${auction.id}` : "";
-  const liveAuctionUrl = typeof window !== "undefined" ? `${window.location.origin}/my-auctions/${auction.id}/auctioneer?mode=live` : "";
+  const liveAuctionUrl = typeof window !== "undefined" ? `${window.location.origin}/live/${auction.id}` : "";
+  const publicAuctionUrl = liveAuctionUrl;
   const auctionUrl = liveAuctionUrl;
 
   return (

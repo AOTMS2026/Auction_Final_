@@ -139,10 +139,11 @@ function RootComponent() {
   const state = useRouterState();
   const pathname = String(state?.location?.pathname || "");
 
-  // Hide footer tab bar on all My Auction, auction rooms, registration, and redirect pages
+  // Hide footer tab bar on all My Auction, live spectator, registration, and redirect pages
   const isMyAuctionOrRedirect =
     pathname.startsWith("/my-auctions") ||
     pathname.startsWith("/auctions") ||
+    pathname.startsWith("/live") ||
     pathname.startsWith("/register-") ||
     pathname.startsWith("/auctioneer") ||
     pathname.startsWith("/bookmarks") ||

@@ -18,6 +18,7 @@ import { Route as AuthenticatedAuctioneerRouteImport } from './routes/_authentic
 import { Route as AuthenticatedBookmarksRouteImport } from './routes/_authenticated/bookmarks'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as LiveAuctionIdRouteImport } from './routes/live.$auctionId'
 import { Route as RegisterPlayerAuctionIdRouteImport } from './routes/register-player.$auctionId'
 import { Route as RegisterTeamAuctionIdRouteImport } from './routes/register-team.$auctionId'
 import { Route as AuthenticatedAuctionsIdRouteImport } from './routes/_authenticated/auctions.$id'
@@ -73,6 +74,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const LiveAuctionIdRoute = LiveAuctionIdRouteImport.update({
+  id: '/live/$auctionId',
+  path: '/live/$auctionId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterPlayerAuctionIdRoute = RegisterPlayerAuctionIdRouteImport.update({
   id: '/register-player/$auctionId',
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/bookmarks': typeof AuthenticatedBookmarksRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
+  '/live/$auctionId': typeof LiveAuctionIdRoute
   '/register-player/$auctionId': typeof RegisterPlayerAuctionIdRoute
   '/register-team/$auctionId': typeof RegisterTeamAuctionIdRoute
   '/auctions/$id': typeof AuthenticatedAuctionsIdRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/bookmarks': typeof AuthenticatedBookmarksRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
+  '/live/$auctionId': typeof LiveAuctionIdRoute
   '/register-player/$auctionId': typeof RegisterPlayerAuctionIdRoute
   '/register-team/$auctionId': typeof RegisterTeamAuctionIdRoute
   '/auctions/$id': typeof AuthenticatedAuctionsIdRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/_authenticated/bookmarks': typeof AuthenticatedBookmarksRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/live/$auctionId': typeof LiveAuctionIdRoute
   '/register-player/$auctionId': typeof RegisterPlayerAuctionIdRoute
   '/register-team/$auctionId': typeof RegisterTeamAuctionIdRoute
   '/_authenticated/auctions/$id': typeof AuthenticatedAuctionsIdRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/bookmarks'
     | '/dashboard'
     | '/profile'
+    | '/live/$auctionId'
     | '/register-player/$auctionId'
     | '/register-team/$auctionId'
     | '/auctions/$id'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/bookmarks'
     | '/dashboard'
     | '/profile'
+    | '/live/$auctionId'
     | '/register-player/$auctionId'
     | '/register-team/$auctionId'
     | '/auctions/$id'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bookmarks'
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
+    | '/live/$auctionId'
     | '/register-player/$auctionId'
     | '/register-team/$auctionId'
     | '/_authenticated/auctions/$id'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PricingRoute: typeof PricingRoute
+  LiveAuctionIdRoute: typeof LiveAuctionIdRoute
   RegisterPlayerAuctionIdRoute: typeof RegisterPlayerAuctionIdRoute
   RegisterTeamAuctionIdRoute: typeof RegisterTeamAuctionIdRoute
 }
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/live/$auctionId': {
+      id: '/live/$auctionId'
+      path: '/live/$auctionId'
+      fullPath: '/live/$auctionId'
+      preLoaderRoute: typeof LiveAuctionIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/register-player/$auctionId': {
       id: '/register-player/$auctionId'
@@ -480,6 +500,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PricingRoute: PricingRoute,
+  LiveAuctionIdRoute: LiveAuctionIdRoute,
   RegisterPlayerAuctionIdRoute: RegisterPlayerAuctionIdRoute,
   RegisterTeamAuctionIdRoute: RegisterTeamAuctionIdRoute,
 }
