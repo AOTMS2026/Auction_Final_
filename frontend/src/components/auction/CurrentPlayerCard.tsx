@@ -150,9 +150,18 @@ export function CurrentPlayerCard({
                 Grade {player.category || "-"}
               </span>
             )}
-            {/* Level Badge (Orange Box) */}
+            {/* Right/Left Hand Badge (Orange Box - Replaced Level) */}
             <span className="rounded-xl bg-orange-950/80 border-2 border-orange-500/60 text-orange-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-              Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}
+              {(() => {
+                let dh = (player.sportFields?.["Dominated Hand"] || player.sportFields?.["dominatedHand"] || player.sportFields?.["Batting Style"] || "") as string;
+                if (!dh && player.customData) {
+                  const match = player.customData.match(/Dominated Hand:\s*([^,|]+)/i) || player.customData.match(/(Right Hand|Left Hand)/i);
+                  if (match?.[1]) dh = match[1].trim();
+                }
+                if (!dh && player.playerLevel) return player.playerLevel;
+                if (!dh) return "Right Hand";
+                return dh.toLowerCase().includes("hand") ? dh : `${dh} Hand`;
+              })()}
             </span>
             {/* Chapter Name Badge (Green Box) */}
             <span className="rounded-xl bg-emerald-950/80 border-2 border-emerald-500/60 text-emerald-300 px-4 py-2 sm:px-5 sm:py-2.5 text-center text-sm sm:text-base md:text-lg font-black shadow-md">
@@ -170,6 +179,7 @@ export function CurrentPlayerCard({
               .map((spec) => player.sportFields?.[spec])
               .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
               .filter((val) => !player.customData || !player.customData.includes(val))
+              .filter((val) => val !== "Right Hand" && val !== "Left Hand" && !val.toLowerCase().includes("hand"))
               .map((val) => (
                 <span
                   key={val}

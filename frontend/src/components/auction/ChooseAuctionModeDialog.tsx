@@ -38,8 +38,8 @@ export function ChooseAuctionModeDialog({
             )}
           >
             <FlaskConical className={cn("size-9 transition-colors", mode === "trial" ? "text-[#38bdf8] drop-shadow-[0_0_10px_rgba(56,189,248,0.7)]" : "text-[#808f85]")} />
-            <span className="font-black text-sm text-[#ffffff]">Trial / Test Mode</span>
-            <span className="text-[11px] text-[#f2e9dc]/80 font-semibold">Safe practice round.</span>
+            <span className="font-black text-sm text-[#ffffff]">Normal Mode</span>
+            <span className="text-[11px] text-[#f2e9dc]/80 font-semibold">Practice & Trial round.</span>
           </button>
 
           <button

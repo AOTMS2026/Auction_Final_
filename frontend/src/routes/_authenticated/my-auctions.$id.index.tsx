@@ -800,7 +800,17 @@ function ManageAuctionPage() {
                                 <span>Grade {player.category || "-"}</span>
                               </button>
                               <span className="text-[#abb4bd]">·</span>
-                              <span className="text-[#a1b5d8]">Level {player.playerLevel ? `- ${player.playerLevel}` : "-"}</span>
+                              <span className="text-orange-300 font-bold">
+                                {(() => {
+                                  let dh = (player.sportFields?.["Dominated Hand"] || player.sportFields?.["dominatedHand"] || player.sportFields?.["Batting Style"] || "") as string;
+                                  if (!dh && player.customData) {
+                                    const match = player.customData.match(/Dominated Hand:\s*([^,|]+)/i) || player.customData.match(/(Right Hand|Left Hand)/i);
+                                    if (match?.[1]) dh = match[1].trim();
+                                  }
+                                  if (!dh && player.playerLevel) return player.playerLevel;
+                                  return dh || "Right Hand";
+                                })()}
+                              </span>
                               {player.gender && (
                                 <>
                                   <span className="text-[#abb4bd]">·</span>
@@ -816,7 +826,7 @@ function ManageAuctionPage() {
                               )}
                               {(() => {
                                 const dh = player.sportFields?.["Dominated Hand"] || (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData?.includes("BNI") || player.customData?.includes("Family") ? null : player.customData));
-                                if (!dh || dh === "-") return null;
+                                if (!dh || dh === "-" || dh === "Right Hand" || dh === "Left Hand") return null;
                                 return (
                                   <>
                                     <span className="text-[#abb4bd]">·</span>

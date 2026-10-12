@@ -723,4 +723,25 @@
   word-spacing: 0.12em;
 }
 
+/* Founder Ticker Marquee Autoscroll */
+@keyframes tickerScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: tickerScroll 24s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
+
 
