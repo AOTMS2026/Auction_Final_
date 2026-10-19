@@ -24,8 +24,11 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
 
   // Check if auction has Chapter data or specific auction 6a8edaddd7ed74151dbafab3
   const auctionIdStr = String(auction.id || (auction as any)._id || "").toLowerCase();
+  const isJerseyOnlyAuction =
+    auctionIdStr.includes("6ac74cb2a099bf0bff1d2fd4") ||
+    Boolean(auction.name?.toLowerCase().includes("panthers"));
   const hasChapterColumn =
-    !auctionIdStr.includes("6ac74cb2a099bf0bff1d2fd4") &&
+    !isJerseyOnlyAuction &&
     (auctionIdStr.includes("6a8edaddd7ed74151dbafab3") ||
       auction.name?.toLowerCase().includes("bni") ||
       auction.name?.toLowerCase().includes("bbl") ||
@@ -163,6 +166,15 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
       startY += 8;
     } else {
       const tableRows = teamSoldPlayers.map((p, idx) => {
+        const jerseyNumber = p.trouserSize || "-";
+        const playerName = p.name || "-";
+        const jerseyName = p.jerseyName || "-";
+        const jerseySize = p.jerseySize || "-";
+
+        if (isJerseyOnlyAuction) {
+          return [jerseyNumber, playerName, jerseyName, jerseySize];
+        }
+
         const sNo = players.findIndex((x) => x.id === p.id) + 1;
         const pNum = sNo > 0 ? `${sNo}` : `${idx + 1}`;
         const gender = p.gender
@@ -187,7 +199,9 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
       autoTable(doc, {
         startY: startY,
         head: [
-          hasChapterColumn
+          isJerseyOnlyAuction
+            ? ["Jersey Number", "Player Name", "Jersey Name", "JerseySize"]
+            : hasChapterColumn
             ? ["S.No", "Name", "Gender", "Chapter", "Jersey", "Mobile No", "Sold Price"]
             : ["S.No", "Name", "Gender", "Jersey", "Mobile No", "Sold Price"],
         ],
@@ -205,7 +219,14 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
           fontSize: 8,
           textColor: [30, 35, 42],
         },
-        columnStyles: hasChapterColumn
+        columnStyles: isJerseyOnlyAuction
+          ? {
+              0: { cellWidth: 35, halign: "center", fontStyle: "bold" },
+              1: { cellWidth: "auto", fontStyle: "bold" },
+              2: { cellWidth: 50, halign: "center" },
+              3: { cellWidth: 35, halign: "center", fontStyle: "bold" },
+            }
+          : hasChapterColumn
           ? {
               0: { cellWidth: 12, halign: "center" },
               1: { cellWidth: "auto", fontStyle: "bold" },
@@ -253,6 +274,15 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
     startY += 4;
 
     const unsoldRows = unsoldPlayers.map((p, idx) => {
+      const jerseyNumber = p.trouserSize || "-";
+      const playerName = p.name || "-";
+      const jerseyName = p.jerseyName || "-";
+      const jerseySize = p.jerseySize || "-";
+
+      if (isJerseyOnlyAuction) {
+        return [jerseyNumber, playerName, jerseyName, jerseySize];
+      }
+
       const sNo = players.findIndex((x) => x.id === p.id) + 1;
       const pNum = sNo > 0 ? `${sNo}` : `${idx + 1}`;
       const gender = p.gender
@@ -276,7 +306,9 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
     autoTable(doc, {
       startY: startY,
       head: [
-        hasChapterColumn
+        isJerseyOnlyAuction
+          ? ["Jersey Number", "Player Name", "Jersey Name", "JerseySize"]
+          : hasChapterColumn
           ? ["S.No", "Name", "Gender", "Chapter", "Jersey", "Mobile No", "Status"]
           : ["S.No", "Name", "Gender", "Jersey", "Mobile No", "Status"],
       ],
@@ -293,7 +325,14 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
         fontSize: 8,
         textColor: [30, 35, 42],
       },
-      columnStyles: hasChapterColumn
+      columnStyles: isJerseyOnlyAuction
+        ? {
+            0: { cellWidth: 35, halign: "center", fontStyle: "bold" },
+            1: { cellWidth: "auto", fontStyle: "bold" },
+            2: { cellWidth: 50, halign: "center" },
+            3: { cellWidth: 35, halign: "center", fontStyle: "bold" },
+          }
+        : hasChapterColumn
         ? {
             0: { cellWidth: 12, halign: "center" },
             1: { cellWidth: "auto", fontStyle: "bold" },
