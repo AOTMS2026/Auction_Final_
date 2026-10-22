@@ -166,12 +166,13 @@ function Index() {
 
   return (
     <div
+      data-landing-page
       className="min-h-screen text-[#f2e9dc]"
       style={{
         background: "radial-gradient(ellipse at 50% 10%, #1e3a45 0%, #162a32 35%, #122026 75%, #0e1619 100%)",
       }}
     >
-      <SiteHeader />
+      <SiteHeader showLandingExport />
 
       {/* Hero */}
       <section className="relative isolate overflow-hidden border-b border-[#38bdf8]/30">
@@ -555,4 +556,3 @@ function Index() {
     </div>
   );
 }
-

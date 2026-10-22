@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LandingExportButton } from "@/components/site/LandingExportButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,7 @@ const anchors = [
   { label: "Features", href: "/#features" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ showLandingExport = false }: { showLandingExport?: boolean }) {
   const [open, setOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -121,6 +122,7 @@ export function SiteHeader() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {showLandingExport && <div className="hidden md:block"><LandingExportButton /></div>}
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -220,6 +222,11 @@ export function SiteHeader() {
                 >
                   Register / Login
                 </Link>
+              </div>
+            )}
+            {showLandingExport && (
+              <div className="pt-2 pb-1 md:hidden">
+                <LandingExportButton mobile />
               </div>
             )}
           </nav>

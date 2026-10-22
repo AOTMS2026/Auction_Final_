@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Pencil, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { SiteHeader } from "@/components/site/SiteHeader";
+import { RegistrationHeader } from "@/components/site/RegistrationHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,10 +91,28 @@ function PlayerRegistrationPage() {
     },
   });
 
+  const resetForm = () => {
+    setSuccess(false);
+    setPhoto(null);
+    setName("");
+    setPhone("");
+    setPhoneError("");
+    setPosition("");
+    setDominatedHand("");
+    setWicketKeeper("");
+    setAge("");
+    setGender("");
+    setCity("");
+    setJerseySize("");
+    setJerseyName("");
+    setTrouserSize("");
+    setSportFields({});
+  };
+
   if (isPending && !auction) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <SiteHeader />
+        <RegistrationHeader />
         <main className="flex-1 flex flex-col items-center justify-center p-4">
           <Loader2 className="size-8 animate-spin text-brand mb-3" />
           <p className="text-sm text-muted-foreground">Loading registration details...</p>
@@ -106,18 +124,15 @@ function PlayerRegistrationPage() {
   if (isError || !auction) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <SiteHeader />
+        <RegistrationHeader />
         <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
           <div className="max-w-md w-full bg-card rounded-2xl p-8 card-shadow border border-border">
             <h2 className="text-xl font-bold text-foreground mb-2">Auction Not Available</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              This auction registration link may be expired, invalid, or temporarily unavailable.
+              This auction registration link may be expired, invalid, or temporarily unavailable. Please contact the tournament organizers.
             </p>
             <div className="flex justify-center gap-3">
               <Button onClick={() => refetch()}>Try Again</Button>
-              <Button asChild variant="outline">
-                <Link to="/">Go Home</Link>
-              </Button>
             </div>
           </div>
         </main>
@@ -320,22 +335,27 @@ function PlayerRegistrationPage() {
             "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
         }}
       >
-        <SiteHeader />
+        <RegistrationHeader auctionName={auction.name} />
         <main className="flex-1 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-[#162a34]/95 rounded-3xl p-8 text-center border-2 border-emerald-400 shadow-[0_20px_60px_rgba(15,35,45,0.9)] backdrop-blur-xl">
             <div className="mx-auto size-16 bg-emerald-950/80 text-emerald-400 border-2 border-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
               <CheckCircle2 className="size-10" />
             </div>
             <h2 className="text-2xl font-black text-[#ffffff] mb-2 tracking-tight drop-shadow-sm">Registration Complete!</h2>
-            <p className="text-[#f2e9dc]/80 mb-6 font-medium">
+            <p className="text-[#f2e9dc]/80 mb-2 font-medium">
               You have successfully registered for <strong className="text-[#38bdf8]">{auction.name}</strong>.
             </p>
-            <Button
-              className="w-full rounded-full py-3.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30 cursor-pointer"
-              onClick={() => (window.location.href = "/")}
-            >
-              Return Home
-            </Button>
+            <p className="text-xs text-[#38bdf8]/90 mb-6 font-medium">
+              Your details have been submitted securely to the auction organizers.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button
+                className="w-full rounded-full py-3.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30 cursor-pointer"
+                onClick={resetForm}
+              >
+                Register Another Player
+              </Button>
+            </div>
           </div>
         </main>
       </div>
@@ -350,7 +370,7 @@ function PlayerRegistrationPage() {
           "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
       }}
     >
-      <SiteHeader />
+      <RegistrationHeader auctionName={auction.name} />
 
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden">

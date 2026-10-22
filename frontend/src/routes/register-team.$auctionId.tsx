@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Plus, Pencil, CheckCircle2, Copy, UploadCloud } from "lucide-react";
+import { CheckCircle2, Pencil } from "lucide-react";
 import { toast } from "sonner";
-
-import { SiteHeader } from "@/components/site/SiteHeader";
+import { RegistrationHeader } from "@/components/site/RegistrationHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -177,6 +176,17 @@ function PublicRegisterTeamPage() {
     registerMutation.mutate(input);
   };
 
+  const resetForm = () => {
+    setSuccess(false);
+    setName("");
+    setShortName("");
+    setOwnerName("");
+    setOwnerPhone("");
+    setColorTheme("");
+    setLogo(null);
+    setOriginalLogo(null);
+  };
+
   if (success && auction) {
     return (
       <div
@@ -186,7 +196,7 @@ function PublicRegisterTeamPage() {
             "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
         }}
       >
-        <SiteHeader />
+        <RegistrationHeader auctionName={auction.name} formType="team" />
         <main className="flex-1 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-[#162a34]/95 rounded-3xl p-8 text-center border-2 border-emerald-400 shadow-[0_20px_60px_rgba(15,35,45,0.9)] backdrop-blur-xl">
             <div className="mx-auto size-16 bg-emerald-950/80 text-emerald-400 border-2 border-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
@@ -198,7 +208,7 @@ function PublicRegisterTeamPage() {
             </p>
             <div className="flex flex-col gap-3">
               <Button
-                onClick={() => setSuccess(false)}
+                onClick={resetForm}
                 className="w-full rounded-full py-3.5 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_25px_rgba(249,115,22,0.65)] hover:scale-[1.01] transition-all border border-white/30"
               >
                 Register Another Team
@@ -218,7 +228,7 @@ function PublicRegisterTeamPage() {
           "radial-gradient(ellipse at 50% 15%, #1e3a45 0%, #162a32 45%, #101c22 80%, #0c1417 100%)",
       }}
     >
-      <SiteHeader />
+      <RegistrationHeader auctionName={auction?.name} formType="team" />
 
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden">
