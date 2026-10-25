@@ -1129,10 +1129,13 @@ function AuctioneerConsole() {
         </div>
 
         {/* Right Column: Teams List (Vertical Grid) */}
-        <div className="w-[480px] shrink-0 flex flex-col h-full bg-[#162a34]/90 backdrop-blur-xl border-2 border-[#38bdf8]/40 rounded-3xl p-3.5 shadow-[0_15px_45px_rgba(15,35,45,0.85)] select-none overflow-hidden text-[#ffffff]">
-          <div className="shrink-0 border-b border-[#38bdf8]/30 pb-2 mb-2 flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">Teams</h2>
-            <span className="text-[10px] text-[#f97316] font-black uppercase tracking-wider">Bidding Team Selection</span>
+        <div className="w-[500px] xl:w-[540px] 2xl:w-[580px] shrink-0 flex flex-col h-full bg-[#162a34]/90 backdrop-blur-xl border-2 border-[#38bdf8]/40 rounded-3xl p-3.5 shadow-[0_15px_45px_rgba(15,35,45,0.85)] select-none overflow-hidden text-[#ffffff]">
+          <div className="shrink-0 border-b border-[#38bdf8]/30 pb-2.5 mb-2 flex items-center justify-between">
+            <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#38bdf8] flex items-center gap-1.5">
+              <span>Teams</span>
+              <span className="text-[11px] text-[#a1b5d8]">({orderedTeams.length})</span>
+            </h2>
+            <span className="text-[10px] sm:text-xs text-[#f97316] font-black uppercase tracking-wider">Bidding Team Selection</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-2">

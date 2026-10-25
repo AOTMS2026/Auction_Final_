@@ -54,7 +54,7 @@ export function TeamBidCard({
       onDragEnd={onDragEnd}
       onDrop={onDrop}
       className={cn(
-        "relative flex w-full items-center gap-2.5 rounded-2xl border-2 p-2 sm:p-2.5 text-left transition-all shadow-sm select-none",
+        "relative flex w-full items-center gap-3 rounded-2xl border-2 p-3 sm:p-3.5 text-left transition-all shadow-sm select-none",
         draggable && "cursor-grab active:cursor-grabbing",
         isFull
           ? "border-[#38bdf8]/15 bg-[#142630]/40 opacity-40 cursor-not-allowed"
@@ -70,54 +70,64 @@ export function TeamBidCard({
       )}
     >
       <div className={cn(
-        "flex size-9 sm:size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 shadow-md",
+        "flex size-11 sm:size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 shadow-md",
         cannotAfford ? "bg-[#23151a] border-rose-500/60" : "bg-[#142630] border-[#38bdf8]/50"
       )}>
         <FallbackImage
           src={team.logo || ""}
           alt={team.name}
           className="size-full object-cover"
-          fallback={<span className={cn("text-xs font-black", cannotAfford ? "text-rose-400" : "text-[#38bdf8]")}>{team.shortName.slice(0, 3)}</span>}
+          fallback={<span className={cn("text-xs sm:text-sm font-black", cannotAfford ? "text-rose-400" : "text-[#38bdf8]")}>{team.shortName.slice(0, 3)}</span>}
         />
       </div>
-      <div className="min-w-0 flex-1 pr-6">
-        <p className="truncate text-xs sm:text-sm font-black text-[#ffffff] leading-tight drop-shadow-sm">{team.name}</p>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-xs font-bold text-[#38bdf8] truncate">
-          <span className={cn("font-black", cannotAfford ? "text-rose-400" : "text-emerald-400")}>🪙 {formatPoints(stats.availablePoints)}</span>
-          <span className="text-[#38bdf8]/40 font-normal">•</span>
+      <div className="min-w-0 flex-1 flex flex-col justify-center space-y-1">
+        {/* Row 1: Team Name & View Players Eye Button */}
+        <div className="flex items-center justify-between gap-1">
+          <p className="truncate text-[13.5px] sm:text-[14.5px] font-black text-[#ffffff] leading-tight drop-shadow-sm tracking-wide" title={team.name}>
+            {team.name}
+          </p>
+          {onViewPlayers && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewPlayers();
+              }}
+              className="shrink-0 -mr-1 rounded-full p-1 text-[#abb4bd] hover:bg-[#38bdf8]/20 hover:text-[#38bdf8] border border-transparent hover:border-[#38bdf8]/40 transition-all cursor-pointer"
+              aria-label="View sold players"
+              title="View Bought Players"
+            >
+              <Eye className="size-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Row 2: Purse (Available Points) & Max Bid */}
+        <div className="flex items-center justify-between gap-1 text-xs sm:text-[13px] font-bold leading-none">
+          <span className={cn("font-black whitespace-nowrap text-[12.5px] sm:text-[13.5px]", cannotAfford ? "text-rose-400" : "text-emerald-400")}>
+            🪙 {formatPoints(stats.availablePoints)}
+          </span>
           {isFull ? (
-            <span className="font-black text-rose-400">Full</span>
+            <span className="font-black text-rose-400 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 border border-rose-500/40">
+              Full
+            </span>
           ) : (
-            <span className={cn(cannotAfford ? "text-rose-400 font-black" : "text-[#f2e9dc]/80")}>
+            <span className={cn("whitespace-nowrap text-[11.5px] sm:text-xs", cannotAfford ? "text-rose-400 font-black" : "text-[#f2e9dc]/95")}>
               Max: <span className={cn("font-black", cannotAfford ? "text-rose-400" : "text-emerald-400")}>{formatPoints(stats.maxBidPoints)}</span>
             </span>
           )}
-          {cannotAfford && !isFull && (
-            <span className="ml-1 px-1 py-0.2 rounded text-[8.5px] font-black bg-rose-500/25 text-rose-300 border border-rose-500/40">
-              Low Purse
-            </span>
-          )}
         </div>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-bold text-[#f2e9dc]/70 truncate">
-          <span>Squad: <span className="text-[#ffffff] font-black">{stats.totalPlayers}/{stats.totalPlayers + stats.reservedPlayers}</span></span>
-          <span className="text-[#38bdf8]/40 font-normal">•</span>
-          <span>Left: <span className="text-[#f97316] font-black">{stats.reservedPlayers}</span></span>
+
+        {/* Row 3: Squad Count & Left */}
+        <div className="flex items-center justify-between gap-1 text-[11px] sm:text-[12px] font-bold text-[#f2e9dc]/85 leading-none">
+          <span className="whitespace-nowrap">
+            <span className="text-[#a1b5d8] font-semibold">Squad:</span> <span className="text-[#ffffff] font-black">{stats.totalPlayers}/{stats.totalPlayers + stats.reservedPlayers}</span>
+          </span>
+          <span className="whitespace-nowrap">
+            <span className="text-[#a1b5d8] font-semibold">Left:</span> <span className="text-[#f97316] font-black">{stats.reservedPlayers}</span>
+          </span>
         </div>
       </div>
-
-      {onViewPlayers && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewPlayers();
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#abb4bd] hover:bg-[#2e343a] hover:text-[#fffcf7] border border-transparent hover:border-[#5c6875]/40 transition-colors"
-          aria-label="View sold players"
-        >
-          <Eye className="size-3.5" />
-        </button>
-      )}
     </div>
   );
 }

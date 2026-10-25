@@ -281,7 +281,7 @@ function PublicLiveAuctionPage() {
         </div>
 
         {/* Right Column: Teams List (Vertical Grid) */}
-        <div className="w-full lg:w-[480px] shrink-0 flex flex-col h-full bg-[#162a34]/90 backdrop-blur-xl border-2 border-[#38bdf8]/40 rounded-3xl p-3.5 shadow-[0_15px_45px_rgba(15,35,45,0.85)] select-none overflow-hidden text-[#ffffff]">
+        <div className="w-full lg:w-[500px] xl:w-[540px] 2xl:w-[580px] shrink-0 flex flex-col h-full bg-[#162a34]/90 backdrop-blur-xl border-2 border-[#38bdf8]/40 rounded-3xl p-3.5 shadow-[0_15px_45px_rgba(15,35,45,0.85)] select-none overflow-hidden text-[#ffffff]">
           <div className="shrink-0 border-b border-[#38bdf8]/30 pb-2 mb-2 flex items-center justify-between">
             <h2 className="text-xs font-black uppercase tracking-wider text-[#38bdf8] flex items-center gap-2">
               <Users className="size-4 text-[#38bdf8]" />
