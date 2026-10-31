@@ -62,6 +62,19 @@ export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
   },
 };
 
+export const BOXER_SIZES = [
+  "26",
+  "28",
+  "30",
+  "32",
+  "34",
+  "36",
+  "38",
+  "40",
+  "42",
+  "44",
+] as const;
+
 export type PlayerFormData = z.infer<typeof basePlayerSchema> & {
   sportFields: Record<string, any>;
 };

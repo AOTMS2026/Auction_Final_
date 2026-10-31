@@ -685,7 +685,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 </Label>
                 <Input
                   id="jerseySize"
-                  placeholder="e.g. M, L, XL"
+                  placeholder="e.g. M, L, XL, XXL"
                   value={jerseySize}
                   onChange={(e) => setJerseySize(e.target.value)}
                   disabled={isSubmitting || !!player}
@@ -702,7 +702,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   </Label>
                   <Input
                     id="boxerSize"
-                    placeholder="e.g. M, L, XL, 32"
+                    placeholder="e.g. 28, 30, 32, 34"
                     value={boxerSize}
                     onChange={(e) => setBoxerSize(e.target.value)}
                     disabled={isSubmitting || !!player}
