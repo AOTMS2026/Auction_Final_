@@ -335,9 +335,13 @@ function PlayerRegistrationPage() {
       age: parseInt(age),
       gender: isBadminton ? "" : gender,
       city: isBadminton ? "" : city.trim(),
-      food: isBadminton ? food : undefined,
-      boxerSize: isBadminton ? boxerSize.trim() : undefined,
-      bloodGroup: isBadminton ? bloodGroup.trim() : undefined,
+      ...(isBadminton
+        ? {
+            food,
+            boxerSize: boxerSize.trim(),
+            bloodGroup: bloodGroup.trim(),
+          }
+        : {}),
       jerseySize: jerseySize.trim(),
       jerseyName: jerseyName.trim(),
       trouserSize: trouserSize.trim(),
