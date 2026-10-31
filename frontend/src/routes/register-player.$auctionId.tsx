@@ -288,18 +288,10 @@ function PlayerRegistrationPage() {
         toast.error("Please select food preference (Veg / Non-Veg)");
         return;
       }
-      if (!boxerSize.trim()) {
-        toast.error("Please enter boxer/short size");
-        return;
-      }
       if (!bloodGroup.trim()) {
         toast.error("Please enter blood group");
         return;
       }
-    }
-    if (!jerseySize.trim()) {
-      toast.error("Please enter jersey size");
-      return;
     }
     if (!jerseyName.trim()) {
       toast.error("Please enter jersey name");
@@ -308,6 +300,16 @@ function PlayerRegistrationPage() {
     if (!trouserSize.trim()) {
       toast.error("Please enter jersey number");
       return;
+    }
+    if (!jerseySize.trim()) {
+      toast.error("Please enter jersey size");
+      return;
+    }
+    if (isBadminton) {
+      if (!boxerSize.trim()) {
+        toast.error("Please enter boxer/short size");
+        return;
+      }
     }
 
     const customDataStr = `Dominated Hand: ${dominatedHand}`;
@@ -657,22 +659,6 @@ function PlayerRegistrationPage() {
                     </Select>
                   </div>
 
-                  {/* BOXER / SHORT SIZE */}
-                  <div className="space-y-2">
-                    <Label htmlFor="boxerSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                      BOXER / SHORT SIZE <span className="text-red-400 font-bold ml-0.5">*</span>
-                    </Label>
-                    <Input
-                      id="boxerSize"
-                      placeholder="e.g. M, L, XL, 32"
-                      value={boxerSize}
-                      onChange={(e) => setBoxerSize(e.target.value)}
-                      disabled={registerMutation.isPending}
-                      required
-                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
-                    />
-                  </div>
-
                   {/* BLOOD GROUP */}
                   <div className="space-y-2">
                     <Label htmlFor="bloodGroup" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
@@ -690,22 +676,6 @@ function PlayerRegistrationPage() {
                   </div>
                 </>
               )}
-
-              {/* JERSEY SIZE */}
-              <div className="space-y-2">
-                <Label htmlFor="jerseySize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span>
-                </Label>
-                <Input
-                  id="jerseySize"
-                  placeholder="e.g. M, L, XL"
-                  value={jerseySize}
-                  onChange={(e) => setJerseySize(e.target.value)}
-                  disabled={registerMutation.isPending}
-                  required
-                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
-                />
-              </div>
 
               {/* JERSEY NAME */}
               <div className="space-y-2">
@@ -738,6 +708,40 @@ function PlayerRegistrationPage() {
                   className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                 />
               </div>
+
+              {/* JERSEY SIZE */}
+              <div className="space-y-2">
+                <Label htmlFor="jerseySize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                  JERSEY SIZE <span className="text-red-400 font-bold ml-0.5">*</span>
+                </Label>
+                <Input
+                  id="jerseySize"
+                  placeholder="e.g. M, L, XL"
+                  value={jerseySize}
+                  onChange={(e) => setJerseySize(e.target.value)}
+                  disabled={registerMutation.isPending}
+                  required
+                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
+                />
+              </div>
+
+              {/* BOXER / SHORT SIZE (Badminton only) */}
+              {isBadminton && (
+                <div className="space-y-2">
+                  <Label htmlFor="boxerSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                    BOXER / SHORT SIZE <span className="text-red-400 font-bold ml-0.5">*</span>
+                  </Label>
+                  <Input
+                    id="boxerSize"
+                    placeholder="e.g. M, L, XL, 32"
+                    value={boxerSize}
+                    onChange={(e) => setBoxerSize(e.target.value)}
+                    disabled={registerMutation.isPending}
+                    required
+                    className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="pt-4">
