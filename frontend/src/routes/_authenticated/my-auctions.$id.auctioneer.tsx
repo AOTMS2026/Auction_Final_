@@ -40,7 +40,12 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/auctioneer
 
     const user = await authClient.getCurrentUser();
     const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
-    const isAuctioneer = Boolean(user && (auction.createdBy === user.id || isAdmin || params.id === "6ac74cb2a099bf0bff1d2fd4" || params.id === "6ad5eac10f608613609aff77" || params.id === "6ae58c64b02d0b36bdfe924b"));
+    const isSpecificOwner = Boolean(
+      (user?.email === "ufc@gmail.com" && params.id === "6ad5eac10f608613609aff77") ||
+      (user?.email === "panthersbleague@gmail.com" && params.id === "6ac74cb2a099bf0bff1d2fd4") ||
+      (user?.email === "hunterz@gmail.com" && params.id === "6ae58c64b02d0b36bdfe924b")
+    );
+    const isAuctioneer = Boolean(user && (auction.createdBy === user.id || isAdmin || isSpecificOwner));
 
     // Preload teams and players concurrently for zero-latency instant rendering
     void Promise.all([

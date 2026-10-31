@@ -206,10 +206,22 @@ function MyAuctionsPage() {
                     variant="outline"
                     size="icon"
                     className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] hover:bg-[#38bdf8] hover:text-[#ffffff] text-[#38bdf8] transition-all shadow-sm"
-                    onClick={() => {
+                    onClick={async () => {
                       const shareUrl = `${window.location.origin}/my-auctions/${a.id}`;
+                      if (navigator.share) {
+                        try {
+                          await navigator.share({
+                            title: a.name,
+                            text: `Access the ${a.name} dashboard:`,
+                            url: shareUrl,
+                          });
+                          return;
+                        } catch {
+                          // Fallback to clipboard if share cancelled/unsupported
+                        }
+                      }
                       navigator.clipboard.writeText(shareUrl);
-                      toast.success("Auction link copied to clipboard!");
+                      toast.success(`Dashboard link for "${a.name}" copied to clipboard!`);
                     }}
                     aria-label="Share auction"
                     title="Share Auction"
