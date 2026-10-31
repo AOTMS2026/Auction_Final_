@@ -207,7 +207,7 @@ function MyAuctionsPage() {
                     size="icon"
                     className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] hover:bg-[#38bdf8] hover:text-[#ffffff] text-[#38bdf8] transition-all shadow-sm"
                     onClick={() => {
-                      const shareUrl = `${window.location.origin}/auctions/${a.id}`;
+                      const shareUrl = `${window.location.origin}/my-auctions/${a.id}`;
                       navigator.clipboard.writeText(shareUrl);
                       toast.success("Auction link copied to clipboard!");
                     }}
