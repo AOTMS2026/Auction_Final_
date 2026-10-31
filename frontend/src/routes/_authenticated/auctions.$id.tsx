@@ -955,6 +955,16 @@ function AuctionDetailPage() {
               );
             })
           )}
+            {editPlayer && (
+              <EditGradeModal
+                player={editPlayer}
+                open={!!editPlayer}
+                onOpenChange={(open) => {
+                  if (!open) setEditPlayer(null);
+                }}
+                onSave={handleSaveGrade}
+              />
+            )}
             {editPlayerId && (
               <PlayerFormModal
                 auctionId={auction.id}

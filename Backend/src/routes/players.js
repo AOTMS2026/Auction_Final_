@@ -30,6 +30,9 @@ function toPublicPlayer(doc) {
     photo: doc.photo,
     gender: doc.gender,
     city: doc.city,
+    food: doc.food,
+    boxerSize: doc.boxerSize,
+    bloodGroup: doc.bloodGroup,
     playerLevel: doc.playerLevel,
     paymentMode: doc.paymentMode,
     utrNumber: doc.utrNumber,
@@ -241,7 +244,8 @@ router.patch(
       "name", "phone", "age", "category", "baseValue",
       "soldPrice", "jerseySize", "jerseyName", "trouserSize",
       "customData", "photo", "gender", "city", "playerLevel",
-      "paymentMode", "utrNumber", "paymentImage", "sportFields", "auctionRoundStatus"
+      "paymentMode", "utrNumber", "paymentImage", "sportFields", "auctionRoundStatus",
+      "food", "boxerSize", "bloodGroup"
     ];
 
     for (const field of updatableFields) {

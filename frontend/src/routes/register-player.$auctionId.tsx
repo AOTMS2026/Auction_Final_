@@ -60,6 +60,9 @@ function PlayerRegistrationPage() {
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
+  const [food, setFood] = useState("");
+  const [boxerSize, setBoxerSize] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
   const [jerseySize, setJerseySize] = useState("");
   const [jerseyName, setJerseyName] = useState("");
   const [trouserSize, setTrouserSize] = useState("");
@@ -103,6 +106,9 @@ function PlayerRegistrationPage() {
     setAge("");
     setGender("");
     setCity("");
+    setFood("");
+    setBoxerSize("");
+    setBloodGroup("");
     setJerseySize("");
     setJerseyName("");
     setTrouserSize("");
@@ -140,6 +146,7 @@ function PlayerRegistrationPage() {
     );
   }
 
+  const isBadminton = (auction.sportType || "").toLowerCase() === "badminton";
   const config = SPORT_CONFIGS[auction.sportType] || SPORT_CONFIGS["cricket"];
   const availableRoles = Array.from(
     new Set([
@@ -258,7 +265,7 @@ function PlayerRegistrationPage() {
       toast.error("Please select right/left hand");
       return;
     }
-    if (!wicketKeeper) {
+    if (!isBadminton && !wicketKeeper) {
       toast.error("Please select Wicket-Keeper (Yes / No)");
       return;
     }
@@ -266,13 +273,29 @@ function PlayerRegistrationPage() {
       toast.error("Please enter a valid age");
       return;
     }
-    if (!gender) {
-      toast.error("Please select gender");
-      return;
+    if (!isBadminton) {
+      if (!gender) {
+        toast.error("Please select gender");
+        return;
+      }
+      if (!city.trim()) {
+        toast.error("Please enter city");
+        return;
+      }
     }
-    if (!city.trim()) {
-      toast.error("Please enter city");
-      return;
+    if (isBadminton) {
+      if (!food) {
+        toast.error("Please select food preference (Veg / Non-Veg)");
+        return;
+      }
+      if (!boxerSize.trim()) {
+        toast.error("Please enter boxer/short size");
+        return;
+      }
+      if (!bloodGroup.trim()) {
+        toast.error("Please enter blood group");
+        return;
+      }
     }
     if (!jerseySize.trim()) {
       toast.error("Please enter jersey size");
@@ -292,7 +315,15 @@ function PlayerRegistrationPage() {
       ...sportFields,
       role: position,
       "Dominated Hand": dominatedHand,
-      "Wicket Keeper": wicketKeeper,
+      ...(isBadminton
+        ? {
+            Food: food,
+            "Boxer/Short Size": boxerSize.trim(),
+            "Blood Group": bloodGroup.trim(),
+          }
+        : {
+            "Wicket Keeper": wicketKeeper,
+          }),
     };
 
     const input: PlayerInput = {
@@ -300,8 +331,11 @@ function PlayerRegistrationPage() {
       name: name.trim(),
       phone: trimmedPhone,
       age: parseInt(age),
-      gender,
-      city: city.trim(),
+      gender: isBadminton ? "" : gender,
+      city: isBadminton ? "" : city.trim(),
+      food: isBadminton ? food : undefined,
+      boxerSize: isBadminton ? boxerSize.trim() : undefined,
+      bloodGroup: isBadminton ? bloodGroup.trim() : undefined,
       jerseySize: jerseySize.trim(),
       jerseyName: jerseyName.trim(),
       trouserSize: trouserSize.trim(),
@@ -531,21 +565,23 @@ function PlayerRegistrationPage() {
                 </Select>
               </div>
 
-              {/* WICKET-KEEPER */}
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  WICKET-KEEPER <span className="text-red-400 font-bold ml-0.5">*</span>
-                </Label>
-                <Select value={wicketKeeper} onValueChange={setWicketKeeper}>
-                  <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
-                    <SelectValue placeholder="Select Wicket-Keeper" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
-                    <SelectItem value="Yes" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Yes</SelectItem>
-                    <SelectItem value="No" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isBadminton && (
+                /* WICKET-KEEPER */
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                    WICKET-KEEPER <span className="text-red-400 font-bold ml-0.5">*</span>
+                  </Label>
+                  <Select value={wicketKeeper} onValueChange={setWicketKeeper}>
+                    <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
+                      <SelectValue placeholder="Select Wicket-Keeper" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                      <SelectItem value="Yes" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Yes</SelectItem>
+                      <SelectItem value="No" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* AGE */}
               <div className="space-y-2">
@@ -565,37 +601,95 @@ function PlayerRegistrationPage() {
                 />
               </div>
 
-              {/* GENDER */}
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  GENDER <span className="text-red-400 font-bold ml-0.5">*</span>
-                </Label>
-                <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
-                    <SelectItem value="Male" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Male</SelectItem>
-                    <SelectItem value="Female" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isBadminton ? (
+                <>
+                  {/* GENDER */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      GENDER <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Select value={gender} onValueChange={setGender}>
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Male" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Male</SelectItem>
+                        <SelectItem value="Female" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* CITY */}
-              <div className="space-y-2">
-                <Label htmlFor="city" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  CITY <span className="text-red-400 font-bold ml-0.5">*</span>
-                </Label>
-                <Input
-                  id="city"
-                  placeholder="e.g. Mumbai"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  disabled={registerMutation.isPending}
-                  required
-                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
-                />
-              </div>
+                  {/* CITY */}
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      CITY <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Input
+                      id="city"
+                      placeholder="e.g. Mumbai"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* FOOD */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      FOOD <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Select value={food} onValueChange={setFood}>
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
+                        <SelectValue placeholder="Select Veg / Non-Veg" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Veg" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                          Veg
+                        </SelectItem>
+                        <SelectItem value="Non-Veg" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                          Non-Veg
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* BOXER / SHORT SIZE */}
+                  <div className="space-y-2">
+                    <Label htmlFor="boxerSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      BOXER / SHORT SIZE <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Input
+                      id="boxerSize"
+                      placeholder="e.g. M, L, XL, 32"
+                      value={boxerSize}
+                      onChange={(e) => setBoxerSize(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
+                    />
+                  </div>
+
+                  {/* BLOOD GROUP */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bloodGroup" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      BLOOD GROUP <span className="text-red-400 font-bold ml-0.5">*</span>
+                    </Label>
+                    <Input
+                      id="bloodGroup"
+                      placeholder="e.g. O+, A+, B+, AB+"
+                      value={bloodGroup}
+                      onChange={(e) => setBloodGroup(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      required
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
+                    />
+                  </div>
+                </>
+              )}
 
               {/* JERSEY SIZE */}
               <div className="space-y-2">

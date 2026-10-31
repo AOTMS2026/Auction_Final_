@@ -64,6 +64,15 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [age, setAge] = useState(player?.age?.toString() || "");
   const [gender, setGender] = useState(player?.gender ? (player.gender.trim().charAt(0).toUpperCase() + player.gender.trim().slice(1).toLowerCase()) : "");
   const [city, setCity] = useState(player?.city || "");
+  const [food, setFood] = useState(
+    player?.food || player?.sportFields?.["Food"] || player?.sportFields?.["food"] || ""
+  );
+  const [boxerSize, setBoxerSize] = useState(
+    player?.boxerSize || player?.sportFields?.["Boxer/Short Size"] || player?.sportFields?.["boxerSize"] || player?.sportFields?.["Short Size"] || ""
+  );
+  const [bloodGroup, setBloodGroup] = useState(
+    player?.bloodGroup || player?.sportFields?.["Blood Group"] || player?.sportFields?.["bloodGroup"] || ""
+  );
   const [jerseySize, setJerseySize] = useState(player?.jerseySize || "");
   const [jerseyName, setJerseyName] = useState(player?.jerseyName || "");
   const [trouserSize, setTrouserSize] = useState(player?.trouserSize || "");
@@ -78,6 +87,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const { players = [], createPlayer, updatePlayer, isCreating, isUpdating } = usePlayers(auctionId);
   const isSubmitting = isCreating || isUpdating || isSaving;
 
+  const isBadminton = (sportType || "").toLowerCase() === "badminton";
   const config = SPORT_CONFIGS[sportType] || SPORT_CONFIGS["cricket"];
 
   const availableRoles = Array.from(
@@ -101,6 +111,9 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setAge("");
       setGender("");
       setCity("");
+      setFood("");
+      setBoxerSize("");
+      setBloodGroup("");
       setJerseySize("");
       setJerseyName("");
       setTrouserSize("");
@@ -128,6 +141,11 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
           : ""
       );
       setCity(player.city || "");
+      setFood(player.food || player.sportFields?.["Food"] || player.sportFields?.["food"] || "");
+      setBoxerSize(
+        player.boxerSize || player.sportFields?.["Boxer/Short Size"] || player.sportFields?.["boxerSize"] || player.sportFields?.["Short Size"] || ""
+      );
+      setBloodGroup(player.bloodGroup || player.sportFields?.["Blood Group"] || player.sportFields?.["bloodGroup"] || "");
       setJerseySize(player.jerseySize || "");
       setJerseyName(player.jerseyName || "");
       setTrouserSize(player.trouserSize || "");
@@ -249,7 +267,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       toast.error("Please select right/left hand");
       return;
     }
-    if (!wicketKeeper) {
+    if (!isBadminton && !wicketKeeper) {
       toast.error("Please select Wicket-Keeper (Yes / No)");
       return;
     }
@@ -257,13 +275,29 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       toast.error("Please enter a valid age");
       return;
     }
-    if (!gender) {
-      toast.error("Please select gender");
-      return;
+    if (!isBadminton) {
+      if (!gender) {
+        toast.error("Please select gender");
+        return;
+      }
+      if (!city.trim()) {
+        toast.error("Please enter city");
+        return;
+      }
     }
-    if (!city.trim()) {
-      toast.error("Please enter city");
-      return;
+    if (isBadminton) {
+      if (!food) {
+        toast.error("Please select food preference (Veg / Non-Veg)");
+        return;
+      }
+      if (!boxerSize.trim()) {
+        toast.error("Please enter boxer/short size");
+        return;
+      }
+      if (!bloodGroup.trim()) {
+        toast.error("Please enter blood group");
+        return;
+      }
     }
     if (!jerseySize.trim()) {
       toast.error("Please enter jersey size");
@@ -288,7 +322,15 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       ...sportFields,
       role: position,
       "Dominated Hand": dominatedHand,
-      "Wicket Keeper": wicketKeeper,
+      ...(isBadminton
+        ? {
+            Food: food,
+            "Boxer/Short Size": boxerSize.trim(),
+            "Blood Group": bloodGroup.trim(),
+          }
+        : {
+            "Wicket Keeper": wicketKeeper,
+          }),
     };
 
     const input: PlayerInput = {
@@ -296,8 +338,11 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       name: name.trim(),
       phone: trimmedPhone,
       age: parseInt(age),
-      gender,
-      city: city.trim(),
+      gender: isBadminton ? "" : gender,
+      city: isBadminton ? "" : city.trim(),
+      food: isBadminton ? food : (player?.food || ""),
+      boxerSize: isBadminton ? boxerSize.trim() : (player?.boxerSize || ""),
+      bloodGroup: isBadminton ? bloodGroup.trim() : (player?.bloodGroup || ""),
       jerseySize: jerseySize.trim(),
       jerseyName: jerseyName.trim(),
       trouserSize: trouserSize.trim(),
@@ -305,7 +350,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       photo,
       sportFields: updatedSportFields,
       baseValue: player?.baseValue ?? 0,
-      category: grade.trim(),
+      category: player ? grade.trim() : "",
       playerLevel: player?.playerLevel ?? "",
       paymentMode: "",
       utrNumber: "",
@@ -489,21 +534,23 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 </Select>
               </div>
 
-              {/* WICKET-KEEPER */}
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  WICKET-KEEPER {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
-                </Label>
-                <Select value={wicketKeeper} onValueChange={setWicketKeeper} disabled={isSubmitting || !!player}>
-                  <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed">
-                    <SelectValue placeholder="Select Wicket-Keeper" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
-                    <SelectItem value="Yes" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Yes</SelectItem>
-                    <SelectItem value="No" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isBadminton && (
+                /* WICKET-KEEPER */
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                    WICKET-KEEPER {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                  </Label>
+                  <Select value={wicketKeeper} onValueChange={setWicketKeeper} disabled={isSubmitting || !!player}>
+                    <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed">
+                      <SelectValue placeholder="Select Wicket-Keeper" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                      <SelectItem value="Yes" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Yes</SelectItem>
+                      <SelectItem value="No" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* AGE */}
               <div className="space-y-2">
@@ -523,37 +570,95 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 />
               </div>
 
-              {/* GENDER */}
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  GENDER {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
-                </Label>
-                <Select value={gender} onValueChange={setGender} disabled={isSubmitting || !!player}>
-                  <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed">
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
-                    <SelectItem value="Male" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Male</SelectItem>
-                    <SelectItem value="Female" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {!isBadminton ? (
+                <>
+                  {/* GENDER */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      GENDER {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                    </Label>
+                    <Select value={gender} onValueChange={setGender} disabled={isSubmitting || !!player}>
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed">
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Male" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Male</SelectItem>
+                        <SelectItem value="Female" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* CITY */}
-              <div className="space-y-2">
-                <Label htmlFor="city" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  CITY {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
-                </Label>
-                <Input
-                  id="city"
-                  placeholder="e.g. Mumbai"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  disabled={isSubmitting || !!player}
-                  required
-                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-              </div>
+                  {/* CITY */}
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      CITY {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                    </Label>
+                    <Input
+                      id="city"
+                      placeholder="e.g. Mumbai"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      disabled={isSubmitting || !!player}
+                      required
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* FOOD */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      FOOD {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                    </Label>
+                    <Select value={food} onValueChange={setFood} disabled={isSubmitting || !!player}>
+                      <SelectTrigger className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed">
+                        <SelectValue placeholder="Select Veg / Non-Veg" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                        <SelectItem value="Veg" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                          Veg
+                        </SelectItem>
+                        <SelectItem value="Non-Veg" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                          Non-Veg
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* BOXER / SHORT SIZE */}
+                  <div className="space-y-2">
+                    <Label htmlFor="boxerSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      BOXER / SHORT SIZE {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                    </Label>
+                    <Input
+                      id="boxerSize"
+                      placeholder="e.g. M, L, XL, 32"
+                      value={boxerSize}
+                      onChange={(e) => setBoxerSize(e.target.value)}
+                      disabled={isSubmitting || !!player}
+                      required={!player}
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* BLOOD GROUP */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bloodGroup" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                      BLOOD GROUP {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                    </Label>
+                    <Input
+                      id="bloodGroup"
+                      placeholder="e.g. O+, A+, B+, AB+"
+                      value={bloodGroup}
+                      onChange={(e) => setBloodGroup(e.target.value)}
+                      disabled={isSubmitting || !!player}
+                      required={!player}
+                      className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </>
+              )}
 
               {/* JERSEY SIZE */}
               <div className="space-y-2">
@@ -603,34 +708,36 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 />
               </div>
 
-              {/* GRADE */}
-              <div className="space-y-2">
-                <Label htmlFor="player-grade" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                  GRADE {player && <span className="text-red-400 font-bold ml-0.5">*</span>}
-                </Label>
-                <Select value={grade} onValueChange={setGrade} disabled={isSubmitting}>
-                  <SelectTrigger id="player-grade" className="rounded-xl border-2 border-[#38bdf8]/60 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
-                    <SelectValue placeholder={player ? "Select Grade (A+, A, B+, B, C)" : "Select Grade (Optional)"} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
-                    <SelectItem value="A+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                      A+
-                    </SelectItem>
-                    <SelectItem value="A" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                      A
-                    </SelectItem>
-                    <SelectItem value="B+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                      B+
-                    </SelectItem>
-                    <SelectItem value="B" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                      B
-                    </SelectItem>
-                    <SelectItem value="C" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                      C
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* GRADE (Only for editing existing players) */}
+              {player && (
+                <div className="space-y-2">
+                  <Label htmlFor="player-grade" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                    GRADE <span className="text-red-400 font-bold ml-0.5">*</span>
+                  </Label>
+                  <Select value={grade} onValueChange={setGrade} disabled={isSubmitting}>
+                    <SelectTrigger id="player-grade" className="rounded-xl border-2 border-[#38bdf8]/60 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
+                      <SelectValue placeholder="Select Grade (A+, A, B+, B, C)" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                      <SelectItem value="A+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                        A+
+                      </SelectItem>
+                      <SelectItem value="A" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                        A
+                      </SelectItem>
+                      <SelectItem value="B+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                        B+
+                      </SelectItem>
+                      <SelectItem value="B" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                        B
+                      </SelectItem>
+                      <SelectItem value="C" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                        C
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-[#38bdf8]/30">

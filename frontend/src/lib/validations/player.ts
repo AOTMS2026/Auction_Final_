@@ -14,6 +14,9 @@ export const basePlayerSchema = z.object({
   customData: z.string().optional(),
   gender: z.string().optional(),
   city: z.string().optional(),
+  food: z.string().optional(),
+  boxerSize: z.string().optional(),
+  bloodGroup: z.string().optional(),
   playerLevel: z.string().optional(),
   paymentMode: z.string().optional(),
   utrNumber: z.string().optional(),
@@ -53,7 +56,7 @@ export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
     specs: ["Specialization"],
   },
   badminton: {
-    roles: ["Singles Player", "Doubles Player", "Mixed Doubles"],
+    roles: ["Singles Player", "Doubles Player", "Both"],
     stats: ["Matches", "Wins", "Win Percentage"],
     specs: ["Dominated Hand"],
   },
