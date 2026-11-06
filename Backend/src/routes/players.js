@@ -73,8 +73,11 @@ router.get(
     const queryStartTime = performance.now();
     let players = [];
     try {
+      const projection = isOwn
+        ? "-sportFields.originalPhoto"
+        : "-paymentImage -sportFields.originalPhoto";
       players = await Player.find({ auctionId })
-        .select("-paymentImage -sportFields.originalPhoto")
+        .select(projection)
         .sort({ createdAt: -1 })
         .allowDiskUse(true)
         .lean();
