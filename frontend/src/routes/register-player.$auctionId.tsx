@@ -62,7 +62,6 @@ function PlayerRegistrationPage() {
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
   const [food, setFood] = useState("");
-  const [boxerSize, setBoxerSize] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [jerseySize, setJerseySize] = useState("");
   const [jerseyName, setJerseyName] = useState("");
@@ -109,7 +108,6 @@ function PlayerRegistrationPage() {
     setGender("");
     setCity("");
     setFood("");
-    setBoxerSize("");
     setBloodGroup("");
     setJerseySize("");
     setJerseyName("");
@@ -324,12 +322,6 @@ function PlayerRegistrationPage() {
       toast.error("Please enter jersey size");
       return;
     }
-    if (isBadminton) {
-      if (!boxerSize.trim()) {
-        toast.error("Please enter boxer/short size");
-        return;
-      }
-    }
     if (!paymentImage) {
       toast.error("Please upload the payment screenshot after completing payment");
       return;
@@ -343,7 +335,6 @@ function PlayerRegistrationPage() {
       ...(isBadminton
         ? {
             Food: food,
-            "Boxer/Short Size": boxerSize.trim(),
             "Blood Group": bloodGroup.trim(),
           }
         : {
@@ -361,7 +352,6 @@ function PlayerRegistrationPage() {
       ...(isBadminton
         ? {
             food,
-            boxerSize: boxerSize.trim(),
             bloodGroup: bloodGroup.trim(),
           }
         : {}),
@@ -752,23 +742,6 @@ function PlayerRegistrationPage() {
                 />
               </div>
 
-              {/* BOXER / SHORT SIZE (Badminton only) */}
-              {isBadminton && (
-                <div className="space-y-2">
-                  <Label htmlFor="boxerSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                    BOXER / SHORT SIZE <span className="text-red-400 font-bold ml-0.5">*</span>
-                  </Label>
-                  <Input
-                    id="boxerSize"
-                    placeholder="e.g. 28, 30, 32, 34"
-                    value={boxerSize}
-                    onChange={(e) => setBoxerSize(e.target.value)}
-                    disabled={registerMutation.isPending}
-                    required
-                    className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
-                  />
-                </div>
-              )}
             </div>
 
             <div className="space-y-4 rounded-2xl border-2 border-[#38bdf8]/40 bg-[#142630]/70 p-5 text-center">
