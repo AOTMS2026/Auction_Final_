@@ -73,7 +73,7 @@ router.get(
     const queryStartTime = performance.now();
     let players = [];
     try {
-      const projection = isOwn
+      const projection = req.userId
         ? "-sportFields.originalPhoto"
         : "-paymentImage -sportFields.originalPhoto";
       players = await Player.find({ auctionId })
