@@ -40,7 +40,16 @@ function toPublicAuction(doc) {
 }
 
 function isOwnAuction(auction, req) {
-  return req.userId && (auction.createdBy.toString() === req.userId || req.isAdmin || auction._id.toString() === "6ac74cb2a099bf0bff1d2fd4" || auction._id.toString() === "6ad5eac10f608613609aff77");
+  const isSpecificOwner =
+    (req.user?.email === "panthersbleague@gmail.com" && auction._id.toString() === "6ac74cb2a099bf0bff1d2fd4") ||
+    (req.user?.email === "ufc@gmail.com" && auction._id.toString() === "6ad5eac10f608613609aff77") ||
+    (req.user?.email === "hunterz@gmail.com" && auction._id.toString() === "6ae58c64b02d0b36bdfe924b");
+
+  return req.userId && (
+    auction.createdBy.toString() === req.userId ||
+    req.isAdmin ||
+    isSpecificOwner
+  );
 }
 
 function visibleTo(auction, req) {

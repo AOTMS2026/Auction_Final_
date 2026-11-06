@@ -68,6 +68,18 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    food: {
+      type: String,
+      default: "",
+    },
+    boxerSize: {
+      type: String,
+      default: "",
+    },
+    bloodGroup: {
+      type: String,
+      default: "",
+    },
     playerLevel: {
       type: String,
       enum: ["Beginner", "Intermediate", "Advanced", "Professional", ""],

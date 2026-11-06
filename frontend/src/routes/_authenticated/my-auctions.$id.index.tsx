@@ -59,7 +59,7 @@ export const Route = createFileRoute("/_authenticated/my-auctions/$id/")({
 
     const user = await authClient.getCurrentUser();
     const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
-    const isOwner = auction.createdBy === user?.id || (user?.email === "ufc@gmail.com" && params.id === "6ad5eac10f608613609aff77");
+    const isOwner = auction.createdBy === user?.id || (user?.email === "ufc@gmail.com" && params.id === "6ad5eac10f608613609aff77") || (user?.email === "hunterz@gmail.com" && params.id === "6ae58c64b02d0b36bdfe924b");
     if (!user || (!isOwner && !isAdmin)) {
       throw redirect({ to: "/live/$auctionId", params: { auctionId: params.id } });
     }

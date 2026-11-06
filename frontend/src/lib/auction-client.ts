@@ -52,6 +52,9 @@ export type Player = {
   photo?: string | null;
   gender?: string;
   city?: string;
+  food?: string;
+  boxerSize?: string;
+  bloodGroup?: string;
   playerLevel?: string;
   paymentMode?: string;
   utrNumber?: string;
@@ -78,6 +81,9 @@ export type PlayerInput = {
   photo?: string | null;
   gender?: string;
   city?: string;
+  food?: string;
+  boxerSize?: string;
+  bloodGroup?: string;
   playerLevel?: string;
   paymentMode?: string;
   utrNumber?: string;

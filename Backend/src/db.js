@@ -34,6 +34,46 @@ async function connectDB() {
 
   await seedAdminUser();
   await seedPanthersLeagueUser();
+  await seedHunterzUser();
+}
+
+async function seedHunterzUser() {
+  try {
+    const User = require("./models/User");
+    const Auction = require("./models/Auction");
+    const bcrypt = require("bcryptjs");
+    const hunterzEmail = "hunterz@gmail.com";
+    const passwordHash = await bcrypt.hash("Hunterz@2026", 10);
+
+    let user = await User.findOne({ email: hunterzEmail });
+    if (!user) {
+      user = await User.create({
+        email: hunterzEmail,
+        passwordHash,
+        name: "Hunterz Badminton",
+        role: "user",
+      });
+      console.log("[db] Created Hunterz user: hunterz@gmail.com");
+    } else {
+      user.name = "Hunterz Badminton";
+      const isPassValid = await bcrypt.compare("Hunterz@2026", user.passwordHash);
+      if (!isPassValid) {
+        user.passwordHash = passwordHash;
+        await user.save();
+        console.log("[db] Updated password for user: hunterz@gmail.com");
+      }
+    }
+
+    // Ensure Hunterz Badminton Season 1 auction belongs to this user
+    const auction = await Auction.findOne({ name: /Hunterz Badminton/i });
+    if (auction && (!auction.createdBy || auction.createdBy.toString() !== user._id.toString())) {
+      auction.createdBy = user._id;
+      await auction.save();
+      console.log("[db] Linked Hunterz Badminton auction to user:", hunterzEmail);
+    }
+  } catch (err) {
+    console.error("[db] Hunterz user seeding failed:", err.message);
+  }
 }
 
 async function seedPanthersLeagueUser() {

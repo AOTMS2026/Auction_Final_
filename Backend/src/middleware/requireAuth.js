@@ -12,6 +12,7 @@ async function requireAuth(req, res, next) {
     const payload = jwt.verify(match[1], process.env.JWT_SECRET);
     req.userId = payload.sub;
     const user = await User.findById(req.userId).lean();
+    req.user = user;
     req.isAdmin = !!(user && (user.role === 'admin' || user.email === 'aotms@aotms.com' || user.email === 'ameen@gmail.com'));
     next();
   } catch {
@@ -27,6 +28,7 @@ async function optionalAuth(req, _res, next) {
       const payload = jwt.verify(match[1], process.env.JWT_SECRET);
       req.userId = payload.sub;
       const user = await User.findById(req.userId).lean();
+      req.user = user;
       req.isAdmin = !!(user && (user.role === 'admin' || user.email === 'aotms@aotms.com' || user.email === 'ameen@gmail.com'));
     } catch {
       // No valid token: proceed as an anonymous request.
