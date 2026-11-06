@@ -178,22 +178,23 @@ function PlayerRegistrationPage() {
         setDragOffset({ x: 0, y: 0 });
       };
 
-      const handlePaymentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (file.size > 10 * 1024 * 1024) {
-          e.target.value = "";
-          toast.error("Payment screenshot must be less than 10MB");
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = () => setPaymentImage(reader.result as string);
-        reader.readAsDataURL(file);
-      };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handlePaymentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      e.target.value = "";
+      toast.error("Payment screenshot must be less than 10MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => setPaymentImage(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const [isCropping, setIsCropping] = useState(false);
