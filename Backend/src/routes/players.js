@@ -126,7 +126,7 @@ router.post(
     }
 
     const uploadedPhoto = await uploadBase64Image(rest.photo);
-    const uploadedPayment = await uploadBase64Image(rest.paymentImage);
+    const uploadedPayment = await uploadBase64Image(rest.paymentImage, "pitchbid/payment-screenshots");
 
     const player = await Player.create({
       auctionId,
@@ -180,7 +180,7 @@ router.post(
     }
 
     const uploadedPhoto = await uploadBase64Image(rest.photo);
-    const uploadedPayment = await uploadBase64Image(rest.paymentImage);
+    const uploadedPayment = await uploadBase64Image(rest.paymentImage, "pitchbid/payment-screenshots");
 
     const player = await Player.create({
       auctionId,
@@ -247,7 +247,8 @@ router.patch(
     for (const field of updatableFields) {
       if (req.body[field] !== undefined) {
         if (field === "photo" || field === "paymentImage") {
-          const newUrl = await uploadBase64Image(req.body[field]);
+          const folder = field === "paymentImage" ? "pitchbid/payment-screenshots" : "pitchbid";
+          const newUrl = await uploadBase64Image(req.body[field], folder);
           if (newUrl && newUrl !== player[field] && player[field]) {
             deleteImage(player[field]).catch(console.error);
           }

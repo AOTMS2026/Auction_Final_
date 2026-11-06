@@ -26,6 +26,7 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
   const auctionIdStr = String(auction.id || (auction as any)._id || "").toLowerCase();
   const isJerseyOnlyAuction =
     auctionIdStr.includes("6ac74cb2a099bf0bff1d2fd4") ||
+    auctionIdStr.includes("6ad5eac10f608613609aff77") ||
     Boolean(auction.name?.toLowerCase().includes("panthers"));
   const hasChapterColumn =
     !isJerseyOnlyAuction &&
@@ -166,10 +167,16 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
       startY += 8;
     } else {
       const tableRows = teamSoldPlayers.map((p, idx) => {
-        const jerseyNumber = p.trouserSize || "-";
+        const jerseyNumber =
+          p.trouserSize ||
+          (p as any).jerseyNumber ||
+          (p.sportFields as any)?.jerseyNumber ||
+          (p.sportFields as any)?.["Jersey Number"] ||
+          (p.sportFields as any)?.["jerseyNumber"] ||
+          "-";
         const playerName = p.name || "-";
-        const jerseyName = p.jerseyName || "-";
-        const jerseySize = p.jerseySize || "-";
+        const jerseyName = p.jerseyName || (p.sportFields as any)?.jerseyName || "-";
+        const jerseySize = p.jerseySize || (p.sportFields as any)?.jerseySize || "-";
 
         if (isJerseyOnlyAuction) {
           return [jerseyNumber, playerName, jerseyName, jerseySize];
@@ -274,10 +281,16 @@ export function exportAuctionPDF(auction: Auction, players: Player[], teams: Tea
     startY += 4;
 
     const unsoldRows = unsoldPlayers.map((p, idx) => {
-      const jerseyNumber = p.trouserSize || "-";
+      const jerseyNumber =
+        p.trouserSize ||
+        (p as any).jerseyNumber ||
+        (p.sportFields as any)?.jerseyNumber ||
+        (p.sportFields as any)?.["Jersey Number"] ||
+        (p.sportFields as any)?.["jerseyNumber"] ||
+        "-";
       const playerName = p.name || "-";
-      const jerseyName = p.jerseyName || "-";
-      const jerseySize = p.jerseySize || "-";
+      const jerseyName = p.jerseyName || (p.sportFields as any)?.jerseyName || "-";
+      const jerseySize = p.jerseySize || (p.sportFields as any)?.jerseySize || "-";
 
       if (isJerseyOnlyAuction) {
         return [jerseyNumber, playerName, jerseyName, jerseySize];

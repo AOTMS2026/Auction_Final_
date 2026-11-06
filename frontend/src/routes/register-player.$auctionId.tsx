@@ -22,6 +22,7 @@ import { auctionDetailQueryOptions } from "@/lib/queries/auctions";
 import { usePlayers } from "@/hooks/usePlayers";
 import { SPORT_CONFIGS } from "@/lib/validations/player";
 import stadiumImg from "@/assets/stadium-band.jpg";
+import paymentQr from "@/assets/payment-qr.png";
 
 export const Route = createFileRoute("/register-player/$auctionId")({
   loader: async ({ params, context }) => {
@@ -63,6 +64,7 @@ function PlayerRegistrationPage() {
   const [jerseySize, setJerseySize] = useState("");
   const [jerseyName, setJerseyName] = useState("");
   const [trouserSize, setTrouserSize] = useState("");
+  const [paymentImage, setPaymentImage] = useState<string | null>(null);
 
   const [sportFields, setSportFields] = useState<Record<string, any>>({});
 
@@ -106,6 +108,7 @@ function PlayerRegistrationPage() {
     setJerseySize("");
     setJerseyName("");
     setTrouserSize("");
+    setPaymentImage(null);
     setSportFields({});
   };
 
@@ -166,6 +169,21 @@ function PlayerRegistrationPage() {
         setCropImageSrc(rawDataUrl);
         setZoom(1);
         setDragOffset({ x: 0, y: 0 });
+      };
+
+      const handlePaymentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+          e.target.value = "";
+          toast.error("Payment screenshot must be less than 10MB");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => setPaymentImage(reader.result as string);
+        reader.readAsDataURL(file);
       };
       reader.readAsDataURL(file);
     }
@@ -286,6 +304,10 @@ function PlayerRegistrationPage() {
       toast.error("Please enter jersey number");
       return;
     }
+    if (!paymentImage) {
+      toast.error("Please upload the payment screenshot after completing payment");
+      return;
+    }
 
     const customDataStr = `Dominated Hand: ${dominatedHand}`;
     const updatedSportFields = {
@@ -313,7 +335,7 @@ function PlayerRegistrationPage() {
       playerLevel: "",
       paymentMode: "",
       utrNumber: "",
-      paymentImage: null,
+      paymentImage,
     };
 
     setIsLocalSubmitting(true);
@@ -643,6 +665,37 @@ function PlayerRegistrationPage() {
                   required
                   className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold"
                 />
+              </div>
+            </div>
+
+            <div className="space-y-4 rounded-2xl border-2 border-[#38bdf8]/40 bg-[#142630]/70 p-5 text-center">
+              <div>
+                <h2 className="text-sm font-black uppercase tracking-wider text-[#38bdf8]">Payment</h2>
+                <p className="mt-1 text-xs font-medium text-[#f2e9dc]/80">
+                  Scan the QR code, complete the payment, and upload the payment screenshot below.
+                </p>
+              </div>
+              <img
+                src={paymentQr}
+                alt="PhonePe payment QR code"
+                className="mx-auto size-56 rounded-xl bg-white object-contain p-2"
+              />
+              <div className="space-y-2 text-left">
+                <Label htmlFor="payment-screenshot" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                  PAYMENT SCREENSHOT <span className="text-red-400 font-bold ml-0.5">*</span>
+                </Label>
+                <Input
+                  id="payment-screenshot"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePaymentImageChange}
+                  disabled={registerMutation.isPending}
+                  required
+                  className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] file:mr-3 file:rounded-lg file:border-0 file:bg-[#38bdf8] file:px-3 file:py-1 file:text-xs file:font-bold file:text-[#142630]"
+                />
+                {paymentImage && (
+                  <p className="text-xs font-bold text-emerald-400">Payment screenshot selected.</p>
+                )}
               </div>
             </div>
 
