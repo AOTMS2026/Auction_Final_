@@ -108,22 +108,15 @@ export function CurrentPlayerCard({
             </div>
           )}
         </div>
-        <div className="mt-3 flex items-center gap-2 w-full shrink-0 select-none">
-          {player.age != null && (
+        {/* Age only — gender is intentionally not shown on the auction stage,
+            in either Trial or Live mode. */}
+        {player.age != null && (
+          <div className="mt-3 flex items-center gap-2 w-full shrink-0 select-none">
             <div className="flex-1 rounded-xl bg-[#142630] border-2 border-[#38bdf8]/40 text-[#ffffff] px-3 py-2 text-center text-sm sm:text-base font-black shadow-sm">
               {player.age} Years
             </div>
-          )}
-          <div className="flex-1 rounded-xl bg-[#142630] border-2 border-[#38bdf8]/40 text-[#38bdf8] px-3 py-2 text-center text-sm sm:text-base font-black shadow-sm">
-            {(() => {
-              const g = player.gender?.trim().toLowerCase();
-              if (!g) return "Gender: -";
-              if (g === "m" || g === "male") return "Gender: Male";
-              if (g === "f" || g === "w" || g === "female" || g === "woman" || g === "women") return "Gender: Female";
-              return `Gender: ${g.charAt(0).toUpperCase() + g.slice(1)}`;
-            })()}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Right Column: Details & Bid amount */}

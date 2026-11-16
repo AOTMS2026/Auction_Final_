@@ -184,10 +184,14 @@ export function sortPlayersByGradeForList(players: Player[]): Player[] {
 
 /**
  * Builds rows for players export with detected auction fields.
- * Players are sorted strictly according to Grade: A+ -> A -> B+ -> B -> C -> No Grade.
+ * Rows follow the exact order the roster is rendered in the console: grade block
+ * (A++ -> A+ -> A -> B+ -> B -> C -> no grade) then S.No, with players that have
+ * no serial sitting last inside their grade. Auctions whose roster carries no
+ * serials at all keep the legacy grade + name ordering.
  */
 function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
-  const sortedPlayers = sortPlayersByGrade(players);
+  const hasSerialNumbers = players.some((p) => getPlayerSerialNo(p) !== null);
+  const sortedPlayers = hasSerialNumbers ? sortPlayersByGradeForList(players) : sortPlayersByGrade(players);
 
   const isBniAuction =
     auction.id === "6a8edaddd7ed74151dbafab3" ||
@@ -301,7 +305,9 @@ function buildPlayerRows(auction: Auction, players: Player[], teams: Team[]) {
     const soldTeamName = p.teamId ? (teamMap.get(p.teamId) || "Sold") : "-";
 
     const row: Record<string, any> = {
-      "S.No": index + 1,
+      // The player's real serial when the roster has one, otherwise the row
+      // position (which is what the console badge falls back to as well).
+      "S.No": getPlayerSerialNo(p) ?? index + 1,
       "Player Name": p.name || "",
       "Phone Number": p.phone || "-",
     };
