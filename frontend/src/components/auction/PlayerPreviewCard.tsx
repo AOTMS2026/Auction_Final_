@@ -81,6 +81,40 @@ export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: Playe
             )}
           </div>
 
+          <div className="w-full mt-4 grid grid-cols-2 gap-2 text-left">
+            {[
+              ["Age", player.age],
+              ["Hand", player.sportFields?.["Dominated Hand"]],
+              ["Food", player.food || player.sportFields?.["Food"]],
+              ["Blood Group", player.bloodGroup || player.sportFields?.["Blood Group"]],
+              ["Jersey Name", player.jerseyName],
+              ["Jersey Number", player.trouserSize],
+              ["Jersey Size", player.jerseySize],
+            ]
+              .filter(([, value]) => value)
+              .map(([label, value]) => (
+                <div key={label} className="rounded-xl border border-[#38bdf8]/20 bg-[#162a34]/70 px-3 py-2">
+                  <div className="text-[9px] font-black uppercase tracking-wider text-[#38bdf8]">{label}</div>
+                  <div className="mt-0.5 text-xs font-bold text-[#ffffff]">{value}</div>
+                </div>
+              ))}
+          </div>
+
+          {player.paymentImage && (
+            <div className="w-full mt-4 rounded-2xl border-2 border-emerald-400/40 bg-[#162a34]/70 p-3 text-left">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                Payment Screenshot
+              </div>
+              <a href={player.paymentImage} target="_blank" rel="noreferrer">
+                <img
+                  src={player.paymentImage}
+                  alt={`${player.name} payment screenshot`}
+                  className="max-h-64 w-full rounded-xl object-contain bg-white"
+                />
+              </a>
+            </div>
+          )}
+
           {/* Action Button */}
           <div className="w-full mt-4">
             <Button asChild className="w-full rounded-full py-3 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)] hover:scale-105 transition-all border border-white/30">
