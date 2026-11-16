@@ -153,6 +153,35 @@ export function sortPlayersByGrade(players: Player[]): Player[] {
   });
 }
 
+function getPlayerSerialNo(player: Player): number | null {
+  const raw = player.sNo ?? player.sportFields?.["sNo"];
+  if (raw === null || raw === undefined || raw === "") return null;
+  const parsed = Number(raw);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+/**
+ * Ordering used by the auction player list: players are grouped by grade
+ * (A++ -> A+ -> A -> B+ -> B -> C -> no grade) and sorted by serial number
+ * inside each grade. A player added after the roster was seeded has no serial
+ * yet, so it sits at the bottom of its own grade group (oldest first) instead
+ * of the top of the list or the tail of an unrelated grade.
+ */
+export function sortPlayersByGradeForList(players: Player[]): Player[] {
+  return [...players].sort((a, b) => {
+    const rankDiff = getPlayerGradeRank(a.category) - getPlayerGradeRank(b.category);
+    if (rankDiff !== 0) return rankDiff;
+
+    const aSNo = getPlayerSerialNo(a);
+    const bSNo = getPlayerSerialNo(b);
+    if (aSNo !== null && bSNo !== null && aSNo !== bSNo) return aSNo - bSNo;
+    if (aSNo === null && bSNo !== null) return 1;
+    if (aSNo !== null && bSNo === null) return -1;
+
+    return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+  });
+}
+
 /**
  * Builds rows for players export with detected auction fields.
  * Players are sorted strictly according to Grade: A+ -> A -> B+ -> B -> C -> No Grade.

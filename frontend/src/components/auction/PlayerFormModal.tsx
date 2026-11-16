@@ -51,7 +51,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = setControlledOpen || setInternalOpen;
 
-  // 11 Required Fields + Grade (on edit)
+  // 11 Required Fields + Grade (also selectable on add)
   const [photo, setPhoto] = useState<string | null>(player?.photo || null);
   const [name, setName] = useState(player?.name || "");
   const [phone, setPhone] = useState(player?.phone || "");
@@ -346,7 +346,7 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       photo,
       sportFields: updatedSportFields,
       baseValue: player?.baseValue ?? 0,
-      category: player ? grade.trim() : "",
+      category: grade.trim(),
       playerLevel: player?.playerLevel ?? "",
       paymentMode: player?.paymentMode ?? "",
       utrNumber: player?.utrNumber ?? "",
@@ -688,39 +688,37 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                 />
               </div>
 
-              {/* GRADE (Only for editing existing players) */}
-              {player && (
-                <div className="space-y-2">
-                  <Label htmlFor="player-grade" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                    GRADE {!isAdmin && <span className="text-red-400 font-bold ml-0.5">*</span>}
-                  </Label>
-                  <Select value={grade} onValueChange={setGrade} disabled={isSubmitting}>
-                    <SelectTrigger id="player-grade" className="rounded-xl border-2 border-[#38bdf8]/60 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
-                      <SelectValue placeholder="Select Grade (A++, A+, A, B+, B, C)" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
-                      <SelectItem value="A++" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                        A++
-                      </SelectItem>
-                      <SelectItem value="A+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                        A+
-                      </SelectItem>
-                      <SelectItem value="A" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                        A
-                      </SelectItem>
-                      <SelectItem value="B+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                        B+
-                      </SelectItem>
-                      <SelectItem value="B" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                        B
-                      </SelectItem>
-                      <SelectItem value="C" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
-                        C
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {/* GRADE (optional on add, required when a franchise user edits) */}
+              <div className="space-y-2">
+                <Label htmlFor="player-grade" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
+                  GRADE {player && !isAdmin && <span className="text-red-400 font-bold ml-0.5">*</span>}
+                </Label>
+                <Select value={grade} onValueChange={setGrade} disabled={isSubmitting}>
+                  <SelectTrigger id="player-grade" className="rounded-xl border-2 border-[#38bdf8]/60 bg-[#142630]/90 text-[#ffffff] focus:ring-[#38bdf8] font-bold">
+                    <SelectValue placeholder="Select Grade (A++, A+, A, B+, B, C)" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 border-[#38bdf8]/50 bg-[#142630] text-[#ffffff]">
+                    <SelectItem value="A++" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                      A++
+                    </SelectItem>
+                    <SelectItem value="A+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                      A+
+                    </SelectItem>
+                    <SelectItem value="A" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                      A
+                    </SelectItem>
+                    <SelectItem value="B+" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                      B+
+                    </SelectItem>
+                    <SelectItem value="B" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                      B
+                    </SelectItem>
+                    <SelectItem value="C" className="hover:bg-[#1a3a4a] focus:bg-[#1a3a4a] text-[#ffffff] font-bold">
+                      C
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-[#38bdf8]/30">

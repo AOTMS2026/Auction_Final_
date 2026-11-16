@@ -46,7 +46,7 @@ import { usePlayers, playersQueryOptions } from "@/hooks/usePlayers";
 import { useRealtimeUpdates } from "@/hooks/useRealtimeUpdates";
 import { computeTeamStats, formatPoints } from "@/lib/team-stats";
 import { exportAuctionPDF } from "@/lib/pdf-export";
-import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
+import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel, sortPlayersByGradeForList } from "@/lib/excel-export";
 import { auctionClient, type Auction, type Player } from "@/lib/auction-client";
 import { authClient } from "@/lib/auth-client";
 import { useAuth } from "@/hooks/useAuth";
@@ -229,6 +229,10 @@ function AuctionDetailPage() {
   const soldPlayersCount = players.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold").length;
   const pendingPlayersCount = players.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold").length;
 
+  const isHunterzAuction =
+    auction.id === "6ae58c64b02d0b36bdfe924b" ||
+    Boolean(auction.name?.toLowerCase().includes("hunterz"));
+
   const filteredPlayersList = useMemo(() => {
     let list = players;
 
@@ -238,6 +242,13 @@ function AuctionDetailPage() {
       list = list.filter((p) => !!p.teamId || p.auctionRoundStatus === "sold");
     } else if (playerStatusFilter === "pending") {
       list = list.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold");
+    }
+
+    // Grade-grouped ordering (A++ -> A+ -> A -> B+ -> B -> C -> ungraded) with
+    // serial order inside each grade, so a player added after the roster was
+    // seeded (no serial yet) sits at the bottom of its own grade group.
+    if (isHunterzAuction) {
+      list = sortPlayersByGradeForList(list);
     }
 
     if (playerSearchQuery.trim()) {
@@ -254,7 +265,21 @@ function AuctionDetailPage() {
     }
 
     return list;
-  }, [players, playerStatusFilter, playerSearchQuery]);
+  }, [players, playerStatusFilter, playerSearchQuery, isHunterzAuction]);
+
+  // Card serial: the seeded serial when the roster has one, otherwise the
+  // player's position in the grade-grouped order (so newly added players are
+  // not labelled as #1 just because the API returns newest first).
+  const displaySNoMap = useMemo(() => {
+    if (!isHunterzAuction) return null;
+    const map = new Map<string, number>();
+    sortPlayersByGradeForList(players).forEach((p, idx) => {
+      const rawSNo = p.sNo ?? p.sportFields?.["sNo"];
+      const explicit = rawSNo === null || rawSNo === undefined || rawSNo === "" ? NaN : Number(rawSNo);
+      map.set(p.id, Number.isNaN(explicit) ? idx + 1 : explicit);
+    });
+    return map;
+  }, [players, isHunterzAuction]);
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -828,7 +853,8 @@ function AuctionDetailPage() {
             ) : (
               filteredPlayersList.map((player) => {
                 const soldTeam = teams?.find((t) => t.id === player.teamId);
-                const globalSNo = players.findIndex((x) => x.id === player.id) + 1;
+                const globalSNo =
+                  displaySNoMap?.get(player.id) ?? (players.findIndex((x) => x.id === player.id) + 1);
 
                 return (
                   <div
