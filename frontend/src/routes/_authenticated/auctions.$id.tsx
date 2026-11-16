@@ -49,6 +49,7 @@ import { exportAuctionPDF } from "@/lib/pdf-export";
 import { exportCompleteAuctionExcel, exportPlayersExcel, exportTeamsExcel } from "@/lib/excel-export";
 import { auctionClient, type Auction, type Player } from "@/lib/auction-client";
 import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { auctionDetailQueryOptions, teamsQueryOptions, auctionKeys } from "@/lib/queries/auctions";
 import { sportTypeLabels, visibilityLabels } from "@/lib/validations/auction";
@@ -193,6 +194,8 @@ function AuctionDetailPage() {
   const navigate = useNavigate();
   const { auction: initialAuction } = Route.useLoaderData();
   const { data: auction = initialAuction } = useQuery(auctionDetailQueryOptions(initialAuction.id));
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
   const queryClient = useQueryClient();
   useRealtimeUpdates(auction?.id);
   const { players, isPending: playersPending, updatePlayer, deletePlayer, isUpdating: playersUpdating } = usePlayers(auction.id);
@@ -836,6 +839,7 @@ function AuctionDetailPage() {
                       player={player}
                       open={previewPlayerId === player.id}
                       onOpenChange={(open) => !open && setPreviewPlayerId(null)}
+                      onEdit={isAdmin ? () => setEditPlayerId(player.id) : undefined}
                       trigger={
                         <button 
                           className="flex flex-1 items-center gap-4 sm:gap-5 text-left hover:opacity-90 transition-opacity min-w-0 pr-4 cursor-pointer"
@@ -890,11 +894,28 @@ function AuctionDetailPage() {
                                   setEditPlayer(player);
                                 }}
                                 className="px-2.5 py-0.5 rounded-full bg-[#142630] border border-[#38bdf8]/60 text-[#38bdf8] hover:bg-[#38bdf8]/20 hover:text-[#ffffff] transition-all text-xs font-black uppercase flex items-center gap-1 cursor-pointer shadow-sm group/btn"
-                                title="Click to assign or change Grade (A+, A, B+, B, C)"
+                                title="Click to assign or change Grade (A++, A+, A, B+, B, C)"
                               >
                                 <Award className="size-3 text-[#38bdf8] group-hover/btn:scale-110 transition-transform" />
                                 <span>Grade {player.category || "-"}</span>
                               </button>
+                              {isAdmin && (
+                                <>
+                                  <span className="text-[#5c6875]">·</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditPlayerId(player.id);
+                                    }}
+                                    className="px-2.5 py-0.5 rounded-full bg-[#142630] border border-emerald-400/60 text-emerald-300 hover:bg-emerald-500/20 hover:text-[#ffffff] transition-all text-xs font-black uppercase flex items-center gap-1 cursor-pointer shadow-sm group/editbtn"
+                                    title="Edit Player Details (Admin Only)"
+                                  >
+                                    <Pencil className="size-3 text-emerald-400 group-hover/editbtn:scale-110 transition-transform" />
+                                    <span>Edit Details</span>
+                                  </button>
+                                </>
+                              )}
                               {(() => {
                                 const dh = player.sportFields?.["Dominated Hand"] || (player.customData?.startsWith("Dominated Hand: ") ? player.customData.replace("Dominated Hand: ", "") : (player.customData?.includes("BNI") || player.customData?.includes("Family") ? null : player.customData));
                                 if (!dh || dh === "-") return null;
@@ -921,9 +942,11 @@ function AuctionDetailPage() {
                         <DropdownMenuItem onSelect={() => setEditPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer text-[#38bdf8]">
                           <Award className="mr-2 size-4 text-[#38bdf8]" /> Assign / Edit Grade
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer">
-                          <Pencil className="mr-2 size-4 text-[#a1b5d8]" /> Edit player
-                        </DropdownMenuItem>
+                        {isAdmin && (
+                          <DropdownMenuItem onSelect={() => setEditPlayerId(player.id)} className="hover:bg-[#2e343a] cursor-pointer text-emerald-300">
+                            <Pencil className="mr-2 size-4 text-emerald-400" /> Edit Player Details
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onSelect={() => setChangeTeamPlayer(player)} className="hover:bg-[#2e343a] cursor-pointer">
                           <Shield className="mr-2 size-4 text-[#38bdf8]" /> Change Team
                         </DropdownMenuItem>

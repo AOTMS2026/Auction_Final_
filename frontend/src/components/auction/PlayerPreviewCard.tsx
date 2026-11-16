@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FallbackImage } from "@/components/ui/fallback-image";
 import { Button } from "@/components/ui/button";
 import { usePlayerProfile } from "@/hooks/usePlayerProfile";
+import { useAuth } from "@/hooks/useAuth";
 import type { Player } from "@/lib/auction-client";
 
 type PlayerPreviewCardProps = {
@@ -11,9 +12,13 @@ type PlayerPreviewCardProps = {
   trigger: React.ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEdit?: (() => void) | undefined;
 };
 
-export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: PlayerPreviewCardProps) {
+export function PlayerPreviewCard({ player, trigger, open, onOpenChange, onEdit }: PlayerPreviewCardProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
+
   // We only fetch the full profile if the dialog is open to save unnecessary requests
   const { data: profile, isLoading } = usePlayerProfile(player.phone, open);
 
@@ -83,6 +88,7 @@ export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: Playe
 
           <div className="w-full mt-4 grid grid-cols-2 gap-2 text-left">
             {[
+              ["Grade", player.category],
               ["Age", player.age],
               ["Hand", player.sportFields?.["Dominated Hand"]],
               ["Food", player.food || player.sportFields?.["Food"]],
@@ -90,6 +96,7 @@ export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: Playe
               ["Jersey Name", player.jerseyName],
               ["Jersey Number", player.trouserSize],
               ["Jersey Size", player.jerseySize],
+              ["Boxer/Short Size", player.boxerSize || player.sportFields?.["Boxer/Short Size"]],
             ]
               .filter(([, value]) => value)
               .map(([label, value]) => (
@@ -115,8 +122,21 @@ export function PlayerPreviewCard({ player, trigger, open, onOpenChange }: Playe
             </div>
           )}
 
-          {/* Action Button */}
-          <div className="w-full mt-4">
+          {/* Action Buttons */}
+          <div className="w-full mt-4 flex flex-col gap-2.5">
+            {isAdmin && onEdit && (
+              <Button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false);
+                  onEdit();
+                }}
+                className="w-full rounded-full py-2.5 h-auto font-black text-xs text-[#ffffff] bg-[#162a34] hover:bg-[#38bdf8] hover:text-[#142630] border-2 border-[#38bdf8]/70 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Pencil className="size-3.5" />
+                <span>Edit Player Details</span>
+              </Button>
+            )}
             <Button asChild className="w-full rounded-full py-3 h-auto font-black text-sm text-[#ffffff] bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] shadow-[0_0_20px_rgba(249,115,22,0.6)] hover:scale-105 transition-all border border-white/30">
               <Link to="/players/$phone" params={{ phone: player.phone }} onClick={() => onOpenChange(false)}>
                 View Full Profile

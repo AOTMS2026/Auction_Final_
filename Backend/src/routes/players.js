@@ -224,7 +224,7 @@ router.patch(
     const auction = await Auction.findById(player.auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
-    if (req.body.phone !== undefined && req.body.phone.trim() !== player.phone) {
+    if (req.isAdmin && req.body.phone !== undefined && req.body.phone.trim() !== player.phone) {
       const trimmedPhone = req.body.phone.trim();
       const phoneDigits = req.body.phone.replace(/\D/g, "").slice(-10);
       const phoneFilter = phoneDigits && phoneDigits !== trimmedPhone
@@ -244,13 +244,29 @@ router.patch(
       }
     }
 
-    const updatableFields = [
-      "name", "phone", "age", "category", "baseValue", "sNo",
-      "soldPrice", "jerseySize", "jerseyName", "trouserSize",
+    const adminDetailFields = [
+      "name", "phone", "age", "jerseySize", "jerseyName", "trouserSize",
       "customData", "photo", "gender", "city", "playerLevel",
-      "paymentMode", "utrNumber", "paymentImage", "sportFields", "auctionRoundStatus",
+      "paymentMode", "utrNumber", "paymentImage", "sportFields",
       "food", "boxerSize", "bloodGroup"
     ];
+
+    const generalFields = [
+      "category", "baseValue", "sNo", "soldPrice", "auctionRoundStatus"
+    ];
+
+    if (
+      !req.isAdmin &&
+      adminDetailFields.some((f) => req.body[f] !== undefined) &&
+      !generalFields.some((f) => req.body[f] !== undefined) &&
+      req.body.teamId === undefined
+    ) {
+      return res.status(403).json({ error: "Only administrators can edit player details." });
+    }
+
+    const updatableFields = req.isAdmin
+      ? [...generalFields, ...adminDetailFields]
+      : generalFields;
 
     for (const field of updatableFields) {
       if (req.body[field] !== undefined) {
