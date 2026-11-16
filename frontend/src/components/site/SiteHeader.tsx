@@ -141,19 +141,18 @@ export function SiteHeader({ showLandingExport = false }: { showLandingExport?: 
                     {user?.email}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-[#38bdf8]/20" />
-                  {(user?.role === "admin" || user?.email === "aotms@aotms.com") ? (
+                  {(user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com") && (
                     <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-black text-[#f97316]">
                       <Link to="/dashboard">
                         <LayoutDashboard className="mr-2 size-4 text-[#f97316]" /> Admin Panel
                       </Link>
                     </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-bold">
-                      <Link to="/my-auctions">
-                        <LayoutDashboard className="mr-2 size-4 text-[#38bdf8]" /> My Auctions
-                      </Link>
-                    </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-bold">
+                    <Link to="/my-auctions">
+                      <LayoutDashboard className="mr-2 size-4 text-[#38bdf8]" /> My Auctions
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild className="focus:bg-[#234857] focus:text-[#ffffff] cursor-pointer rounded-xl font-bold">
                     <Link to="/bookmarks">
                       <Bookmark className="mr-2 size-4 text-[#38bdf8]" /> Bookmarks

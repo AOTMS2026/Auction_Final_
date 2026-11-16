@@ -119,27 +119,42 @@ async function seedAdminUser() {
   try {
     const User = require("./models/User");
     const bcrypt = require("bcryptjs");
-    const adminEmail = "aotms@aotms.com";
-    const passwordHash = await bcrypt.hash("Aotms@2026", 10);
 
-    let admin = await User.findOne({ email: adminEmail });
-    if (!admin) {
-      admin = await User.create({
-        email: adminEmail,
-        passwordHash,
+    const admins = [
+      {
+        email: "aotms@aotms.com",
         name: "AOTMS",
-        role: "admin",
-      });
-      console.log("[db] Created default Admin user: aotms@aotms.com");
-    } else {
-      admin.role = "admin";
-      admin.name = "AOTMS";
-      const isPassValid = await bcrypt.compare("Aotms@2026", admin.passwordHash);
-      if (!isPassValid) {
-        admin.passwordHash = passwordHash;
+        defaultPassword: "Aotms@2026",
+      },
+      {
+        email: "ameen@gmail.com",
+        name: "Ameen Sayyed",
+        defaultPassword: "Ameen@2026",
+      },
+    ];
+
+    for (const adminData of admins) {
+      let admin = await User.findOne({ email: adminData.email });
+      const passwordHash = await bcrypt.hash(adminData.defaultPassword, 10);
+
+      if (!admin) {
+        admin = await User.create({
+          email: adminData.email,
+          passwordHash,
+          name: adminData.name,
+          role: "admin",
+        });
+        console.log(`[db] Created default Admin user: ${adminData.email}`);
+      } else {
+        admin.role = "admin";
+        if (!admin.name) admin.name = adminData.name;
+        const isPassValid = await bcrypt.compare(adminData.defaultPassword, admin.passwordHash);
+        if (!isPassValid) {
+          admin.passwordHash = passwordHash;
+        }
+        await admin.save();
+        console.log(`[db] Verified & updated Admin user: ${adminData.email} (role: admin)`);
       }
-      await admin.save();
-      console.log("[db] Verified & updated Admin user: aotms@aotms.com");
     }
   } catch (err) {
     console.error("[db] Admin seeding failed:", err.message);

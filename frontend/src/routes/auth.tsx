@@ -64,13 +64,14 @@ function AuthPage() {
       if (target && target !== "/") {
         void navigate({ to: target, replace: true });
       } else {
+        const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
         if (user?.email === "hunterz@gmail.com") {
           void navigate({ to: "/my-auctions/$id", params: { id: "6ae58c64b02d0b36bdfe924b" }, replace: true });
         } else if (user?.email === "ufc@gmail.com") {
           void navigate({ to: "/my-auctions/$id", params: { id: "6ad5eac10f608613609aff77" }, replace: true });
         } else if (user?.email === "panthersbleague@gmail.com") {
           void navigate({ to: "/my-auctions/$id", params: { id: "6ac74cb2a099bf0bff1d2fd4" }, replace: true });
-        } else if (user?.role !== "admin") {
+        } else if (!isAdmin) {
           void navigate({ to: "/my-auctions", replace: true });
         } else {
           void navigate({ to: "/", replace: true });

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Search, Gavel, Users, Trophy, Pencil, Trash, Play, Eye, Sparkles, Building2, ShieldCheck, ArrowRight, RefreshCw, CalendarDays, Landmark } from "lucide-react";
@@ -10,6 +10,7 @@ import { AdminAuctionFormWithPreview } from "@/components/admin/AdminAuctionForm
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { authClient } from "@/lib/auth-client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,15 @@ import { sportTypeLabels } from "@/lib/validations/auction";
 import type { AuctionFormValues } from "@/lib/validations/auction";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return {};
+    const user = await authClient.getCurrentUser();
+    const isAdmin = user?.role === "admin" || user?.email === "aotms@aotms.com" || user?.email === "ameen@gmail.com";
+    if (!isAdmin) {
+      throw redirect({ to: "/my-auctions" });
+    }
+    return { user };
+  },
   component: AdminDashboardPage,
 });
 
