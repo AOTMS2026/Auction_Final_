@@ -151,7 +151,7 @@ function PublicLiveAuctionPage() {
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#0b171e] text-[#f2e9dc]">
       {/* Top Header Navbar */}
-      <header className="shrink-0 h-16 border-b border-[#38bdf8]/30 bg-[#142630]/95 backdrop-blur-xl px-4 flex items-center justify-between shadow-lg select-none">
+      <header className="shrink-0 h-16 md:h-20 lg:h-24 border-b border-[#38bdf8]/30 bg-[#142630]/95 backdrop-blur-xl px-4 flex items-center justify-between shadow-lg select-none">
         {/* Left Section: Live Badge & Auction Title */}
         <div className="flex items-center gap-3">
           <Link
@@ -175,26 +175,30 @@ function PublicLiveAuctionPage() {
           </div>
         </div>
 
-        {/* Center Section: Founder Ameen Sayyed Side Photo & Middle Information Autoscroll */}
-        <div className="flex-1 max-w-xl mx-2 sm:mx-4 hidden md:flex items-center bg-[#0d1c24]/90 border border-[#38bdf8]/40 rounded-full py-1 px-3 shadow-[0_0_20px_rgba(14,165,233,0.25)] overflow-hidden h-11">
-          {/* Side Photo: Founder Ameen Sayyed */}
-          <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-[#38bdf8]/30">
-            <div className="relative size-8 rounded-full p-[2px] bg-gradient-to-tr from-[#ea580c] via-[#38bdf8] to-[#f97316] shadow-[0_0_12px_rgba(56,189,248,0.6)] overflow-hidden flex items-center justify-center shrink-0">
+        {/* Center Section: large Founder identity + autoscroll information */}
+        <div className="flex-1 min-w-0 mx-2 sm:mx-4 hidden lg:flex items-center gap-3 lg:gap-4">
+          {/* Founder identity badge — large photo, designation and name */}
+          <div className="flex shrink-0 items-center gap-2.5 lg:gap-3.5 bg-[#0d1c24]/90 border border-[#38bdf8]/45 rounded-2xl px-3 lg:px-4 shadow-[0_0_28px_rgba(14,165,233,0.3)] h-14 lg:h-[76px]">
+            <div className="relative size-11 xl:size-[52px] 2xl:size-[64px] rounded-full p-[2.5px] lg:p-[3px] bg-gradient-to-tr from-[#ea580c] via-[#38bdf8] to-[#f97316] shadow-[0_0_18px_rgba(56,189,248,0.7)] shrink-0">
               <img
                 src="/Ameen_hq.png"
                 alt="Founder Ameen Sayyed"
-                className="size-full rounded-full object-cover"
+                className="size-full rounded-full object-cover object-top bg-[#0d1c24]"
               />
             </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-[8.5px] font-black uppercase tracking-wider text-[#38bdf8]">Founder</span>
-              <span className="text-[11px] font-black text-white whitespace-nowrap">Ameen Sayyed</span>
+            <div className="flex flex-col justify-center leading-none min-w-0">
+              <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-[12px] font-black uppercase tracking-[0.18em] 2xl:tracking-[0.3em] text-[#38bdf8] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                Founder
+              </span>
+              <span className="text-[15px] xl:text-[21px] 2xl:text-[26px] font-black text-white whitespace-nowrap tracking-tight leading-none mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                Ameen Sayyed
+              </span>
             </div>
           </div>
 
-          {/* Middle Information Autoscroll */}
-          <div className="flex-1 overflow-hidden relative ml-3">
-            <div className="animate-ticker flex items-center gap-8 whitespace-nowrap text-xs font-bold text-[#f2e9dc]/90">
+          {/* Middle Information Autoscroll — hidden only when the header has no room */}
+          <div className="hidden xl:flex flex-1 min-w-0 items-center overflow-hidden relative">
+            <div className="animate-ticker flex items-center gap-8 whitespace-nowrap text-[11px] lg:text-xs font-bold text-[#f2e9dc]/90">
               <span>⭐ Founder: Ameen Sayyed • 🏆 AOTMS Premier Sports Auction Platform • ⚡ Real-Time Live Bidding • 🎯 Empowering Grassroots & Professional Leagues • 🚀 Welcome to {auction.name}!</span>
               <span aria-hidden="true">⭐ Founder: Ameen Sayyed • 🏆 AOTMS Premier Sports Auction Platform • ⚡ Real-Time Live Bidding • 🎯 Empowering Grassroots & Professional Leagues • 🚀 Welcome to {auction.name}!</span>
             </div>
@@ -212,7 +216,7 @@ function PublicLiveAuctionPage() {
             title="Open Live Tracking Record (Sold & Unsold Player Log)"
           >
             <Gavel className="size-4 text-amber-400" />
-            <span className="hidden sm:inline">Tracking Record</span>
+            <span className="hidden 2xl:inline">Tracking Record</span>
             <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-[10px] font-black">
               {soldCount + unsoldCount}
             </span>
@@ -229,7 +233,7 @@ function PublicLiveAuctionPage() {
             title="Download Full Auction Results Excel"
           >
             <FileSpreadsheet className="size-4 text-emerald-400" />
-            <span className="hidden sm:inline">Export Excel</span>
+            <span className="hidden 2xl:inline">Export Excel</span>
           </Button>
 
           <Button
@@ -243,7 +247,7 @@ function PublicLiveAuctionPage() {
             title="Download Full Auction Summary PDF"
           >
             <FileText className="size-4" />
-            <span className="hidden sm:inline">Export PDF</span>
+            <span className="hidden 2xl:inline">Export PDF</span>
           </Button>
         </div>
       </header>
