@@ -17,6 +17,9 @@ export type Auction = {
   bidIncrement: number;
   visibility: Visibility;
   status: AuctionStatus;
+  // Public /register-player and /register-team links accept entries only while
+  // this is true. Absent on older records, which means open.
+  registrationOpen?: boolean;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -111,6 +114,7 @@ export type AuctionInput = {
   bidIncrement: number;
   visibility: Visibility;
   status?: AuctionStatus;
+  registrationOpen?: boolean;
 };
 
 export type AuctionFilters = {

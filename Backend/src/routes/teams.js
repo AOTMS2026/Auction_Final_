@@ -153,8 +153,13 @@ router.post(
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const auction = await Auction.findById(auctionId).select("_id").lean().catch(() => null);
+    const auction = await Auction.findById(auctionId).select("_id registrationOpen").lean().catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
+
+    // The organizer can expire the public link at any time.
+    if (auction.registrationOpen === false) {
+      return res.status(403).json({ error: "Team registration for this auction is closed." });
+    }
 
     let uploadedLogo = null;
     if (rest.logo) {

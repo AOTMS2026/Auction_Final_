@@ -71,6 +71,14 @@ const auctionSchema = new mongoose.Schema(
       enum: STATUSES,
       default: "draft",
     },
+    // Public registration links (/register-player/:id, /register-team/:id)
+    // only accept entries while this is true. Flipping it to false expires
+    // the share link without touching the auction, its players or its teams.
+    // Auctions created before this field existed read as open.
+    registrationOpen: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true },
 );

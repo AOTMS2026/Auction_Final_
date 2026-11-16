@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield, RotateCcw, Search, X, Loader2, Check, Award, Gavel } from "lucide-react";
+import { CalendarDays, Copy, Users, Eye, MoreVertical, Pencil, Trash, Share2, UserCheck, FileText, Download, FileSpreadsheet, Shield, RotateCcw, Search, X, Loader2, Check, Award, Gavel, Lock, LockOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import * as XLSX from "xlsx";
@@ -169,6 +169,10 @@ function ManageAuctionPage() {
   const [isSharingPlayerLink, setIsSharingPlayerLink] = useState(false);
   const [isSharingTeamLink, setIsSharingTeamLink] = useState(false);
   const [isRepeatingUnsold, setIsRepeatingUnsold] = useState(false);
+  const [isTogglingRegistration, setIsTogglingRegistration] = useState(false);
+
+  // Missing flag on older auctions means the public links are still open.
+  const registrationOpen = auction.registrationOpen !== false;
 
   function copyCode() {
     navigator.clipboard.writeText(auction.id);
@@ -189,6 +193,24 @@ function ManageAuctionPage() {
     navigator.clipboard.writeText(url);
     toast.success("Team registration link copied to clipboard!");
     setTimeout(() => setIsSharingTeamLink(false), 1200);
+  }
+
+  async function handleToggleRegistration() {
+    const next = !registrationOpen;
+    setIsTogglingRegistration(true);
+    try {
+      await auctionClient.update(auction.id, { registrationOpen: next });
+      await queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auction.id) });
+      toast.success(
+        next
+          ? "Registration link is live again."
+          : "Registration link expired — new entries are now blocked.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update registration settings.");
+    } finally {
+      setIsTogglingRegistration(false);
+    }
   }
 
   function handleStartAuction() {
@@ -743,6 +765,30 @@ function ManageAuctionPage() {
                     <><Check className="size-4 text-emerald-400 animate-bounce" /> Copied Link!</>
                   ) : (
                     <><Share2 className="size-4" /> Share Registration Link</>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleToggleRegistration}
+                  disabled={isTogglingRegistration}
+                  variant="outline"
+                  title={
+                    registrationOpen
+                      ? "Expire the public player & team registration links"
+                      : "Reopen the public registration links"
+                  }
+                  className={cn(
+                    "gap-2 rounded-full border-2 font-extrabold text-xs transition-all shadow-sm cursor-pointer disabled:opacity-75",
+                    registrationOpen
+                      ? "border-[#f97316]/60 bg-[#162a34] text-[#f97316] hover:bg-[#f97316] hover:text-[#ffffff]"
+                      : "border-emerald-500/60 bg-[#162a34] text-emerald-300 hover:bg-emerald-600 hover:text-white",
+                  )}
+                >
+                  {isTogglingRegistration ? (
+                    <><Loader2 className="size-4 animate-spin" /> Updating...</>
+                  ) : registrationOpen ? (
+                    <><Lock className="size-4" /> Expire registration link</>
+                  ) : (
+                    <><LockOpen className="size-4" /> Reopen registration link</>
                   )}
                 </Button>
               </div>

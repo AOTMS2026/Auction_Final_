@@ -164,6 +164,11 @@ router.post(
     const auction = await Auction.findById(auctionId).catch(() => null);
     if (!auction) return res.status(404).json({ error: "Auction not found" });
 
+    // The organizer can expire the public link at any time.
+    if (auction.registrationOpen === false) {
+      return res.status(403).json({ error: "Player registration for this auction is closed." });
+    }
+
     if (rest.sportFields && typeof rest.sportFields === "object") {
       delete rest.sportFields.originalPhoto;
     }

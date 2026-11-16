@@ -147,6 +147,30 @@ function PlayerRegistrationPage() {
     );
   }
 
+  // The organizer can expire this link at any time; the form is replaced by a
+  // closed notice while the auction, players and teams stay untouched.
+  if (auction.registrationOpen === false) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <RegistrationHeader />
+        <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+          <div className="max-w-md w-full bg-card rounded-2xl p-8 card-shadow border border-border">
+            <h2 className="text-xl font-bold text-foreground mb-2">Registration Closed</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Player registration for <span className="font-semibold text-foreground">{auction.name}</span> is closed.
+              Please contact the tournament organizers if you still need to be added to this auction.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button variant="outline" onClick={() => refetch()}>
+                Refresh
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const isBadminton = (auction.sportType || "").toLowerCase() === "badminton";
   const config = SPORT_CONFIGS[auction.sportType] || SPORT_CONFIGS["cricket"];
   const availableRoles = Array.from(

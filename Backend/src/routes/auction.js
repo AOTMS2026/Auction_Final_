@@ -33,6 +33,8 @@ function toPublicAuction(doc) {
     bidIncrement: doc.bidIncrement,
     visibility: doc.visibility,
     status: doc.status,
+    // Legacy auctions saved before the flag existed count as open.
+    registrationOpen: doc.registrationOpen !== false,
     createdBy: doc.createdBy.toString(),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -164,10 +166,18 @@ router.patch(
       return res.status(400).json({ error: `status must be one of: ${AUCTION_STATUSES.join(", ")}` });
     }
 
-    const fields = ["sportType", "name", "startsAt", "playersPerTeam", "pointsPerTeam", "minimumBid", "maxBid", "bidIncrement", "visibility", "status"];
+    const fields = ["sportType", "name", "startsAt", "playersPerTeam", "pointsPerTeam", "minimumBid", "maxBid", "bidIncrement", "visibility", "status", "registrationOpen"];
     for (const field of fields) {
       if (Object.prototype.hasOwnProperty.call(req.body, field)) {
-        auction[field] = field === "startsAt" ? new Date(req.body[field]) : req.body[field];
+        if (field === "startsAt") {
+          auction[field] = new Date(req.body[field]);
+        } else if (field === "registrationOpen") {
+          // Accept JSON booleans as well as "true"/"false" strings.
+          const value = req.body[field];
+          auction[field] = !(value === false || value === "false" || value === 0 || value === "0");
+        } else {
+          auction[field] = req.body[field];
+        }
       }
     }
     if (req.body.coverImage !== undefined) {

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Pencil } from "lucide-react";
+import { CheckCircle2, Loader2, Pencil, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { RegistrationHeader } from "@/components/site/RegistrationHeader";
 import { Button } from "@/components/ui/button";
@@ -303,6 +303,13 @@ function PublicRegisterTeamPage() {
         ) : isError || !auction ? (
           <div className="bg-[#162a34]/95 p-8 rounded-3xl border-2 border-destructive/40 text-center card-shadow">
             <p className="text-destructive font-medium">Please check the link and try again.</p>
+          </div>
+        ) : auction.registrationOpen === false ? (
+          <div className="bg-[#162a34]/95 p-8 rounded-3xl border-2 border-[#f97316]/50 text-center card-shadow">
+            <p className="text-lg font-black text-[#ffffff] mb-2">Team Registration Closed</p>
+            <p className="text-sm text-[#f2e9dc]/70">
+              The organizer has closed team registration for {auction.name}. Please contact them directly if you still need a team.
+            </p>
           </div>
         ) : (
           <div className="bg-[#162a34]/95 backdrop-blur-xl rounded-3xl border-2 border-[#38bdf8]/40 shadow-[0_20px_60px_rgba(15,35,45,0.9)] overflow-hidden text-[#ffffff]">
