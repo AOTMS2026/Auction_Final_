@@ -53,7 +53,6 @@ export type Player = {
   gender?: string;
   city?: string;
   food?: string;
-  boxerSize?: string;
   bloodGroup?: string;
   playerLevel?: string;
   paymentMode?: string;
@@ -82,7 +81,6 @@ export type PlayerInput = {
   gender?: string;
   city?: string;
   food?: string;
-  boxerSize?: string;
   bloodGroup?: string;
   playerLevel?: string;
   paymentMode?: string;

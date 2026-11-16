@@ -72,9 +72,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
   const [food, setFood] = useState(
     player?.food || player?.sportFields?.["Food"] || player?.sportFields?.["food"] || ""
   );
-  const [boxerSize, setBoxerSize] = useState(
-    player?.boxerSize || player?.sportFields?.["Boxer/Short Size"] || player?.sportFields?.["boxerSize"] || player?.sportFields?.["Short Size"] || ""
-  );
   const [bloodGroup, setBloodGroup] = useState(
     player?.bloodGroup || player?.sportFields?.["Blood Group"] || player?.sportFields?.["bloodGroup"] || ""
   );
@@ -117,7 +114,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       setGender("");
       setCity("");
       setFood("");
-      setBoxerSize("");
       setBloodGroup("");
       setJerseySize("");
       setJerseyName("");
@@ -147,9 +143,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       );
       setCity(player.city || "");
       setFood(player.food || player.sportFields?.["Food"] || player.sportFields?.["food"] || "");
-      setBoxerSize(
-        player.boxerSize || player.sportFields?.["Boxer/Short Size"] || player.sportFields?.["boxerSize"] || player.sportFields?.["Short Size"] || ""
-      );
       setBloodGroup(player.bloodGroup || player.sportFields?.["Blood Group"] || player.sportFields?.["bloodGroup"] || "");
       setJerseySize(player.jerseySize || "");
       setJerseyName(player.jerseyName || "");
@@ -313,12 +306,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
         toast.error("Please enter jersey size");
         return;
       }
-      if (isBadminton) {
-        if (!boxerSize.trim()) {
-          toast.error("Please enter boxer/short size");
-          return;
-        }
-      }
     }
 
     if (player && !isAdmin && !grade.trim()) {
@@ -327,14 +314,13 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
     }
 
     const customDataStr = dominatedHand ? `Dominated Hand: ${dominatedHand}` : (player?.customData || "");
-    const updatedSportFields = {
+    const updatedSportFields: Record<string, any> = {
       ...sportFields,
       role: position,
       "Dominated Hand": dominatedHand,
       ...(isBadminton
         ? {
             Food: food,
-            "Boxer/Short Size": boxerSize.trim(),
             "Blood Group": bloodGroup.trim(),
           }
         : {
@@ -352,7 +338,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
       gender: isBadminton ? "" : gender,
       city: isBadminton ? "" : city.trim(),
       food: isBadminton ? food : (player?.food || ""),
-      boxerSize: isBadminton ? boxerSize.trim() : (player?.boxerSize || ""),
       bloodGroup: isBadminton ? bloodGroup.trim() : (player?.bloodGroup || ""),
       jerseySize: jerseySize.trim(),
       jerseyName: jerseyName.trim(),
@@ -702,24 +687,6 @@ export function PlayerFormModal({ auctionId, sportType, playersPerTeam, player, 
                   className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
-
-              {/* BOXER / SHORT SIZE (Badminton only) */}
-              {isBadminton && (
-                <div className="space-y-2">
-                  <Label htmlFor="boxerSize" className="text-xs font-black uppercase tracking-wider text-[#38bdf8]">
-                    BOXER / SHORT SIZE {!player && <span className="text-red-400 font-bold ml-0.5">*</span>}
-                  </Label>
-                  <Input
-                    id="boxerSize"
-                    placeholder="e.g. 28, 30, 32, 34"
-                    value={boxerSize}
-                    onChange={(e) => setBoxerSize(e.target.value)}
-                    disabled={isSubmitting || !canEditDetails}
-                    required={!player}
-                    className="rounded-xl border-2 border-[#38bdf8]/40 bg-[#142630]/90 text-[#ffffff] placeholder:text-[#8f9ba7]/50 focus-visible:ring-[#38bdf8] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
-                </div>
-              )}
 
               {/* GRADE (Only for editing existing players) */}
               {player && (

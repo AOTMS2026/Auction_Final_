@@ -31,7 +31,6 @@ function toPublicPlayer(doc) {
     gender: doc.gender,
     city: doc.city,
     food: doc.food,
-    boxerSize: doc.boxerSize,
     bloodGroup: doc.bloodGroup,
     playerLevel: doc.playerLevel,
     paymentMode: doc.paymentMode,
@@ -248,7 +247,7 @@ router.patch(
       "name", "phone", "age", "jerseySize", "jerseyName", "trouserSize",
       "customData", "photo", "gender", "city", "playerLevel",
       "paymentMode", "utrNumber", "paymentImage", "sportFields",
-      "food", "boxerSize", "bloodGroup"
+      "food", "bloodGroup"
     ];
 
     const generalFields = [

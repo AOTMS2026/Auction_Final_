@@ -96,7 +96,6 @@ export function PlayerPreviewCard({ player, trigger, open, onOpenChange, onEdit 
               ["Jersey Name", player.jerseyName],
               ["Jersey Number", player.trouserSize],
               ["Jersey Size", player.jerseySize],
-              ["Boxer/Short Size", player.boxerSize || player.sportFields?.["Boxer/Short Size"]],
             ]
               .filter(([, value]) => value)
               .map(([label, value]) => (

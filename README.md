@@ -87,7 +87,7 @@ Unlike single-sport auction tools, AOTMS is engineered with a modular sport-attr
 * **Player Roles:** Singles Player, Doubles Player, Both (Versatile).
 * **Specializations:** Dominated Hand (Right / Left).
 * **Tracked Statistics:** Matches Played, Wins, Win Percentage, Tournament Honors.
-* **Apparel Specifications:** Jersey Name, Jersey Number, Jersey Size, Boxer/Short Waist Size (e.g., 28, 30, 32, 34).
+* **Apparel Specifications:** Jersey Name, Jersey Number, Jersey Size.
 
 ### 3. ⚽ Football (Soccer)
 * **Player Roles:** Goalkeeper, Center Back / Defender, Midfielder, Winger, Forward / Striker.
@@ -118,8 +118,8 @@ Unlike single-sport auction tools, AOTMS is engineered with a modular sport-attr
 ### 2. Self-Service Public Registration Portals
 * **Dedicated Registration URLs & QR Codes:** Shareable links (`/register-player/:auctionId` and `/register-team/:auctionId`) that organizers can print on posters or blast on social media.
 * **Interactive Image Cropper:** Allows players to upload their profile photos and visually crop them into high-resolution circular cards directly in their browser.
-* **Sport-Adaptive Form Fields:** Form inputs automatically morph based on the tournament sport (e.g., batting style for cricket, short size for badminton).
-* **Complete Kit & Logistics Sizing:** Captures player jersey name, jersey number, jersey size (S, M, L, XL, XXL, 3XL), trouser/pant size, and boxer/short size.
+* **Sport-Adaptive Form Fields:** Form inputs automatically morph based on the tournament sport (e.g., batting style for cricket, food & blood group for badminton).
+* **Complete Kit & Logistics Sizing:** Captures player jersey name, jersey number, and jersey size (S, M, L, XL, XXL, 3XL).
 * **Payment & UTR Verification:** Players select payment mode (UPI, Google Pay, PhonePe, Cash, Bank Transfer), enter the bank UTR transaction number, and upload their payment screenshot.
 * **Anti-Duplicate Safety:** Automatic validation prevents duplicate phone numbers from registering twice in the same tournament.
 
@@ -296,7 +296,6 @@ Represents an athlete registered in the auction pool.
   jerseySize: { type: String, default: "" },
   jerseyName: { type: String, default: "" },
   trouserSize: { type: String, default: "" },
-  boxerSize: { type: String, default: "" },             // For Badminton/Indoor sports
   
   // Payment Verification
   paymentMode: { type: String, default: "" },           // "UPI", "Cash", etc.

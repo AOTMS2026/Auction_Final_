@@ -15,7 +15,6 @@ export const basePlayerSchema = z.object({
   gender: z.string().optional(),
   city: z.string().optional(),
   food: z.string().optional(),
-  boxerSize: z.string().optional(),
   bloodGroup: z.string().optional(),
   playerLevel: z.string().optional(),
   paymentMode: z.string().optional(),
@@ -61,19 +60,6 @@ export const SPORT_CONFIGS: Record<SportType, SportConfig> = {
     specs: ["Dominated Hand"],
   },
 };
-
-export const BOXER_SIZES = [
-  "26",
-  "28",
-  "30",
-  "32",
-  "34",
-  "36",
-  "38",
-  "40",
-  "42",
-  "44",
-] as const;
 
 export type PlayerFormData = z.infer<typeof basePlayerSchema> & {
   sportFields: Record<string, any>;
