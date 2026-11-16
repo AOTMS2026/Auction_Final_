@@ -1027,7 +1027,7 @@ function AuctioneerConsole() {
         <div className="flex-1 min-w-0 mx-2 sm:mx-4 hidden lg:flex items-center gap-3 lg:gap-4">
           {/* Founder identity badge — large photo, designation and name */}
           <div className="flex shrink-0 items-center gap-2.5 lg:gap-3.5 bg-[#0d1c24]/90 border border-[#38bdf8]/45 rounded-2xl px-3 lg:px-4 shadow-[0_0_28px_rgba(14,165,233,0.3)] h-14 lg:h-[76px]">
-            <div className="relative size-11 xl:size-[52px] 2xl:size-[64px] rounded-full p-[2.5px] lg:p-[3px] bg-gradient-to-tr from-[#ea580c] via-[#38bdf8] to-[#f97316] shadow-[0_0_18px_rgba(56,189,248,0.7)] shrink-0">
+            <div className="relative size-11 xl:size-[48px] 2xl:size-[56px] rounded-full p-[2.5px] lg:p-[3px] bg-gradient-to-tr from-[#ea580c] via-[#38bdf8] to-[#f97316] shadow-[0_0_18px_rgba(56,189,248,0.7)] shrink-0">
               <img
                 src="/Ameen_hq.png"
                 alt="Founder Ameen Sayyed"
@@ -1038,7 +1038,7 @@ function AuctioneerConsole() {
               <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-[12px] font-black uppercase tracking-[0.18em] 2xl:tracking-[0.3em] text-[#38bdf8] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                 Founder
               </span>
-              <span className="text-[15px] xl:text-[21px] 2xl:text-[26px] font-black text-white whitespace-nowrap tracking-tight leading-none mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+              <span className="text-[15px] xl:text-[19px] 2xl:text-[23px] font-black text-white whitespace-nowrap tracking-tight leading-none mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
                 Ameen Sayyed
               </span>
             </div>
