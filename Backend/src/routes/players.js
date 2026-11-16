@@ -38,6 +38,7 @@ function toPublicPlayer(doc) {
     utrNumber: doc.utrNumber,
     paymentImage: doc.paymentImage,
     sportFields: doc.sportFields,
+    sNo: doc.sNo != null ? doc.sNo : (doc.sportFields?.get ? doc.sportFields.get('sNo') : doc.sportFields?.sNo),
     auctionRoundStatus: doc.auctionRoundStatus,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -241,7 +242,7 @@ router.patch(
     }
 
     const updatableFields = [
-      "name", "phone", "age", "category", "baseValue",
+      "name", "phone", "age", "category", "baseValue", "sNo",
       "soldPrice", "jerseySize", "jerseyName", "trouserSize",
       "customData", "photo", "gender", "city", "playerLevel",
       "paymentMode", "utrNumber", "paymentImage", "sportFields", "auctionRoundStatus",

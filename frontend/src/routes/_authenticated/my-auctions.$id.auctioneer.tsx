@@ -381,49 +381,39 @@ function AuctioneerConsole() {
     }
   }
 
-  function getNextAvailableTeamId(fromTeamId: string): string | null {
-    if (orderedTeams.length === 0) return null;
-    const startIndex = orderedTeams.findIndex((t) => t.id === fromTeamId);
-    if (startIndex === -1) return null;
-
-    for (let i = 1; i <= orderedTeams.length; i++) {
-      const nextIndex = (startIndex + i) % orderedTeams.length;
-      const candidateTeam = orderedTeams[nextIndex];
-      if (!candidateTeam) continue;
-      const stats = computeTeamStats(candidateTeam, effectivePlayers, auction);
-      if (stats.reservedPlayers > 0) {
-        return candidateTeam.id;
-      }
-    }
-    return null;
+  function effectiveStatus(player: Player): AuctionRoundStatus {
+    return trialOverrides[player.id]?.auctionRoundStatus ?? player.auctionRoundStatus ?? "pending";
   }
 
-  function handleTeamSelect(teamId: string) {
-    if (selectedTeamId === teamId) return;
-    setSelectedTeamId(teamId);
-    if (isAuctioneer) {
-      emitAuctionEvent("stageUpdate", {
-        currentPlayerId,
-        currentBid,
-        selectedTeamId: teamId,
-      });
-    }
-  }
+  const effectivePlayers: Player[] = players.map((p) => {
+    const override = trialOverrides[p.id];
+    return override
+      ? {
+          ...p,
+          teamId: override.teamId !== undefined ? override.teamId : p.teamId,
+          soldPrice: override.soldPrice !== undefined ? override.soldPrice : p.soldPrice,
+          auctionRoundStatus: override.auctionRoundStatus || p.auctionRoundStatus,
+        }
+      : p;
+  });
 
-  // Auto-select initial random player on start if none is currently selected
-  useEffect(() => {
-    if (playersPending || currentPlayerId) return;
-    const pending = players.filter((p) => effectiveStatus(p) === "pending");
-    if (pending.length > 0) {
-      const queue = createShuffledQueue(pending);
-      const firstId = queue[0];
-      const firstPlayer = players.find((p) => p.id === firstId);
-      if (firstPlayer) {
-        startNewLot(firstPlayer);
-        setShuffledIds(queue.filter((id) => id !== firstId));
-      }
+  const pendingPlayers = players.filter((p) => effectiveStatus(p) === "pending");
+  const soldCount = players.filter((p) => effectiveStatus(p) === "sold").length;
+  const unsoldCount = players.filter((p) => effectiveStatus(p) === "unsold").length;
+  const currentPlayer = players.find((p) => p.id === currentPlayerId) ?? null;
+
+  const isHunterzAuction =
+    auction.id === "6ae58c64b02d0b36bdfe924b" ||
+    Boolean(auction.name?.toLowerCase().includes("hunterz"));
+
+  function getPlayerSNo(p: Player, fallbackIdx: number = 9999): number {
+    if (p.sNo != null) return p.sNo;
+    if (p.sportFields?.["sNo"] != null) {
+      const parsed = Number(p.sportFields["sNo"]);
+      if (!isNaN(parsed)) return parsed;
     }
-  }, [playersPending]);
+    return fallbackIdx;
+  }
 
   function getSpecialPriority(name: string): number {
     const n = name.toLowerCase();
@@ -454,6 +444,42 @@ function AuctioneerConsole() {
     deprioritizeId?: string | null
   ): string[] {
     const pool = excludeId ? pendingList.filter((p) => p.id !== excludeId) : pendingList;
+
+    if (isHunterzAuction) {
+      // 1. Grade A++ members come first, in strict serial order (S.NO 1, 2, 3... 14)
+      const aPlusPlus = pool
+        .filter((p) => (p.category || "").trim().toUpperCase() === "A++")
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+
+      // 2. Grade B+ members come second, in strict serial order (S.NO 99, 100, 101... 112)
+      const bPlus = pool
+        .filter((p) => (p.category || "").trim().toUpperCase() === "B+")
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+
+      // 3. Once A++ and B+ are completed, Grade A+ and A players come shuffled together
+      const aAndAPlus = pool.filter((p) => {
+        const cat = (p.category || "").trim().toUpperCase();
+        return cat === "A+" || cat === "A";
+      });
+      const shuffledAAndAPlus = shuffleArray(aAndAPlus);
+
+      // 4. Any remaining pending players (others)
+      const others = pool.filter((p) => {
+        const cat = (p.category || "").trim().toUpperCase();
+        return cat !== "A++" && cat !== "B+" && cat !== "A+" && cat !== "A";
+      });
+      const shuffledOthers = shuffleArray(others);
+
+      const combined = [
+        ...aPlusPlus.map((p) => p.id),
+        ...bPlus.map((p) => p.id),
+        ...shuffledAAndAPlus.map((p) => p.id),
+        ...shuffledOthers.map((p) => p.id),
+      ];
+
+      return combined;
+    }
+
     const priorityPending = pool.filter((p) => getSpecialPriority(p.name) !== Infinity);
     const nonPriorityPending = pool.filter((p) => getSpecialPriority(p.name) === Infinity);
 
@@ -478,6 +504,24 @@ function AuctioneerConsole() {
     const newQueue = createShuffledQueue(currentPending, excludeId, deprioritizeId ?? replacedPlayerId);
     setShuffledIds(newQueue);
     return newQueue;
+  }
+
+  function startNewLot(player: Player, soldTeamId?: string | null) {
+    setCurrentPlayerId(player.id);
+    const initialBid = player.baseValue && player.baseValue > 0 ? player.baseValue : auction.minimumBid;
+    setCurrentBid(initialBid);
+
+    const referenceTeamId = soldTeamId !== undefined ? soldTeamId : lastSoldTeamId;
+    const finalTeamId = referenceTeamId && teams.length > 0 ? referenceTeamId : null;
+    setSelectedTeamId(finalTeamId);
+
+    if (isAuctioneer) {
+      emitAuctionEvent("stageUpdate", {
+        currentPlayerId: player.id,
+        currentBid: initialBid,
+        selectedTeamId: finalTeamId,
+      });
+    }
   }
 
   // Keep shuffled queue synchronized with pending players
@@ -580,21 +624,61 @@ function AuctioneerConsole() {
     }
   }
 
-  function effectiveStatus(player: Player): AuctionRoundStatus {
-    return trialOverrides[player.id]?.auctionRoundStatus ?? player.auctionRoundStatus ?? "pending";
+  function getNextAvailableTeamId(fromTeamId: string): string | null {
+    if (orderedTeams.length === 0) return null;
+    const startIndex = orderedTeams.findIndex((t) => t.id === fromTeamId);
+    if (startIndex === -1) return null;
+
+    for (let i = 1; i <= orderedTeams.length; i++) {
+      const nextIndex = (startIndex + i) % orderedTeams.length;
+      const candidateTeam = orderedTeams[nextIndex];
+      if (!candidateTeam) continue;
+      const stats = computeTeamStats(candidateTeam, effectivePlayers, auction);
+      if (stats.reservedPlayers > 0) {
+        return candidateTeam.id;
+      }
+    }
+    return null;
   }
 
-  const effectivePlayers: Player[] = players.map((p) => {
-    const override = trialOverrides[p.id];
-    return override
-      ? {
-          ...p,
-          teamId: override.teamId !== undefined ? override.teamId : p.teamId,
-          soldPrice: override.soldPrice !== undefined ? override.soldPrice : p.soldPrice,
-          auctionRoundStatus: override.auctionRoundStatus || p.auctionRoundStatus,
+  function handleTeamSelect(teamId: string) {
+    if (selectedTeamId === teamId) return;
+    setSelectedTeamId(teamId);
+    if (isAuctioneer) {
+      emitAuctionEvent("stageUpdate", {
+        currentPlayerId,
+        currentBid,
+        selectedTeamId: teamId,
+      });
+    }
+  }
+
+  // Auto-select initial player on start if none is currently selected
+  useEffect(() => {
+    if (playersPending) return;
+    const pending = players.filter((p) => effectiveStatus(p) === "pending");
+    if (pending.length === 0) return;
+
+    if (!currentPlayerId) {
+      const queue = createShuffledQueue(pending);
+      const firstId = queue[0];
+      const firstPlayer = players.find((p) => p.id === firstId);
+      if (firstPlayer) {
+        startNewLot(firstPlayer);
+        setShuffledIds(queue.filter((id) => id !== firstId));
+      }
+    } else if (isHunterzAuction && soldCount === 0 && unsoldCount === 0) {
+      const queue = createShuffledQueue(pending);
+      const firstId = queue[0];
+      if (firstId && currentPlayerId !== firstId) {
+        const firstPlayer = players.find((p) => p.id === firstId);
+        if (firstPlayer) {
+          startNewLot(firstPlayer);
+          setShuffledIds(queue.filter((id) => id !== firstId));
         }
-      : p;
-  });
+      }
+    }
+  }, [playersPending, isHunterzAuction, soldCount, unsoldCount]);
 
   const teamStatsMap = useMemo(() => {
     const map = new Map<string, ReturnType<typeof computeTeamStats>>();
@@ -607,33 +691,11 @@ function AuctioneerConsole() {
   const playerSNoMap = useMemo(() => {
     const map = new Map<string, number>();
     players.forEach((p, idx) => {
-      map.set(p.id, idx + 1);
+      const explicitSNo = p.sNo ?? (p.sportFields?.["sNo"] ? Number(p.sportFields["sNo"]) : undefined);
+      map.set(p.id, explicitSNo !== undefined ? explicitSNo : idx + 1);
     });
     return map;
   }, [players]);
-
-  const pendingPlayers = players.filter((p) => effectiveStatus(p) === "pending");
-  const soldCount = players.filter((p) => effectiveStatus(p) === "sold").length;
-  const unsoldCount = players.filter((p) => effectiveStatus(p) === "unsold").length;
-  const currentPlayer = players.find((p) => p.id === currentPlayerId) ?? null;
-
-  function startNewLot(player: Player, soldTeamId?: string | null) {
-    setCurrentPlayerId(player.id);
-    const initialBid = player.baseValue && player.baseValue > 0 ? player.baseValue : auction.minimumBid;
-    setCurrentBid(initialBid);
-
-    const referenceTeamId = soldTeamId !== undefined ? soldTeamId : lastSoldTeamId;
-    const finalTeamId = referenceTeamId && teams.length > 0 ? referenceTeamId : null;
-    setSelectedTeamId(finalTeamId);
-
-    if (isAuctioneer) {
-      emitAuctionEvent("stageUpdate", {
-        currentPlayerId: player.id,
-        currentBid: initialBid,
-        selectedTeamId: finalTeamId,
-      });
-    }
-  }
 
   // Spectator fallback: if not auctioneer and no player selected yet, display the first available pending player
   useEffect(() => {
@@ -821,13 +883,38 @@ function AuctioneerConsole() {
 
   const unsoldPlayers = players.filter((p) => effectiveStatus(p) === "unsold");
 
-  const pendingPriorityPlayers = pendingPlayers.filter(
-    (p) => getSpecialPriority(p.name) !== Infinity
-  );
-  const basePickerPlayers = [
-    ...pendingPriorityPlayers,
-    ...pendingPlayers.filter((p) => getSpecialPriority(p.name) === Infinity)
-  ];
+  const basePickerPlayers = useMemo(() => {
+    if (isHunterzAuction) {
+      const aPlusPlus = pendingPlayers
+        .filter((p) => (p.category || "").trim().toUpperCase() === "A++")
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+      const bPlus = pendingPlayers
+        .filter((p) => (p.category || "").trim().toUpperCase() === "B+")
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+      const aPlus = pendingPlayers
+        .filter((p) => (p.category || "").trim().toUpperCase() === "A+")
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+      const aGrade = pendingPlayers
+        .filter((p) => (p.category || "").trim().toUpperCase() === "A")
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+      const others = pendingPlayers
+        .filter((p) => {
+          const cat = (p.category || "").trim().toUpperCase();
+          return cat !== "A++" && cat !== "B+" && cat !== "A+" && cat !== "A";
+        })
+        .sort((a, b) => getPlayerSNo(a) - getPlayerSNo(b));
+
+      return [...aPlusPlus, ...bPlus, ...aPlus, ...aGrade, ...others];
+    }
+
+    const pendingPriorityPlayers = pendingPlayers.filter(
+      (p) => getSpecialPriority(p.name) !== Infinity
+    );
+    return [
+      ...pendingPriorityPlayers,
+      ...pendingPlayers.filter((p) => getSpecialPriority(p.name) === Infinity)
+    ];
+  }, [pendingPlayers, isHunterzAuction]);
 
   const pickerSourcePlayers =
     pickerTab === "unsold"
@@ -1465,6 +1552,7 @@ function AuctioneerConsole() {
               </span>
               {[
                 { key: "ALL", label: "All" },
+                { key: "A++", label: "A++" },
                 { key: "A+", label: "A+" },
                 { key: "A", label: "A" },
                 { key: "B+", label: "B+" },

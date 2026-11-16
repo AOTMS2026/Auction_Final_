@@ -119,11 +119,23 @@ function ManageAuctionPage() {
       list = list.filter((p) => !p.teamId && p.auctionRoundStatus !== "unsold");
     }
 
+    const isHunterzAuction =
+      auction.id === "6ae58c64b02d0b36bdfe924b" ||
+      auction.name?.toLowerCase().includes("hunterz");
+
+    if (isHunterzAuction) {
+      list = [...list].sort((a, b) => {
+        const aSNo = a.sNo ?? 9999;
+        const bSNo = b.sNo ?? 9999;
+        return aSNo - bSNo;
+      });
+    }
+
     if (playerSearchQuery.trim()) {
       const q = playerSearchQuery.trim().toLowerCase().replace(/^#/, "");
       list = list.filter((p) => {
-        const globalIndex = players.findIndex((x) => x.id === p.id) + 1;
-        const sNoStr = String(globalIndex);
+        const sNo = p.sNo ?? (players.findIndex((x) => x.id === p.id) + 1);
+        const sNoStr = String(sNo);
         const nameMatch = p.name?.toLowerCase().includes(q);
         const sNoMatch = sNoStr === q || sNoStr.startsWith(q);
         const phoneMatch = p.phone?.includes(q);
@@ -133,7 +145,7 @@ function ManageAuctionPage() {
     }
 
     return list;
-  }, [players, playerStatusFilter, playerSearchQuery]);
+  }, [players, playerStatusFilter, playerSearchQuery, auction]);
 
   const [isExportingPlayers, setIsExportingPlayers] = useState(false);
   const [isExportingTeams, setIsExportingTeams] = useState(false);
@@ -743,7 +755,7 @@ function ManageAuctionPage() {
             ) : (
               filteredPlayersList.map((player) => {
                 const soldTeam = teams?.find((t) => t.id === player.teamId);
-                const globalSNo = players.findIndex((x) => x.id === player.id) + 1;
+                const globalSNo = player.sNo ?? (players.findIndex((x) => x.id === player.id) + 1);
 
                 return (
                   <div

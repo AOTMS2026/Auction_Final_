@@ -16,6 +16,13 @@ import { cn } from "@/lib/utils";
 
 export const AVAILABLE_GRADES = [
   {
+    value: "A++",
+    label: "Grade A++",
+    desc: "Super Icon / Marquee Player",
+    color: "from-amber-400/25 to-yellow-500/35 border-amber-300 text-amber-200 ring-amber-400/50",
+    badge: "bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-black",
+  },
+  {
     value: "A+",
     label: "Grade A+",
     desc: "Elite Tier Player",
@@ -52,7 +59,7 @@ export const AVAILABLE_GRADES = [
   },
 ] as const;
 
-export type GradeType = "A+" | "A" | "B+" | "B" | "C" | "";
+export type GradeType = "A++" | "A+" | "A" | "B+" | "B" | "C" | "";
 
 interface EditGradeModalProps {
   player: Player | null;

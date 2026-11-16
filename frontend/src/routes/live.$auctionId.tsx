@@ -103,10 +103,15 @@ function PublicLiveAuctionPage() {
   const soldCount = soldPlayers.length;
   const unsoldCount = unsoldPlayers.length;
 
+  const isHunterzAuction =
+    auction.id === "6ae58c64b02d0b36bdfe924b" ||
+    auction.name.toLowerCase().includes("hunterz");
+
   const playerSNoMap = useMemo(() => {
     const map = new Map<string, number>();
     players.forEach((p, idx) => {
-      map.set(p.id, idx + 1);
+      const explicitSNo = p.sNo ?? (p.sportFields?.["sNo"] ? Number(p.sportFields["sNo"]) : undefined);
+      map.set(p.id, explicitSNo !== undefined ? explicitSNo : idx + 1);
     });
     return map;
   }, [players]);
@@ -116,13 +121,21 @@ function PublicLiveAuctionPage() {
   // Spectator fallback: if no player on block yet, pick the first pending player
   useEffect(() => {
     if (!currentPlayerId && pendingPlayers.length > 0) {
-      const first = pendingPlayers[0];
+      let first = pendingPlayers[0];
+      if (isHunterzAuction) {
+        const aPlusPlus = pendingPlayers
+          .filter((p) => (p.category || "").trim().toUpperCase() === "A++")
+          .sort((a, b) => (a.sNo ?? 9999) - (b.sNo ?? 9999));
+        if (aPlusPlus.length > 0) {
+          first = aPlusPlus[0];
+        }
+      }
       if (first) {
         setCurrentPlayerId(first.id);
         setCurrentBid(first.baseValue && first.baseValue > 0 ? first.baseValue : auction.minimumBid);
       }
     }
-  }, [currentPlayerId, pendingPlayers, auction.minimumBid]);
+  }, [currentPlayerId, pendingPlayers, auction.minimumBid, isHunterzAuction]);
 
   const teamStatsMap = useMemo(() => {
     const map = new Map<string, ReturnType<typeof computeTeamStats>>();

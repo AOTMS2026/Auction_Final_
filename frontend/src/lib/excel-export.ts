@@ -124,6 +124,7 @@ function applySheetStyles(
 }
 
 export const GRADE_ORDER_MAP: Record<string, number> = {
+  "A++": 0,
   "A+": 1,
   "A": 2,
   "B+": 3,

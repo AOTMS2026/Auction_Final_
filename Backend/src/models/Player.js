@@ -32,6 +32,10 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    sNo: {
+      type: Number,
+      default: null,
+    },
     baseValue: {
       type: Number,
       default: 0,
